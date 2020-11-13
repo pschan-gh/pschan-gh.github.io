@@ -1,0 +1,60 @@
+<html>
+<script src="crypto-js.min.js" integrity="sha512-nOQuvD9nKirvxDdvQ9OMqe2dgapbPB7vYAMrzJihw5m+aNcf0dX53m6YxM4LgA9u8e9eg9QX+/+mPu8kCNpV2A==" crossorigin="anonymous"></script>
+<body>
+	<!-- <textarea></textarea> -->
+	<!-- <input  type='text' id="hash" style="width:100%;overflow-x:auto" readonly onclick="this.select()"/> -->
+	<!-- <textarea id="hash" style="width:100%;overflow-x:auto" readonly onclick="this.select()"></textarea> -->
+	<form id="form" class="appnitro top_label" method="post" data-highlightcolor="#f4dfb4" action="">
+		<ul>
+			<li id="li_2">
+				<label class="description" for="element_2">Last Name<span id="required_2" class="required">*</span></label>
+				<div>
+					<input id="element_2" name="element_2" class="element text medium" type="text" value="" required>
+				</div> 
+				<br/>
+				<label class="description" for="element_4">Last 2 Digits of Student ID<span id="required_4" class="required">*</span></label>
+				<div>
+					<input id="element_4" name="element_4" class="element text medium" type="text" value="" required>
+				</div> 
+				<br/>
+			</li>
+			<li id="li_1">
+				<!-- <h3>Compute Hash Value of pdf</h3> -->				
+				<label class="description" for="element_1">Hash Digest<span id="required_1" class="required">*
+					<br/>(It might take a few seconds to calculate if the file is large.)</span></label>
+				<div>
+					<input type='file' onchange='loadFile()'>
+					<br/>
+					<textarea id="element_1" name="element_1" class="element textarea medium" rows="8" style="width:90%" required readonly onclick="this.select()"></textarea>
+				</div> 
+				<div id="filename" style="display:none">
+					<input id="element_3" style="width:90%" name="element_3" class="element text medium" type="text" value="" readonly>
+				</div>
+				<br/>
+			</li>
+			<li id="li_buttons" class="buttons">
+				<input type="hidden" name="form_id" value="">
+				<input type="hidden" name="submit_form" value="1">
+				<input type="hidden" name="page_number" value="1">				
+				<!-- <input id="submit_form" class="button_text" type="submit" name="submit_form" value="Submit"> -->
+			</li>
+		</ul>
+		</form>
+	</body>
+	<script type="text/javascript">
+	function loadFile() {
+		var file = document.querySelector('input[type=file]').files[0];
+		var reader = new FileReader();
+		reader.filename = file.name;
+		reader.addEventListener("load", function () {
+			var data = reader.result.split(',')[1];
+			document.getElementById('element_1').value = CryptoJS.SHA256(data);
+			document.getElementById('element_3').value = reader.filename;
+			document.getElementById('filename').style.display = 'block';
+		});
+		if (file) {
+			reader.readAsDataURL(file);
+		}
+	};
+</script>
+</html>
