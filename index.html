@@ -1,7 +1,7 @@
 # Tools
 
-[Cranach] (https://pschan-gh.github.io/cranach/)
+[Cranach](https://pschan-gh.github.io/cranach/)
 
-[WeBWorK Log Viewer] (https://pschan-gh.github.io/ww_logparser/)
+[WeBWorK Log Viewer](https://pschan-gh.github.io/ww_logparser/)
 
-[Csvbase] (https://pschan-gh.github.io/csvbase)
+[Csvbase](https://pschan-gh.github.io/csvbase)
