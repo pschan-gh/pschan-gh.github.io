@@ -68,6 +68,7 @@ function updateModal(cranach) {
         var course = $(this).attr('course');
         var md5String = $(this).attr('md5');
         var item_type = $(this).attr('type');
+        var chapterType = $(this).attr('chapter_type');
         var chapter = $(this).attr('chapter');
         var item = $(this).attr('item');
         var slide = $(this).closest('.slide').attr('slide');
@@ -81,7 +82,7 @@ function updateModal(cranach) {
         $('#share_item span').hide();
 
         $('.current_course').text(course);
-        $('.current_chapter').text(chapter);
+        $('.current_chapter').text(chapterType + ' ' + chapter);
         $('.current_item_type').text(item_type);
         $('.current_item').text(item);
         $('#share_item span.current_course, #share_item span.current_chapter, #share_item span.current_item_type, #share_item span.current_item').show();
@@ -509,20 +510,31 @@ function postprocess(cranach) {
             });
         });
 
+        // https://stackoverflow.com/questions/20466903/bootstrap-popover-hide-on-click-outside/27615920
+        $('body').on('click', function (e) {
+            $('[data-toggle=popover]').each(function () {
+                // hide any open popovers when the anywhere else in the body is clicked
+                if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+                    $(this).popover('hide');
+                }
+            });
+        });
+
         if (cranach.attr['selectedItem']) {
             console.log('SELECTED ITEM: ' + cranach.attr['selectedItem']);
-            var $item = $('.statement[item="' + cranach.attr['selectedItem'] + '"], .statement[md5="' + cranach.attr['selectedItem'] + '"], .substatement[item="' + cranach.attr['selectedItem'] + '"], .substatement[md5="' + cranach.attr['selectedItem'] + '"]').first();
-            var $selectedSlide = $item.closest('.slide');
-            $('#output').scrollTo($selectedSlide);
-            $selectedSlide.click();
-            $item.find('.item_title').addClass('highlighted');
+
+            $item = $('.statement[item="' + cranach.attr['selectedItem'] + '"], .statement[md5="' + cranach.attr['selectedItem'] + '"], .substatement[item="' + cranach.attr['selectedItem'] + '"], .substatement[md5="' + cranach.attr['selectedItem'] + '"], .label[name="' + cranach.attr['selectedItem'] + '"]').first().closest('.statement, .substatement');
+
+            //  var $selectedSlide = $item.closest('.slide');
+            $('#output').scrollTo($item);
+            // $selectedSlide.click();
+            $item.find('.item_title').first().addClass('highlighted');
         } else if (cranach.attr['selectedSection']) {
             var $section = $('.title[serial="' + cranach.attr['selectedSection'] + '"]').first();
             var $selectedSlide = $section.closest('.slide');
             $('#output').scrollTo($selectedSlide);
             $selectedSlide.click();
             $section.addClass('highlighted');
-
         } else {
             var $selectedSlide = $('.slide[slide="' + cranach.attr['selectedSlide']  + '"]');
             console.log('SCROLLING TO SLIDE ' + cranach.attr['selectedSlide']);
@@ -544,13 +556,13 @@ function postprocess(cranach) {
                 $("#menu_container .navbar-nav, .controls, .present .slide_number").not('.hidden').fadeOut();
             }, 1000);
         })
-        
+
         $("#menu_container .navbar-nav, .present .slide_number").not('.hidden').off();
         $("#menu_container .navbar-nav, .present .slide_number").not('.hidden').mouseover(function() {
             $('#right_half').off('mousemove');
             clearTimeout(menu_timer);
             $(this).show();
-        });        
+        });
         $("#menu_container .navbar-nav, .present .slide_number").not('.hidden').mouseout(function() {
             clearTimeout(menu_timer);
             $('#right_half').off('mousemove');
