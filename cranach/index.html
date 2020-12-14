@@ -143,8 +143,8 @@
 
     </script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <!-- <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script> -->
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script> -->
     <!-- <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.0/es5/tex-chtml.js"></script> -->
 
 <style type="text/css">
@@ -571,7 +571,7 @@
                 <div class="modal-footer">
                     <div style="width:100%">
                         <div class="feedback" style="float:left;font-size:small">
-                            <img class="exempt loading" style="max-width:5em;height:auto;margin:auto;display:none" src="icons/Loading_icon.gif"/>
+                            <img class="exempt loading" style="max-width:5em;height:auto;margin:auto;display:none;float:left" src="icons/Loading_icon.gif"/>
                             <div class="message" style="display:inline-block;float:left"></div>
                         </div>
                         <div style="float:right">
@@ -669,7 +669,11 @@ $(function() {
         }
         console.log(query);
         $("#render_sel").html('<option value="">Render</option><option value="all">All</option>');
-        baseRenderer = new Cranach('').setup({'query':query})
+        baseRenderer.then(cranach => {
+            let dir = cranach.attr['dir'];
+            baseRenderer = new Cranach('').setup({'dir':dir, 'query':query});
+            return baseRenderer;
+        })
         .then(cranach => {
             console.log(cranach);
             MathJax.typesetClear();
