@@ -279,7 +279,7 @@ for (let p of urlParams) {
     console.log(p);
 }
 
-var rotationMatrix = urlParams.has('rotationMatrix') ? urlParams.get('rotationMatrix') : "[-0.5,-0.43,0.75,0,0.87,-0.25,0.43,0,0,0.87,0.5,0,0,0,0,1]";
+var rotationMatrix = urlParams.has('rotationMatrix') ? JSON.parse(urlParams.get('rotationMatrix')) : new Array(-0.5,-0.43,0.75,0,0.87,-0.25,0.43,0,0,0.87,0.5,0,0,0,0,1);
 
 var sidebar = urlParams.has('sidebar') ? urlParams.get('sidebar') : 1;
 var dimensions = urlParams.has('dimensions') ? JSON.parse(urlParams.get('dimensions')) : new Array(800, 800);
