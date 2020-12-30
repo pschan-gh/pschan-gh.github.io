@@ -1,15 +1,280 @@
 var eqStrings;
 var global_valuess = new Array();
 var range;
+var eqIndex = 0;
 
 //settings
 var numSamples = 20;
 var  basicPlotOptions, options, glOptions;
-    
+
+var nullDatas = [{nRows: numSamples, nCols: numSamples, formattedValues: null, scaleFactor: 1, colourGradient: [{rgb:{red:0, green:0, blue:0}, alpha:0}]}];
 //end settings
 
+class eqStruct {
+    constructor(surfaceplot, eqInfo, isParam) {
+        this.surfaceplot = surfaceplot;
+        this.eqInfo = eqInfo;
+        this.isParam = isParam;
+        this.index = eqIndex;
+
+        console.log(eqInfo + ' ' + isParam);
+
+        var input = document.createElement("div");
+
+        let container;
+        let num_equations = 0;
+        let num_params = 0;
+
+        num_equations = document.getElementById("equations").childElementCount;
+        if (document.getElementById("param_equations")!= null) {
+            num_params = document.getElementById("param_equations").childElementCount;
+        }
+        this.index = eqIndex;
+        if(!isParam) {
+            container = document.getElementById("equations");
+            input.className = "input"; // set the CSS class
+            // this.index = num_equations;
+            // input.id = "input" + this.index;
+        } else {
+            container = document.getElementById("param_equations");
+            input.className = "param_input";
+            // this.index = num_params;
+            // input.id = "param_input" + this.index;
+        }
+
+        input.id = input.className + this.index;
+
+        container.appendChild(input);
+
+        let eqdiv = document.createElement("div");
+        eqdiv.className = "eqdiv";
+
+        let show = document.createElement("input");
+        show.type = "checkbox";
+        show.className = 'show large';
+        show.value = "1";
+        show.checked = "true";
+        show.style.cssFloat = "left";
+        show.style.marginLeft = '5px';
+        show.style.marginTop = '2px';
+
+        // let close = document.createElement("button");
+        let close = document.createElement("span");
+        // close.className = 'btn btn-outline-info btn-xs';
+        close.className = 'material-icons';
+        close.style.cssFloat = "left";
+        // close.style.width = "2em";
+        // close.style.height = "1em";
+        close.style.border = 'solid 2px';
+        close.style.margin = '2px';
+        close.style.borderRadius = '5px';
+        // close.style.fontSize = '0.75em';
+        // close.style.textAlign = 'center';
+        // close.innerHTML = '<span class="material-icons">close</span>';
+        close.innerHTML = 'close';
+
+;
+
+
+        let equationinput = document.createElement("input");
+        equationinput.className = "equationinput"; // set the CSS class
+        if(!isParam) {
+            equationinput.id = "equationinput" + this.index;
+        } else {
+            equationinput.id = "paramequationinput" + this.index;
+        }
+        equationinput.type = "text";
+
+        equationinput.value = eqInfo == null ? "" : eqInfo.str;
+
+        var color1 = document.createElement("input");
+
+        color1.type = "color";
+        color1.className = "color1 color";
+        color1.style.cssFloat = "right";
+        color1.style.height = "1.75em";
+        color1.style.width = "2em";
+
+        // let k = num_equations + num_params;
+        // console.log(k);
+        if(eqInfo.color == "") {
+            var hue = (0.55 + eqIndex*0.37) % 1;
+            var saturation = (hue > 0.45) && (hue < 0.6) ? 0.5 : 0.3;
+            var color = HSVtoRGB(hue, saturation, 0.85);
+            color1.value = "#" + rgbToHex(color);
+        } else {
+            color1.value = "#" + eqInfo.color;
+        }
+        this.color = color1.value;
+
+        var alpha = document.createElement("input");
+        alpha.type = "number";
+        alpha.min = "0.5";
+        alpha.max = "1";
+        alpha.step = "0.2";
+        alpha.style.width = "2.5em";
+        alpha.style.color = "#888";
+        alpha.style.cssFloat = "right";
+        alpha.className = 'alpha'
+
+        alpha.value = eqInfo.alpha == null ? "0.9":parseFloat(eqInfo.alpha);
+
+        input.appendChild(close);
+        input.appendChild(show);
+        input.appendChild(eqdiv);
+        input.appendChild(color1);
+        input.appendChild(alpha);
+
+
+        eqdiv.appendChild(equationinput);
+
+        if(isParam) {
+            color1.style.display="none";
+            alpha.style.display="none";
+
+            var properties = document.createElement("div");
+            properties.className = "properties";
+
+            var domainButton = document.createElement("button");
+            domainButton.type="button";
+            domainButton.className ="btn btn-outline-info btn-sm";
+            domainButton.style.cssFloat = "right";
+            domainButton.style.display = "inline-block";
+            domainButton.style.marginRight = "0px";
+            domainButton.style.marginLeft = "0px";
+
+            domainButton.innerHTML = "More";
+            domainButton.onclick = function() {eqdiv.style.paddingBottom = "4px";properties.style.display = "block";this.style.display = "none";color1.style.display="inline";alpha.style.display="inline";};
+            input.appendChild(domainButton);
+
+
+            let sdomain = document.createElement("div");
+            let tdomain = document.createElement("div");
+
+            sdomain.className = "domain";
+            sdomain.style.clear="left";
+            sdomain.style.cssFloat="left";
+            sdomain.style.marginLeft="20px";
+            tdomain.className = "domain"
+            tdomain.style.cssFloat="left"
+            tdomain.style.marginLeft="4px";
+
+            sdomain.innerHTML = "<span>$s \\in$</span>";
+            tdomain.innerHTML="<span>$t \\in$</span>";
+
+            var sdomaininput = document.createElement("input");
+            sdomaininput.type = "text";
+            sdomaininput.value = eqInfo.domain.s;
+            sdomaininput.style.width="3em";
+            sdomaininput.className = "sdomain";
+
+            var tdomaininput = document.createElement("input");
+            tdomaininput.type = "text";
+            tdomaininput.value = eqInfo.domain.t;
+            tdomaininput.style.width="3em";
+            tdomain.className = "domain";
+            tdomaininput.className = "tdomain";
+
+            sdomain.appendChild(sdomaininput);
+            tdomain.appendChild(tdomaininput);
+
+            var submit = document.createElement("button");
+            submit.type = "button";
+            submit.className ="btn btn-outline-info btn-sm";
+            submit.style.cssFloat = "right";
+            submit.innerHTML="Graph";
+            submit.addEventListener("click", function() {
+                console.log('graphing');
+                color1.style.display="inline-block";
+                alpha.style.display = "inline-block";
+                eqStructs.singleUpdate(input);
+                eqStructs.evaluate();
+                setUp(surfaceplot, global_valuess);
+                properties.style.display = "none";
+            });
+
+            properties.appendChild(sdomain);
+            properties.appendChild(tdomain);
+            properties.appendChild(submit);
+
+            input.appendChild(properties);
+
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub, sdomain]);
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub, tdomain]);
+
+            equationinput.addEventListener("change", function() {
+                try {
+                    if(equationinput.value == "") {
+                        submit.innerHTML = "Remove";
+                    }
+                } catch(a) {}
+            },false);
+            equationinput.addEventListener("keypress", function(e) {
+                try {
+                    if(e.keyCode == 13) {
+                        domainButton.click();
+                    }
+                } catch(a){}
+            },false);
+        }
+
+        if(!isParam) {
+            equationinput.addEventListener("change",function(){
+                try {
+                    eqStructs.singleUpdate(input);
+                    eqStructs.evaluate();
+                    setUp(surfaceplot, global_valuess);
+                } catch(a) {}
+            },false);
+            // equationinput.addEventListener("keypress", function(e) {
+            //     try {
+            //         if (e.keyCode == 13) {
+            //             eqStructs.singleUpdate(input);
+            //         }
+            //     } catch(a) {}
+            // },false);
+        }
+        alpha.addEventListener("change", function() {
+            try {
+                eqStructs.update();
+                setUp(surfaceplot, global_valuess);
+            } catch(a) {
+                alert(a)
+            }
+        },false);
+        color1.addEventListener("change", function() {
+            try {
+                eqStructs.update();
+                setUp(surfaceplot, global_valuess);
+            } catch(a) {
+                alert(a)
+            }
+        },false);
+        show.addEventListener("change", function() {
+            try {
+                eqStructs.update();
+                setUp(surfaceplot, global_valuess);
+            } catch(a) {
+                alert(a)
+            }
+        },false);
+        close.addEventListener("click", function() {
+            let input = isParam ? $(this).closest('div.param_input').first()[0] : $(this).closest('div.input').first()[0];
+            console.log('DELETE ' + input.id);
+            delete eqStructs.eqStructArray[input.id];
+            input.parentNode.removeChild(input);
+            eqStructs.update();
+            setUp(surfaceplot, global_valuess);
+        });
+
+        eqIndex++;
+        input.dataset.isParam = this.isParam;
+        this.inputDiv = input;
+    }
+}
+
 function init_settings(rotationMatrix, dimensions) {
-    console.log(dimensions);
+
     var background = '#f8f8f8';
     var axisForeColour = '#444444';
     var hideFloorPolygons = false;
@@ -46,14 +311,14 @@ function init_settings(rotationMatrix, dimensions) {
     options = {xPos: 0, yPos: 0, width: dimensions[0], height: dimensions[1], xTitle: "x", yTitle: "y", zTitle: "z", backColour: background, axisTextColour: axisForeColour, hideFlatMinPolygons: hideFloorPolygons, startXAngle: 300, startZAngle: 240, Range: range, centeredAxes: centeredaxes.value, rotationMatrix:rotationMatrix};
 
     basicPlotOptions = {fillPolygons: false, tooltips: null, renderPoints: false}
-    
+
     glOptions = { chkControlId: "allowWebGL", autoCalcZScale: autozscale.value, showAxes: showaxes.value, animate: false, xTicksNum: xticks.value, yTicksNum: yticks.value, zTicksNum: zticks.value};
-    
+
 }
 
 function getURL(surfaceplot, path) {
     var params = ['zscale', 'domain', 'numsamples', 'autozscale', 'showaxes', 'centeredaxes', 'xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax', 'xticks', 'yticks', 'zticks'];
-    
+
     var url = path + "/index.php?sidebar=0&";
 
     for(var i = 0; i < params.length; i++) {
@@ -65,13 +330,13 @@ function getURL(surfaceplot, path) {
 
     var eqsarray = eqStructs.eqStructArray;
 
-    for (i = 0; i < eqsarray.length; i++) {
+    for (const i in eqsarray) {
 	url = url + "&equations[" + i + "]='" + encodeURIComponent(eqsarray[i].str) + "'";
 	if(eqsarray[i].isParam) {
 	    url = url + "&sdomain[" + i + "]='" + eqsarray[i].domain.sMin + "," + eqsarray[i].domain.sMax + "'";
 	    url = url + "&tdomain[" + i + "]='" + eqsarray[i].domain.tMin + "," + eqsarray[i].domain.tMax + "'";
 	}
-	
+
 	url = url + "&colors[" + i + "]='" + rgbToHex(eqsarray[i].colourGradient[0].rgb) +"'";
 	url = url + "&alphas[" + i + "]=" + eqsarray[i].colourGradient[0].alpha;
     }
@@ -87,9 +352,9 @@ function getURL(surfaceplot, path) {
 
 function getJSON(surfaceplot, path) {
     var params = ['zscale', 'domain', 'numsamples', 'autozscale', 'showaxes', 'centeredaxes', 'xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax', 'xticks', 'yticks', 'zticks'];
-    
+
     var data = {};
-    
+
     data.sidebar = 0;
 
     params.forEach(param => {
@@ -103,20 +368,22 @@ function getJSON(surfaceplot, path) {
     // data.sdomain = new Array();
     // data.tdomain = new Array();
 
-    for (i = 0; i < eqsarray.length; i++) {
+    let i = 0;
+    for (const k in eqsarray) {
         data.equations[i] = {};
         data.equations[i].isParam = false;
-        data.equations[i].formula = eqsarray[i].str;
-        if(eqsarray[i].isParam) {
+        data.equations[i].formula = eqsarray[k].str;
+        if(eqsarray[k].isParam) {
             data.equations[i].isParam = true;
             data.equations[i].domain =  {
-                s : eqsarray[i].domain.sMin + ',' + eqsarray[i].domain.sMax,
-                t : eqsarray[i].domain.tMin + ',' + eqsarray[i].domain.tMax
+                s : eqsarray[k].domain.sMin + ',' + eqsarray[k].domain.sMax,
+                t : eqsarray[k].domain.tMin + ',' + eqsarray[k].domain.tMax
             }
-            
-        }    
-        data.equations[i].color= rgbToHex(eqsarray[i].colourGradient[0].rgb);
-        data.equations[i].alpha= eqsarray[i].colourGradient[0].alpha;
+
+        }
+        data.equations[i].color= rgbToHex(eqsarray[k].colourGradient[0].rgb);
+        data.equations[i].alpha= eqsarray[k].colourGradient[0].alpha;
+        i++;
     }
 
     var rotMat = surfaceplot.surfacePlot.rotationMatrix;
@@ -132,177 +399,19 @@ function getJSON(surfaceplot, path) {
 function shareURL(surfaceplot, path) {
 
     // shareOverlay = document.getElementById('share-overlay');
-    // 
+    //
     // shareOverlay.display = 'block';
 
     // url = getURL(surfaceplot, path);
     url = getJSON(surfaceplot, path);
 
     $('.share').val(url);
-    $('.embed').val("<iframe style=\"width:100%;height:700px\" frameBorder=\"0\" src=\"" + url + "&dimensions=[600,600]\"></iframe><br><center><a href=\""+ url + "\" target=\"_blank\">WebGL Surface Grapher</a></center>");
+    $('.embed').val("<iframe style=\"width:100%;height:500px\" frameBorder=\"0\" src=\"" + url + "&dimensions=[480,480]\"></iframe>");
 }
 
-var nullDatas = [{nRows: numSamples, nCols: numSamples, formattedValues: null, scaleFactor: 1, colourGradient: [{rgb:{red:0, green:0, blue:0}, alpha:0}]}];
-
-
 function add_equation(surfaceplot, eqInfo, isParam) {
-    var num_equations = document.getElementById("equations").childElementCount;
-    if(document.getElementById("param_equations")!= null)
-	var num_params = document.getElementById("param_equations").childElementCount;
-    else
-	var num_params = 0;
-
-    if(!isParam)
-	container = document.getElementById("equations");
-    else
-	container = document.getElementById("param_equations");
-
-    var input = document.createElement("div");
-    
-    if(!isParam)
-	input.className = "input"; // set the CSS class
-    else
-	input.className = "param_input";
-
-    input.id = "input" + num_equations;
-
-    container.appendChild(input); 
-
-    var eqdiv = document.createElement("div");
-    eqdiv.className = "eqdiv";
-
-    var show = document.createElement("input");
-    show.type = "checkbox";
-    show.value = "1";
-    show.checked = "true";
-    show.style.cssFloat = "left";
-    show.style.width = "20px";
- 
-    var equationinput = document.createElement("input");
-    if(!isParam) {
-	equationinput.className = "equationinput"; // set the CSS class
-	equationinput.id = "equationinput" + num_equations;
-    } else {
-	equationinput.className = "equationinput"; // set the CSS class
-	equationinput.id = "equationinput" + num_params;
-    }
-   
-    equationinput.type = "text";
-
-    equationinput.value = eqInfo == null ? "" : eqInfo.str;
-    
-    var color1 = document.createElement("input");
-    
-    var k = num_equations + num_params;
-
-    color1.type = "color";
-    color1.className = "color1";
-    color1.style.cssFloat = "right";
-    color1.style.height = "1.75em";
-    color1.style.width = "2em";
-
-    if(eqInfo.color == "") {
-	var hue = (0.55 + k*0.37)%1;
-	var saturation = (hue > 0.45) && (hue < 0.6) ? 0.5 : 0.3;
-	var color = HSVtoRGB(hue, saturation, 0.85);
-	color1.value = "#" + rgbToHex(color);
-    } else {
-	color1.value = "#" + eqInfo.color;
-    }
-    
-    var alpha = document.createElement("input");
-    alpha.type = "number";
-    alpha.min = "0.5";
-    alpha.max = "1";
-    alpha.step = "0.2";
-    alpha.style.width = "2.5em";
-    alpha.style.color = "#888";
-    alpha.style.cssFloat = "right";
-
-    alpha.value = eqInfo.alpha == null ? "0.9":parseFloat(eqInfo.alpha);
-
-    input.appendChild(show);        
-    input.appendChild(eqdiv);
-    input.appendChild(color1);
-    input.appendChild(alpha);
-    
-    eqdiv.appendChild(equationinput);
-    
-    if(isParam) {
-	color1.style.display="none";
-	alpha.style.display="none";
-    }
-
-    if(isParam) {
-	var properties = document.createElement("div");
-	properties.className = "properties";
-
-	var domainButton = document.createElement("button");
-	domainButton.type="button";
-	domainButton.className ="btn btn-outline-info btn-sm";
-	domainButton.style.cssFloat = "right";
-	domainButton.style.display = "inline-block";
-	domainButton.style.marginRight = "0px";
-	domainButton.style.marginLeft = "0px";
-
-	domainButton.innerHTML = "More";
-	domainButton.onclick = function() {eqdiv.style.paddingBottom = "4px";properties.style.display = "block";this.style.display = "none";color1.style.display="inline";alpha.style.display="inline";};
-	input.appendChild(domainButton);
-
-
-	var sdomain = document.createElement("div");
-	var tdomain = document.createElement("div");
-	sdomain.className = "domain";
-	sdomain.style.clear="left";
-	sdomain.style.cssFloat="left";
-	sdomain.style.marginLeft="20px";
-	tdomain.className = "domain"
-	tdomain.style.cssFloat="left"
-	tdomain.style.marginLeft="4px";
-	sdomain.innerHTML = "<span>$s \\in$</span>";
-	tdomain.innerHTML="<span>$t \\in$</span>";
-
-	var sdomaininput = document.createElement("input");
-	sdomaininput.type = "text";
-	sdomaininput.value = eqInfo.domain.s;
-	sdomaininput.style.width="3em";
-	var tdomaininput = document.createElement("input");
-	tdomaininput.type = "text";
-	tdomaininput.value = eqInfo.domain.t;
-	tdomaininput.style.width="3em";
-
-	sdomain.appendChild(sdomaininput);
-	tdomain.appendChild(tdomaininput);	
-
-	var submit = document.createElement("button");
-	submit.type = "button";
-	submit.className ="btn btn-outline-info btn-sm";
-	submit.style.cssFloat = "right";
-	submit.innerHTML="Graph";
-	submit.onclick = function(){try{color1.style.display="inline-block";alpha.style.display="inline-block";eqStructs.update();eqStructs.evaluate();setUp(surfaceplot, global_valuess);properties.style.display = "none";}catch(a){}};
-
-
-	properties.appendChild(sdomain);
-	properties.appendChild(tdomain);
-	properties.appendChild(submit);
-
-	input.appendChild(properties);
-
-	MathJax.Hub.Queue(["Typeset", MathJax.Hub, sdomain]);
-	MathJax.Hub.Queue(["Typeset", MathJax.Hub, tdomain]);
-
-	equationinput.addEventListener("change",function(){try{if(equationinput.value == "") {submit.innerHTML = "Remove";}}catch(a){}},false);
-	equationinput.addEventListener("keypress",function(e){try{if(e.keyCode == 13){domainButton.click();}}catch(a){}},false);
-    }
-
-    if(!isParam) {
-	equationinput.addEventListener("change",function(){try{eqStructs.update();eqStructs.evaluate();setUp(surfaceplot, global_valuess);}catch(a){}},false);
-   	equationinput.addEventListener("keypress",function(e){try{if(e.keyCode == 13)eqStructs.update();}catch(a){}},false);
-    } 
-     alpha.addEventListener("change",function(){try{eqStructs.update();setUp(surfaceplot, global_valuess);}catch(a){alert(a)}},false);
-       color1.addEventListener("change",function(){try{eqStructs.update();setUp(surfaceplot, global_valuess);}catch(a){alert(a)}},false);
-    show.addEventListener("change",function(){try{eqStructs.update();setUp(surfaceplot, global_valuess);}catch(a){alert(a)}},false);
-        
+    let eqstruct = new eqStruct(surfaceplot, eqInfo, isParam); // testing
+    console.log(eqstruct);
 }
 
 function latexfy (parent, str) { /* parent should be of eqdiv class */
@@ -310,9 +419,9 @@ function latexfy (parent, str) { /* parent should be of eqdiv class */
     var mathDiv = document.createElement("div");
     mathDiv.className = "mathdiv";
     mathDiv.id = String.fromCharCode(65 + Math.floor(Math.random() * 26)) + Date.now();
-    
+
     mathDiv.style.textAlign = eqs.length == 1?"center":"left";
-	
+
     mathDiv.style.overflow = "hidden";
     mathDiv.style.width = "100%";
 
@@ -328,11 +437,21 @@ function latexfy (parent, str) { /* parent should be of eqdiv class */
     }
 
     MathJax.Hub.Queue(["Typeset", MathJax.Hub, mathDiv]);
-    
-    if(eqs.length > 1){parent.parentNode.childNodes[4].style.display = "none";parent.parentNode.childNodes[2].style.display = "block";parent.parentNode.childNodes[3].style.display = "block";}
 
-    mathDiv.onclick = function(){parent.removeChild(mathDiv);parent.childNodes[0].style.display = "block";if(eqs.length > 1){parent.parentNode.childNodes[4].style.display = "block";parent.parentNode.childNodes[2].style.display = "none"; parent.parentNode.childNodes[3].style.display = "none";}};
-    
+    if ( eqs.length > 1 ){
+        parent.parentNode.childNodes[5].style.display = "none";
+        parent.parentNode.childNodes[3].style.display = "block";
+        parent.parentNode.childNodes[4].style.display = "block";
+    }
+
+    mathDiv.onclick = function() {
+        parent.removeChild(mathDiv);
+        parent.childNodes[0].style.display = "block";
+        if (eqs.length > 1) {
+            parent.parentNode.childNodes[5].style.display = "block";
+            parent.parentNode.childNodes[3].style.display = "none"; parent.parentNode.childNodes[4].style.display = "none";
+        }
+    };
 }
 
 function componentToHex(c) {
@@ -380,37 +499,34 @@ function HSVtoRGB(h, s, v) {
 }
 
 eqStructs = function() {
-    
+
     this.inputList = document.getElementsByClassName("input");
     this.eqstrings = new Array();
     this.eqList = document.getElementsByClassName("equationinput");
-    this.eqStructArray = new Array();
-    
+    this.eqStructArray = new Object();
+
     this.cleanup = function() {
 	var show_new_equation = 1;
-	
+
 	for (var k = this.eqList.length - 1; k >= 0 ; k--) {
 	    var element = this.eqList.item(k);
 	    if(element.value == "") {
 		show_new_equation = 0;
-		element.parentNode.parentNode.parentNode.removeChild(element.parentNode.parentNode);	
+		element.parentNode.parentNode.parentNode.removeChild(element.parentNode.parentNode);
 	    }
 	}
-	
+
 	this.inputList = document.getElementsByClassName("input");
-	
+
 	for(var k = 0; k < this.inputList.length; k++) {
 	    this.inputList.item(k).id = "input" + k;
 	}
-	
+
 	this.eqList = document.getElementsByClassName("equationinput");
-	
+
 	for( k = 0; k < this.eqList.length; k++) {
 	    this.eqList.item(k).id = "equationinput" + k;
 	}
-
-	document.getElementById("new_equation").style.display="block";
-	document.getElementById("new_param").style.display="block";
 
 	var mathDivs = document.getElementsByClassName("mathdiv");
 	while(mathDivs.length > 0) {
@@ -418,51 +534,78 @@ eqStructs = function() {
 	}
     }
 
+    this.singleUpdate = function(inputDiv) {
+
+        var color = hexToRgb($(inputDiv).find('.color').first().val());
+        var alpha = $(inputDiv).find('.alpha').first().val();
+        var colourGradient = [{rgb:color, alpha:alpha}];
+
+        console.log(inputDiv);
+        if (inputDiv.dataset.isParam == 'false') {
+            this.constructArray({
+                id : inputDiv.id,
+                str : $(inputDiv).find('.equationinput').first().val(),
+                colourGradient : colourGradient,
+                show : $(inputDiv).find('.show').first()[0].checked,
+                isParam : false,
+                colourGradient : colourGradient
+            });
+        } else {
+            let sdomain = $(inputDiv).find('.sdomain').first().val().split(',');
+            let tdomain = $(inputDiv).find('.tdomain').first().val().split(',');
+            this.constructArray({
+                id : inputDiv.id,
+                str : $(inputDiv).find('.equationinput').first().val(),
+                colourGradient : colourGradient,
+                show : $(inputDiv).find('.show').first()[0].checked,
+                domain : {
+                    sMin:parseFloat(sdomain[0]),
+                    sMax:parseFloat(sdomain[1]),
+                    tMin : parseFloat(tdomain[0]),
+                    tMax:parseFloat(tdomain[1])
+                },
+                isParam:true,
+                colourGradient : colourGradient
+            });
+        }
+
+        latexfy($(inputDiv).find('.eqdiv').first()[0], $(inputDiv).find('.equationinput').first().val());
+        document.getElementById("new_equation").style.display="block";
+    	document.getElementById("new_param").style.display="block";
+    }
+
     this.update = function() {
-	this.cleanup();
-	this.eqStructArray = new Array();
-	
-	this.inputList = document.getElementsByClassName("input");
-	for(var k = 0; k < this.inputList.length; k++) {
-	    var color = hexToRgb(this.inputList.item(k).childNodes[2].value);
-	    var alpha = this.inputList.item(k).childNodes[3].value;
-	    var colourGradient = [{rgb:color, alpha:alpha}];
+        this.cleanup();
+        this.eqStructArray = new Object();
 
-	    this.constructArray({str:this.inputList.item(k).childNodes[1].childNodes[0].value, colourGradient:colourGradient, show:this.inputList.item(k).childNodes[0].checked, isParam:false, colourGradient:colourGradient});
+        this.inputList = document.getElementsByClassName("input");
+        for(var k = 0; k < this.inputList.length; k++) {
+            this.singleUpdate(this.inputList.item(k));
+        }
 
-	    latexfy(this.inputList.item(k).childNodes[1], this.inputList.item(k).childNodes[1].childNodes[0].value);
-	}
-	
-	this.inputList = document.getElementsByClassName("param_input");
+        this.inputList = document.getElementsByClassName("param_input");
 
-	for(var k = 0; k < this.inputList.length; k++) {
-	    var sdomain = this.inputList.item(k).childNodes[5].childNodes[0].childNodes[1].value.split(",");
-	    var tdomain = this.inputList.item(k).childNodes[5].childNodes[1].childNodes[1].value.split(",");
-	    var color = hexToRgb(this.inputList.item(k).childNodes[2].value);
-	    var alpha = this.inputList.item(k).childNodes[3].value;	  
-	    var colourGradient = [{rgb:color, alpha:alpha}];
-	    this.constructArray({str:this.inputList.item(k).childNodes[1].childNodes[0].value, colourGradient:colourGradient, show:this.inputList.item(k).childNodes[0].checked, domain:{sMin:parseFloat(sdomain[0]), sMax:parseFloat(sdomain[1]), tMin:parseFloat(tdomain[0]), tMax:parseFloat(tdomain[1])}, isParam:true, colourGradient:colourGradient});
-
-	    latexfy(this.inputList.item(k).childNodes[1], this.inputList.item(k).childNodes[1].childNodes[0].value);
-	}
-	//document.getElementById("share-div").style.display="none";
-
+        for(var k = 0; k < this.inputList.length; k++) {
+            this.singleUpdate(this.inputList.item(k));
+        }
+        //document.getElementById("share-div").style.display="none";
+        this.evaluate();
     }
 
     this.constructArray = function(eqStruct) {
-	this.eqStructArray.push(eqStruct);
+        // this.eqStructArray.push(eqStruct);
+        this.eqStructArray[eqStruct['id']] = eqStruct;
     }
 
-    this.evaluate = function() {	
-	global_valuess = values_gen(this.eqStructArray);
-    } 
+    this.evaluate = function() {
+        global_valuess = values_gen(this.eqStructArray);
+    }
 
- 
 }
 
 
 function listen(surfaceplot) {
-    
+
     var zscale = document.getElementById("zscale");
     var domain = document.getElementById("domain");
     var xscale = document.getElementById("xscale");
@@ -472,7 +615,7 @@ function listen(surfaceplot) {
     var autozscale = document.getElementById("autozscale");
     var showaxes = document.getElementById("showaxes");
     var centeredaxes = document.getElementById("centeredaxes");
-    
+
     var zmin = document.getElementById("zmin");
     var zmax = document.getElementById("zmax");
 
@@ -499,11 +642,11 @@ function listen(surfaceplot) {
 
     zmin.addEventListener("change",function(){try{range.zmin=parseInt(this.value);setUp(surfaceplot, global_valuess)}catch(a){alert(a)}},false);
     zmax.addEventListener("change",function(){try{range.zmax=parseInt(this.value);setUp(surfaceplot, global_valuess)}catch(a){alert(a)}},false);
-      
+
 }
 
 function parametric_gen(paramFunc) {
-    		       
+
     var numRows = numSamples;
     var numCols = numSamples;
 
@@ -511,12 +654,12 @@ function parametric_gen(paramFunc) {
     var exp;
 
     if (paramFunc.isParam) {
-	domain = paramFunc.domain;
-	exps = paramFunc.str.split(",");
-	exp = {x:exps[0], y:exps[1], z:exps[2]};
+        domain = paramFunc.domain;
+        exps = paramFunc.str.split(",");
+        exp = {x:exps[0], y:exps[1], z:exps[2]};
     } else {
-	domain = {sMin:range.xmin, sMax:range.xmax, tMin:range.ymin, tMax:range.ymax};
-	exp = {x:"x", y:"y", z:paramFunc.str};
+        domain = {sMin:range.xmin, sMax:range.xmax, tMin:range.ymin, tMax:range.ymax};
+        exp = {x:"x", y:"y", z:paramFunc.str};
     }
 
     var sRange = domain.sMax - domain.sMin;
@@ -524,68 +667,78 @@ function parametric_gen(paramFunc) {
 
     var values = null;
     values = new Array();
-        
+
     var s = 0;
     var t = 0;
     if(exp.x != "") {
-	for (var i = 0; i < numRows; i++)  {		
-	    values[i] = new Array();
-	    
-	    for (var j = 0; j < numCols; j++) {	
-		s = (i+0.5)*sRange/numRows + domain.sMin;
-		t = (j+0.5)*tRange/numCols + domain.tMin;	
+        for (var i = 0; i < numRows; i++)  {
+            values[i] = new Array();
 
-		if (paramFunc.isParam) {
-		    values[i][j] = {
-			x:math.eval(exp.x, {s:s, t:t}),
-			y:math.eval(exp.y, {s:s, t:t}),
-			z:math.eval(exp.z, {s:s, t:t})
-		    };
-		} else {
-		    values[i][j] = {
-			x:math.eval(exp.x, {x:s, y:t}),
-			y:math.eval(exp.y, {x:s, y:t}),
-			z:math.eval(exp.z, {x:s, y:t})
-		    };
-		}
-	    }
-	}
-    } else
-	values = null;
+            for (var j = 0; j < numCols; j++) {
+                s = (i+0.5)*sRange/numRows + domain.sMin;
+                t = (j+0.5)*tRange/numCols + domain.tMin;
+
+                if (paramFunc.isParam) {
+                    values[i][j] = {
+                        x:math.eval(exp.x, {s:s, t:t}),
+                        y:math.eval(exp.y, {s:s, t:t}),
+                        z:math.eval(exp.z, {s:s, t:t})
+                    };
+                } else {
+                    values[i][j] = {
+                        x:math.eval(exp.x, {x:s, y:t}),
+                        y:math.eval(exp.y, {x:s, y:t}),
+                        z:math.eval(exp.z, {x:s, y:t})
+                    };
+                }
+            }
+        }
+    } else {
+        values = null;
+    }
     return values;
 }
 
 function values_gen(paramFuncs)
-{   		       
+{
     var numRows = numSamples;
     var numCols = numSamples;
 
     var domain;
 
-    var valuess = new Array();
-    for(var k = 0; k < paramFuncs.length; k++) {
-	valuess.push(parametric_gen(paramFuncs[k]));
+    var valuess = new Object();
+    console.log(paramFuncs);
+    for(const k in paramFuncs) {
+        valuess[k] = parametric_gen(paramFuncs[k]);
     }
-    
+    console.log(valuess);
     return valuess;
 }
 
-function setUp(surfaceplot, valuess) {	
+function setUp(surfaceplot, valuess) {
 
     options.Range=range;
 
     var temp_valuess = null;
-    temp_valuess = valuess.map(function(arr) {if(arr!=null){return arr.slice()}else{return null;}});
+    // temp_valuess = valuess.map(function(arr) {
+    //     if ( arr!=null ) {
+    //         return arr.slice();
+    //     } else {
+    //         return null;
+    //     }
+    // });
+    temp_valuess = valuess;
 
     var datas = null;
     datas = new Array();
 
     var scaleFactor = 1/Math.pow(2, document.getElementById("zscale").value);
-    
-    for(k = 0; k < eqStructs.eqStructArray.length; k++) {
-	if(temp_valuess[k] != null && eqStructs.eqStructArray[k].show) {
-	    datas.push({nRows: numSamples, nCols: numSamples, formattedValues: temp_valuess[k], scaleFactor: scaleFactor, colourGradient:eqStructs.eqStructArray[k].colourGradient});
-	}
+
+    // for(k = 0; k < eqStructs.eqStructArray.length; k++) {
+    for(const k in eqStructs.eqStructArray) {
+        if(temp_valuess[k] != null && eqStructs.eqStructArray[k].show) {
+            datas.push({nRows: numSamples, nCols: numSamples, formattedValues: temp_valuess[k], scaleFactor: scaleFactor, colourGradient:eqStructs.eqStructArray[k].colourGradient});
+        }
     }
 
     if(datas.length == 0)
