@@ -81,7 +81,7 @@ overflow:hidden;
 }
 
 
-.param_input {
+.param.input {
 /*position:relative;*/
 display:block;
 width:100%;
@@ -244,7 +244,7 @@ and (max-device-width : 600px) {
     }
 
 
-    .param_input {
+    .param.input {
 	/*position:relative;*/
 	display:block;
 	width:100%;
@@ -326,7 +326,7 @@ and (max-width : 1600px) {
     }
 
 
-    .param_input {
+    .param.input {
 	/*position:relative;*/
 	display:block;
 	width:100%;
