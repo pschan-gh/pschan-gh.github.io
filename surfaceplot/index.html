@@ -2,33 +2,38 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-    
+
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
-    
+
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js" integrity="sha384-Plbmg8JY28KFelvJVai01l8WyZzrYWG825m+cZ0eDDS1f7d/js6ikvy1+X+guPIB" crossorigin="anonymous"></script>
-    
+
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
-    
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+
+
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.17.0/math.min.js"></script>
-    
+
     <script type="text/javascript"
     src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_CHTML">
     </script>
-    
+
     <script type="text/x-mathjax-config">
     MathJax.Hub.Config({
         tex2jax: {
             inlineMath: [['$','$'], ['\\(','\\)']]
         },
-        
+
     });
     </script>
-    
+
     <link rel="stylesheet" href="styles.css" media="all">
     <link rel="stylesheet" href="slider.css" media="all">
-    
+
     <style>
     .dropdown-menu {
         width: 75% !important;
@@ -56,20 +61,20 @@ varying vec3 b_vLightWeighting;
 
 void main(void)
 {
-    
-    
+
+
     if (gl_FrontFacing) // is the fragment part of a front face?
     {
         gl_FragColor = vec4(vColor.rgb * vLightWeighting, vColor.a);
-        
+
     }
     else // fragment is part of a back face
     {
         gl_FragColor = vec4(vColor.rgb * b_vLightWeighting, vColor.a);
-        
+
     }
-    
-    
+
+
 }
 </script>
 
@@ -92,13 +97,13 @@ varying vec3 b_vLightWeighting;
 void main(void)
 {
     gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
-    
+
     vec3 transformedNormal = uNMatrix * aVertexNormal;
     float directionalLightWeighting = max(dot(-transformedNormal, uLightingDirection), 0.0);
     float b_directionalLightWeighting = max(dot(transformedNormal, uLightingDirection), 0.0);
-    vLightWeighting = uAmbientColor + uDirectionalColor * directionalLightWeighting; 
-    b_vLightWeighting = uAmbientColor + uDirectionalColor * b_directionalLightWeighting; 
-    
+    vLightWeighting = uAmbientColor + uDirectionalColor * directionalLightWeighting;
+    b_vLightWeighting = uAmbientColor + uDirectionalColor * b_directionalLightWeighting;
+
     vColor = aVertexColor;
 }
 </script>
@@ -110,7 +115,7 @@ varying vec4 vColor;
 void main(void)
 {
     gl_FragColor = vColor;
-    
+
 }
 </script>
 
@@ -127,7 +132,7 @@ void main(void)
     gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
     vColor =  vec4(uAxesColour, 1.0);
     //    gl_Position = uPMatrix * vec4(aVertexPosition.x, aVertexPosition.y, aVertexPosition.z, 1.0);
-} 
+}
 </script>
 
 <script id="texture-shader-fs" type="x-shader/x-fragment">
@@ -157,7 +162,7 @@ uniform mat4 uPMatrix;
 void main(void)
 {
     gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
-    vTextureCoord = aTextureCoord; 
+    vTextureCoord = aTextureCoord;
 }
 </script>
 
@@ -166,11 +171,13 @@ void main(void)
     <div style="width:100%;text-align:center">
         <div id="mainContent" style="position:relative;padding-top:0em;text-align:center;margin-left:auto;margin-right:auto;width:100%;height:100%">
             <div id="menu_button">
-                <button class="btn btn-outline-info btn-sm" style="font-size:1em;border:none;" onclick="document.getElementById('sidebar').style.display= document.getElementById('sidebar').style.display=='block'? 'none':'block';document.getElementById('canvas').style.width = document.getElementById('sidebar').style.display == 'block'? '':'98%';if(document.getElementById('sidebar').style.display == 'block'){eqStructs.update()};">
+                <!-- <button class="btn btn-outline-info btn-sm" style="font-size:1em;border:none;" onclick="document.getElementById('sidebar').style.display= document.getElementById('sidebar').style.display=='block'? 'none':'block';document.getElementById('canvas').style.width = document.getElementById('sidebar').style.display == 'block'? '':'98%';if(document.getElementById('sidebar').style.display == 'block'){eqStructs.update()};"> -->
+                <a style="font-size:1em;border:none;" onclick="document.getElementById('sidebar').style.display= document.getElementById('sidebar').style.display=='block'? 'none':'block';document.getElementById('canvas').style.width = document.getElementById('sidebar').style.display == 'block'? '':'98%';if(document.getElementById('sidebar').style.display == 'block'){eqStructs.update()};">
                     <!-- if(document.getElementById('sidebar').style.display == 'block'){eqStructs.update()}; -->
-                    &#9776;
-                </button>
-            </div>     
+                    <!-- &#9776; -->
+                    <span class="material-icons">menu</span>
+                </a>
+            </div>
             <div id="sidebar" style="display:none;border:solid 1px #e0e0e0;text-align:left;">
                 <h2 style="text-align:left;margin-left:2em;padding-bottom:1em;">WebGL Surface Grapher  </h2>
                 <div id="xyequations" style="border: solid 1px #e0e0e0;padding:2px 2px">
@@ -197,7 +204,7 @@ void main(void)
                         </div>
                     </div>
                 </div> <!-- end of xyequations -->
-                
+
                 <br style="clear:both">
                 <div id="paramequations" style="border: solid 1px #e0e0e0;padding:2px 2px">
                     <div id="param_equations">
@@ -205,9 +212,9 @@ void main(void)
                     </div>
                     <div style="clear:both;padding:4px 0px"><button class="btn btn-outline-info btn-sm" id="new_param" href="javascript:void(0)" onclick="add_equation(surfacePlot,{str:'', domain:{s:'',t:''},color:'', alpha:null},true);listen(surfacePlot, range);this.style.display='none';">New Parametric Equation</button>
                     </div>
-                    
+
                 </div> <!-- end of paraequations -->
-                
+
                 <br>
                 <div style="border: solid 1px #e0e0e0;padding:4px 4px;">
                     Settings
@@ -223,9 +230,9 @@ void main(void)
                                 &nbsp&nbsp
                                 $z$-max:<input type="number" class="range" id="zmax" value="10"/>
                             </div>
-                            <hr>		      
+                            <hr>
                         </div>
-                        
+
                         <div>
                             $x$-ticks:<input type="number" class="range" id="xticks" value="5"/>
                             &nbsp&nbsp
@@ -240,7 +247,7 @@ void main(void)
                     <div id="zscale-div">Ceiling height:<br> <input type="range" min="-3" max="1.5" step="0.5" class="slider" id="zscale" value="0" /><hr></div>
                     <div>Resolution (2 - 100):<br> <input type="range" min="2" max="40" step="1" class="slider" id="numsamples" value="20"/></div>
                 </div>
-                <br/>                
+                <br/>
                 <button class="btn btn-outline-info btn-sm share" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" >Share</button>
                 <div class="dropdown-menu" aria-labelledby="test_button">
                     <a class="dropdown-item"><div><b style="color:SteelBlue">URL</b></div>
@@ -255,14 +262,15 @@ void main(void)
                 <div id='surfacePlotDiv' style="width:auto;height:auto;margin-left:auto;margin-right:auto" onmouseover="document.body.style.overflow='hidden'" onmouseout="document.body.style.overflow='auto'">
                     <!-- Graph goes here -->
                 </div>
-                <div style="position:absolute;bottom:0;left:0">
-                    <button class="btn btn-outline-info btn-sm"  href="javascript:void(0)" onclick="options.rotationMatrix=null;surfacePlot.surfacePlot.rotationMatrix=null;setUp(surfacePlot, global_valuess)">Reset camera</button>
+                <div style="position:absolute;bottom:0;left:5px">
+                    <!-- <button class="btn btn-outline-info btn-sm"  href="javascript:void(0)" onclick="options.rotationMatrix=null;surfacePlot.surfacePlot.rotationMatrix=null;setUp(surfacePlot, global_valuess)">Reset camera</button> -->
+                    <span class="material-icons camera_reset"  href="javascript:void(0)" onclick="options.rotationMatrix=null;surfacePlot.surfacePlot.rotationMatrix=null;setUp(surfacePlot, global_valuess)">refresh</button>
                 </div>
                 <div id="brand" style="position:absolute;bottom:0;right:0;font-size:10pt;text-align:left;padding-right:5px;padding-bottom:5px;line-height:1em"></div>
             </div>
         </div>
     </div>
-    
+
 
 <script type='text/javascript'>
 var url = new URL(window.location);
@@ -289,8 +297,9 @@ if (urlParams.has('data')) {
     data = JSON.parse(urlParams.get('data'));
     console.log(data);
     params.forEach(function(param) {
-        if (data['param']) {
-            $('#' + param).val(data['param']);
+        if (data[param]) {
+            $('#' + param).val(data[param]);
+            console.log($('#' + param)[0]);
         }
     });
     rotationMatrix = data['rotationMatrix'];
@@ -304,11 +313,11 @@ if (urlParams.has('data')) {
     data.equations.forEach(function(eq) {
         let eqstruct = {
             str : eq.formula,
-            isParam : eq.isParam, 
-            color : eq.color, 
+            isParam : eq.isParam,
+            color : eq.color,
             alpha : eq.alpha
         }
-        if (eq.isParam == 1) {
+        if (eq.isParam == true) {
             eqstruct['domain'] = eq.domain;
         }
         console.log(eqstruct);
