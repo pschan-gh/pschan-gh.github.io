@@ -28,11 +28,13 @@ function updateModal(cranach) {
     $('.slide_button').off();
     $('.slide_button').on('click', function() {
         console.log('SLIDE BUTTON PRESSED');
-        var course = $(this).closest('.slide').attr('course');
+        let $slide = $('div.slide[slide="' + $(this).attr('slide') + '"');
+        let slide = $slide.attr('slide');
+        
+        var course = $slide.attr('course');
 
-        var slide = $(this).closest('.slide').attr('slide');
-        var chapterType = $(this).closest('.slide').attr('chapter_type');
-        var chapter = $(this).closest('.slide').attr('chapter');
+        var chapterType = $slide.attr('chapter_type');
+        var chapter = $slide.attr('chapter');
 
         $('.modal-title > span').hide();
         $('.md5.share_text').text('');
@@ -45,7 +47,7 @@ function updateModal(cranach) {
 
         let url = cranach.attr['contentURL'];
 
-        let $labels = $(this).closest('div.slide').find('.label');
+        let $labels = $slide.find('> .label');
 
         let slideLabel = $labels.length ? $labels.first().attr('name') : slide;
 
@@ -100,25 +102,25 @@ function updateModal(cranach) {
         let argName = item_type.match(/Course|Chapter|Section/i) ? 'section' : 'item';
 
         let $labels = $(this).closest('div').find('.label');
-                
+
         if ($labels.length) {
             url += '&' + argName + '=' + $labels.first().attr('name');
         } else {
             url +=  '&' + argName + '=' + serial;
         }
-        
+
         $('#item_modal').find('#item_modal_link').attr('href', url);
         $('#item_modal').find('#share_url').text(url);
-        
+
         let title = '';
-        
+
         let titles = $(this).find('*[wbtag="title"]');
          if (titles.length) {
              title = titles.first().text();
          } else {
              title = $(this).attr('item') ? item_type + ' ' + item : item_type;
          }
-        
+
         $('#item_modal').find('#share_hyperlink').text('<a href="' + url + '" target="_blank" title="Course:' + course + '">' + title + '</a>');
         $('#item_modal').find('#share_hyperref').text('\\href{' + url.replace('#', '\\#') + '}{' + title + '}');
         $('#item_modal').find('.md5').first().html(md5String);
@@ -149,7 +151,6 @@ function updateSlideClickEvent(cranach) {
         $('*[text]').removeClass('highlighted');
         $('button').removeClass('highlighted');
         $('.item_button').css('background-color', '');
-        $('[data-toggle="popover"]').popover('hide');
         $(this).find('.loading_icon').hide();
 
         $('.separator').css('font-weight', 'normal');
@@ -204,7 +205,7 @@ function updateSlideClickEvent(cranach) {
                 $('#info_statements .chapter[chapter="' + $(slideElement).attr('chapter') + '"]').show();
             }
 
-            updateSlideProgress(slideIndex, false);
+            // updateSlideProgress(slideIndex, false);
         }
     });
 
@@ -390,33 +391,6 @@ function updateToc(cranach) {
     MathJax.startup.promise = typeset([document.getElementById('toc')]);
 }
 
-function updateCollapseElements() {
-
-    $('#output .collapsea').click(function(event) {
-        if ($(this).hasClass('collapsed')) {
-            $(this).removeClass('collapsed');
-            // $('.collapse[id=' + $(this).attr('aria-controls') + ']').show("slow");
-        } else {
-            $(this).addClass('collapsed');
-            // $('.collapse[id=' + $(this).attr('aria-controls') + ']').hide("slow");
-        }
-        // this.text = $(this).hasClass('collapsed') ? expchar : colchar;
-    });
-
-    // $('.collapse').each(function() {
-    //     var id = $(this).attr('id');
-    //     $(this).on('hide.bs.collapse', function() {
-    //         $('a.collapsea[aria-controls="' + id + '"]').text(expchar);
-    //     });
-    // });
-    // $('.collapse').each(function() {
-    //     var id = $(this).attr('id');
-    //     $(this).on('show.bs.collapse', function() {
-    //         $('a.collapsea[aria-controls="' + id + '"]').text(colchar);
-    //     });
-    // });
-}
-
 function updateKeywords() {
     $('#info_keywords_course').html('');
     $('div.keywords[slide="all"][environ="course"]').each(function() {
@@ -476,7 +450,7 @@ function postprocess(cranach) {
     console.log('POSTPROCESS CALLED');
     $('.icon.xml, .icon.latex').show();
 
-    $('.slide').find("table:not('.exempt'):not('.ltx_eqn_table')").addClass("table table-bordered");
+    // $('.slide').find("table:not('.exempt'):not('.ltx_eqn_table')").addClass("table table-bordered");
 
     // updateEditor();
     updateSlideClickEvent(cranach);
@@ -484,14 +458,18 @@ function postprocess(cranach) {
     updateModal(cranach);
     updateScrollEvent(cranach);
     updateToc(cranach);
-    updateCollapseElements();
     updateKeywords();
-    updateSlideProgress(cranach.slideIndex, true);
+    // updateSlideProgress(cranach.slideIndex, true);
     updateSlideSelector(cranach);
     updateTitle($('#s' + cranach.slideIndex)[0]);
-
+    
+    
     $(function() {
         console.log(cranach);
+        
+        if (cranach.attr['lectureMode']) {
+            $('[data-lecture-skip="true"]').css('color', '#ccc');
+        }
 
         MathJax.startup.promise.then(() => {
             // MathJax.typesetClear();
@@ -516,23 +494,15 @@ function postprocess(cranach) {
         });
 
 
-        $('[data-toggle="popover"]').off();
-        $('[data-toggle="popover"]').on('click', function (e) {
-            $('[data-toggle="popover"]').each(function(){
-    	    $(this).popover('hide');
-    	});
-            $(this).popover('show');
-        });
-
-        https://stackoverflow.com/questions/13202762/html-inside-twitter-bootstrap-popover
-        $("button.btn_keyword[data-toggle=popover]:not(.index)").popover({
+        // https://stackoverflow.com/questions/13202762/html-inside-twitter-bootstrap-popover
+        $("[data-bs-toggle=popover]").popover({
             html : true,
             content: function() {
                 html = 'Loading...';
                 return html;
             }
         });
-        $('[data-toggle="popover"]:not(.index)').on('shown.bs.popover', function() {
+        $('[data-bs-toggle="popover"]').on('shown.bs.popover', function() {
             $('.popover-body').each(function() {
                 let id = $(this).closest('.popover').attr('id');
                 console.log(id);
@@ -543,16 +513,6 @@ function postprocess(cranach) {
                     $(popoverBody).append($(this).clone().removeClass('hidden'));
                     console.log(popoverBody);
                 });
-            });
-        });
-
-        // https://stackoverflow.com/questions/20466903/bootstrap-popover-hide-on-click-outside/27615920
-        $('body').on('click', function (e) {
-            $('[data-toggle=popover]').each(function () {
-                // hide any open popovers when the anywhere else in the body is clicked
-                if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
-                    $(this).popover('hide');
-                }
             });
         });
 
@@ -571,7 +531,7 @@ function postprocess(cranach) {
             var $selectedSlide = $section.closest('.slide');
             $('#output').scrollTo($section);
             $section.addClass('highlighted');
-            // $selectedSlide.click();            
+            // $selectedSlide.click();
         } else {
             var $selectedSlide = $('.slide[slide="' + cranach.attr['selectedSlide']  + '"], .label[name="' + cranach.attr['selectedSlide'] + '"]').first().closest('.slide');
             console.log('SCROLLING TO SLIDE ' + cranach.attr['selectedSlide']);
@@ -590,11 +550,12 @@ function postprocess(cranach) {
         $('#right_half').mousemove(function() {
             clearTimeout(menu_timer);
             $("#menu_container .navbar-nav, .present .controls, .present .slide_number").not('.hidden').fadeIn();
+            $('.present .controls.carousel-indicators').css('display', 'flex');
             menu_timer = setTimeout(function () {
-                $("#menu_container .navbar-nav, .controls, .present .slide_number").not('.hidden').fadeOut();
+                $("#menu_container .navbar-nav, .controls, .present .active .slide_number").not('.hidden').fadeOut();
             }, 1000);
         })
-
+        
         $("#menu_container .navbar-nav, .present .slide_number").not('.hidden').off();
         $("#menu_container .navbar-nav, .present .slide_number").not('.hidden').mouseover(function() {
             $('#right_half').off('mousemove');
@@ -607,6 +568,7 @@ function postprocess(cranach) {
             $('#right_half').mousemove(function() {
                 clearTimeout(menu_timer);
                 $("#menu_container .navbar-nav, .present .controls, .present .slide_number").not('.hidden').fadeIn();
+                $('.present .controls.carousel-indicators').css('display', 'flex');
                 menu_timer = setTimeout(function () {
                     $("#menu_container .navbar-nav, .present .slide_number").not('.hidden').fadeOut();
                     $(".controls").hide();
@@ -616,23 +578,38 @@ function postprocess(cranach) {
 
         $('.controls').off();
         $('.controls').on('mouseover', function() {
-            $('#progress_container').show();
+            // $('#progress_container').show();
             $('#right_half').off('mousemove');
             clearTimeout(menu_timer);
             $(this).show();
         });
         $('.controls').on('mouseout', function() {
-            $('#progress_container').hide();
+            // $('#progress_container').hide();
             clearTimeout(menu_timer);
             $('#right_half').off('mousemove');
             $('#right_half').mousemove(function() {
                 clearTimeout(menu_timer);
                 $("#menu_container .navbar-nav, .present .controls, .present .slide_number").not('.hidden').fadeIn();
+                $('.present .controls.carousel-indicators').css('display', 'flex');
                 menu_timer = setTimeout(function () {
                     $("#menu_container .navbar-nav, .present .slide_number").fadeOut();
                     $(".controls").hide();
                 }, 1000);
             })
+        });
+        
+        $('.carousel').on('slid.bs.carousel', function () {
+            $('#right_half .slide_number button').text('Slide ' + $('.carousel-item.active').attr('slide'));
+            $('#right_half .slide_number button').attr('slide', $('.carousel-item.active').attr('slide'));
+            $('.carousel').carousel('pause');
+            let $slide = $('#output div.slide.active');            
+            slideIndex = $slide.attr('slide');
+            
+            batchRender($slide[0]);
+            adjustHeight();            
+        })
+        $('#output div.collapse').on('shown.bs.collapse', function() {
+            adjustHeight(); 
         });
     });
 

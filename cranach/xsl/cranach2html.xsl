@@ -342,13 +342,12 @@
 				<xsl:value-of select="@wbtag"/>
 			</xsl:attribute>
 			<div class="slide_container" wbtag="ignore">
-				<div class="slide_number">
+				<!-- <div class="slide_number">
 					<button class="plain_button slide_button">
-						<!-- <xsl:copy-of select="@*[name()!='wbtag']"/> -->
 						<xsl:text>Slide </xsl:text>
 						<xsl:value-of select="$slide"/>
 					</button>
-				</div>
+				</div> -->
 				<div class="separator" style="position:relative; width:100%; height:1.5em; text-align:center;" wbtag="ignore">
 					<xsl:attribute name="slide">
 						<xsl:value-of select="$slide"/>
@@ -927,7 +926,7 @@
 
 	<xsl:template match="lv:keyword">
 		<xsl:param name="slide" select="'all'"/>
-		<button class="btn btn-outline-info btn-sm btn_keyword" style="margin-left:5px;margin-top:5px" data-html="true" data-container="body" data-toggle="popover"  data-placement="bottom" slide="{$slide}">
+		<xh:a tabindex="0" role="button" class="btn btn-outline-info btn-sm btn_keyword" style="margin:2.5px" data-bs-html="true" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-placement="bottom" slide="{$slide}">
 			<xsl:attribute name="wbtag">
 				<xsl:text>ignore</xsl:text>
 			</xsl:attribute>
@@ -950,7 +949,7 @@
 				</a>
 			</xsl:for-each>
 			<xsl:value-of select="$keyword"/>
-		</button>
+		</xh:a>
 	</xsl:template>
 
 	<xsl:template match="lv:wiki">
@@ -990,7 +989,7 @@
 			<xsl:value-of select="concat('c', $timestamp, $col)" />
 		</xsl:variable>
 		<!-- <a class="collapsea collapsed" contenteditable="false" data-toggle="collapse" aria-expanded="false" wbtag="ignore" xmlns="http://www.w3.org/1999/xhtml"> -->
-		<a class="collapsea collapsed" contenteditable="false" data-toggle="collapse" aria-expanded="false" wbtag="ignore">
+		<a class="collapsea collapsed" contenteditable="false" data-bs-toggle="collapse" aria-expanded="false" wbtag="ignore">
 			<xsl:attribute name="aria-controls">
 				<xsl:value-of select="$id"/>
 			</xsl:attribute>
@@ -998,6 +997,8 @@
 				<xsl:value-of select="concat('#', $id)" />
 				<!-- <xsl:value-of select="'#'" /> -->
 			</xsl:attribute>
+			<span class="material-icons expand_more">play_arrow</span>
+			<span class="material-icons expand_less">arrow_drop_down</span>
 			<!-- ► -->
 		</a>
 		<div class="collapse" xmlns="http://www.w3.org/1999/xhtml">
@@ -1096,9 +1097,11 @@
 			<xsl:variable name="id">
 				<xsl:value-of select="concat('s', $timestamp, $li)" />
 			</xsl:variable>
-			<a class="collapsea collapsed" contenteditable="false" data-toggle="collapse" aria-expanded="false" wbtag="ignore">
+			<a class="collapsea collapsed" contenteditable="false" data-bs-toggle="collapse" aria-expanded="false" wbtag="ignore">
 				<xsl:attribute name="aria-controls"><xsl:value-of select="$id" /></xsl:attribute>
 				<xsl:attribute name="href">#<xsl:value-of select="$id" /></xsl:attribute>
+				<span class="material-icons expand_more">play_arrow</span>
+				<span class="material-icons expand_less">keyboard_arrow_down</span>
 				<!-- <xsl:attribute name="href">#</xsl:attribute> -->
 				<!-- ► -->
 			</a>
@@ -1166,7 +1169,14 @@
 				<xsl:attribute name="id">
 					<xsl:value-of select="concat('ww_inner_', @ww_id)" />
 				</xsl:attribute>
-				<div style="text-align:center;overflow-y:hidden;height:3.5cm;width:5cm" class="loading_icon"><img class="exempt" style="height:3.5cm" src="icons/Loading_icon.gif"/><br/><div style="margin-top:-2.25cm" class="text-muted">Click to Load.</div></div>
+				<div style="text-align:center;overflow-y:hidden;height:3.5cm;width:5cm" class="loading_icon">
+                    <!-- <img class="exempt" style="height:3.5cm" src="icons/Loading_icon.gif"/> -->
+                    <div class="spinner-border text-secondary" style="margin:2em" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <br/>
+                    <div style="margin-top:-2.25cm" class="text-muted">Click to Load.</div>
+                </div>
 				<iframe style="overflow-x:auto;overflow-y:hidden;display:none" class="webwork">
 					<xsl:attribute name="rendered">0</xsl:attribute>
 					<xsl:attribute name="data-src">
