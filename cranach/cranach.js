@@ -307,7 +307,6 @@ function Cranach(url) {
         var output = this.output;
         $(output).find('#loading_icon').show();
         $(output).find('.progress-bar').first().css('width', '50%').attr('aria-valuenow', '50');
-        console.log(xsl);
         return new Promise((resolve, reject) => {
             $.ajax({
                 url: xsl,
@@ -320,6 +319,7 @@ function Cranach(url) {
                     xsltProcessor.setParameter(null, "timestamp", new Date().getTime());
                     console.log(el.attr['contentURL']);
                     xsltProcessor.setParameter('', 'contenturl', el.attr['contentURL']);
+                    xsltProcessor.setParameter('', 'contentdir', el.attr['dir']);
                     // xsltProcessor.setParameter('', 'contenturl', '');
                     console.log('displayCranachDocToHtml');
                     $(output).find('.progress-bar').css('width', '80%').attr('aria-valuenow', '80');

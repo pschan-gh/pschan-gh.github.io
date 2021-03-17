@@ -17,6 +17,7 @@
 
 	<xsl:param name="timestamp" select="'0'" />
 	<xsl:param name="contenturl" select="''" />
+	<xsl:param name="contentdir" select="''" />
 
 	<xsl:variable name="xh" select="'http://www.w3.org/1999/xhtml'"/>
 
@@ -277,6 +278,7 @@
 			<xsl:number format="1" level="any" count="lv:slide"/>
 		</xsl:variable>
 		<div class="slide collapsed tex2jax_ignore">
+			<xsl:copy-of select="@*"/>
 			<xsl:attribute name="id">
 				<xsl:text>s</xsl:text>
 				<xsl:value-of select="$slide"/>
@@ -389,7 +391,8 @@
 						<xsl:with-param name="slide" select="$slide"/>
 					</xsl:apply-templates>
 				</div>
-			</div>
+			</div>			
+			<span class="annotate redraw-count" style="display:none">0</span>		
 		</div>
 	</xsl:template>
 
@@ -455,20 +458,22 @@
 
 	<xsl:template match="lv:caption">
 		<xsl:param name="serial" select="''"/>
-		<small class="caption" wbtag="ignore">
-			<!-- <xsl:attribute name="wbtag">
+        <div wbtag="skip">
+			<small class="caption" wbtag="ignore">
+				<!-- <xsl:attribute name="wbtag">
 				<xsl:value-of select="'caption'"/>
-			</xsl:attribute> -->
-			<xsl:value-of select="concat('Figure ', $serial, ' ')"/>
-			<!-- <xsl:apply-templates select="text()"/> -->
-		</small>
-        <small class="caption">
-			<xsl:attribute name="wbtag">
-				<xsl:value-of select="'caption'"/>
-			</xsl:attribute>
-			<!-- <xsl:value-of select="concat('Figure ', $serial, ' ')"/> -->
-			<xsl:apply-templates select="text()"/>
-		</small>
+			    </xsl:attribute> -->
+				<xsl:value-of select="concat('Figure ', $serial, ' ')"/>
+				<!-- <xsl:apply-templates select="text()"/> -->
+			</small>
+			<small class="caption">
+				<xsl:attribute name="wbtag">
+					<xsl:value-of select="'caption'"/>
+				</xsl:attribute>
+				<!-- <xsl:value-of select="concat('Figure ', $serial, ' ')"/> -->
+				<xsl:apply-templates select="text()"/>
+			</small>
+		</div>
 	</xsl:template>
 
 	<xsl:template match="lv:statement">
@@ -646,7 +651,7 @@
 					<xsl:apply-templates select="text()"/>
 				</span>
 			</h1>
-			<xsl:apply-templates select="ancestor::*/lv:label"/>
+			<xsl:apply-templates select="ancestor::lv:course/lv:label"/>
 		</button>
 		<br wbtag="ignore"/>
 	</xsl:template>
@@ -698,7 +703,7 @@
 					</h2>
 				</xsl:otherwise>
 			</xsl:choose>
-			<xsl:apply-templates select="ancestor::*/lv:label"/>
+			<xsl:apply-templates select="ancestor::lv:chapter/lv:label"/>
 		</button>
 		<br wbtag="ignore"/>
 	</xsl:template>
@@ -751,7 +756,7 @@
 					<xsl:apply-templates select="*|text()"/>
 				</span>
 			</h3>
-			<xsl:apply-templates select="ancestor::*/lv:label"/>
+			<xsl:apply-templates select="ancestor::lv:section/lv:label"/>
 		</button>
 		<br wbtag="ignore"/>
 	</xsl:template>
@@ -790,7 +795,7 @@
 					<xsl:apply-templates select="text()|*"/>
 				</span>
 			</h4>
-			<xsl:apply-templates select="ancestor::*/lv:label"/>
+			<xsl:apply-templates select="ancestor::lv:subsection/lv:label"/>
 		</button>
 		<br wbtag="ignore"/>
 	</xsl:template>
@@ -831,7 +836,7 @@
 					<xsl:apply-templates select="text()|*"/>
 				</span>
 			</h5>
-			<xsl:apply-templates select="ancestor::*/lv:label"/>
+			<xsl:apply-templates select="ancestor::lv:subsubsection/lv:label"/>
 		</button>
 		<br wbtag="ignore"/>
 	</xsl:template>
@@ -998,7 +1003,7 @@
 			<span class="material-icons-outlined expand_less">play_arrow</span>
 			<!-- ► -->
 		</a>
-		<div class="collapse" xmlns="http://www.w3.org/1999/xhtml">
+		<div class="hidden_collapse">
 			<xsl:attribute name="id">
 				<xsl:value-of select="$id"/>
 			</xsl:attribute>
@@ -1013,9 +1018,18 @@
 		<xsl:element name="{local-name()}" namespace="{$xh}">
 			<xsl:copy-of select="@*[(name(.)!='src') and (name(.)!='environment')]"/>
 			<xsl:if test="@src">
-				<xsl:attribute name="data-src">
-					<xsl:value-of select="@src"/>
-				</xsl:attribute>
+				<xsl:choose>
+					<xsl:when test="contains(@src, 'http')">
+						<xsl:attribute name="data-src">
+							<xsl:value-of select="@src"/>
+						</xsl:attribute>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:attribute name="data-src">
+							<xsl:value-of select="concat($contentdir, '/', @src)"/>
+						</xsl:attribute>
+					</xsl:otherwise>
+				</xsl:choose>
 			</xsl:if>
 			<xsl:attribute name="rendered">0</xsl:attribute>
 			<xsl:apply-templates select="text()|comment()|*"/>
@@ -1098,11 +1112,10 @@
 				<xsl:attribute name="aria-controls"><xsl:value-of select="$id" /></xsl:attribute>
 				<xsl:attribute name="href">#<xsl:value-of select="$id" /></xsl:attribute>
 				<span class="material-icons expand_more">play_arrow</span>
-				<span class="material-icons expand_less">keyboard_arrow_down</span>
-				<!-- <xsl:attribute name="href">#</xsl:attribute> -->
+				<span class="material-icons-outlined expand_less">play_arrow</span>
 				<!-- ► -->
 			</a>
-			<div class="collapse">
+			<div class="hidden_collapse">
 				<xsl:attribute name="id"><xsl:value-of select="$id" /></xsl:attribute>
 				<xsl:attribute name="wbtag">
 					<xsl:value-of select="@wbtag"/>
@@ -1192,11 +1205,23 @@
 			<xsl:attribute name="class">
 				<xsl:text>image</xsl:text>
 			</xsl:attribute>
-			<xsl:copy-of select="@*[name(.)!='src']"/>
+			<xsl:copy-of select="@*[name(.)!='src']"/>			
 			<xsl:element name="img">
 				<xsl:attribute name="wbtag">ignore</xsl:attribute>
 				<xsl:copy-of select="@*[name(.)!='src']"/>
 				<xsl:attribute name="rendered">0</xsl:attribute>
+				<xsl:choose>
+					<xsl:when test="contains(@data-src, 'http')">
+						<xsl:attribute name="data-src">
+							<xsl:value-of select="@data-src"/>
+						</xsl:attribute>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:attribute name="data-src">
+							<xsl:value-of select="concat($contentdir, '/', @data-src)"/>
+						</xsl:attribute>
+					</xsl:otherwise>
+				</xsl:choose>
 			</xsl:element>
 		</xsl:element>
 	</xsl:template>
@@ -1274,9 +1299,9 @@
 </xsl:template>
 
 <xsl:template match="comment()">
-	<xsl:element name="div" namespace="{$xh}" class="hidden">
-		<xsl:attribute name="style">
-			<xsl:value-of select="'display:none'"/>
+	<xsl:element name="div" namespace="{$xh}">
+		<xsl:attribute name="class">
+			<xsl:value-of select="hidden"/>
 		</xsl:attribute>
 		<xsl:copy-of select="."/>
 	</xsl:element>

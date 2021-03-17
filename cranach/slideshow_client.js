@@ -1,4 +1,111 @@
+function annotate() {
+    
+    if ($('#output').hasClass('annotate')) {
+        $('canvas').hide();
+        $('canvas').closest('div.slide').find('.canvas-controls .disable').click();
+        $('canvas').closest('div.slide').find('.canvas-controls').hide();$('#output').removeClass('annotate')
+        $('#output').removeClass('annotate');
+    } else {
+        $('#output').addClass('annotate');
+        $('.carousel').attr('data-bs-touch', "false");
+    }
+    // let slide = $('div.slide[slide="' + slideIndex + '"]')[0];
+    let slide = $('#output div.slide.active')[0];
+    updateCanvas(slide);
+    
+}
+
+function updateCanvas(slide) {    
+    if ($('#output').hasClass('annotate')) {        
+        $('.canvas-controls').show();
+        if (!$(slide).find('canvas').length) {
+            addCanvas(slide);
+        }   
+        $(slide.cfd.canvas).show();     
+    } else {
+        if ($(slide).find('canvas').length) {
+            $('.canvas-controls').hide();
+            $(slide).find('canvas').hide();            
+        }
+    } 
+    $('.canvas-controls .annotate').off();    
+    $('.canvas-controls .clear').click(function() {
+        $(slide).find('canvas').remove();
+        addCanvas(slide);
+    });
+    $('.canvas-controls .expand').click(function() {
+        // https://stackoverflow.com/questions/331052/how-to-resize-html-canvas-element
+        var oldCanvas = slide.cfd.canvas.toDataURL("image/png");
+        var img = new Image();
+        img.src = oldCanvas;
+        img.onload = function (){
+            $(slide.cfd.canvas).first()[0].width = $('#output')[0].scrollWidth;
+            $(slide.cfd.canvas).first()[0].height = $('#output')[0].scrollHeight;
+            let ctx = slide.cfd.canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+        }
+        // $(slide.cfd.canvas).first()[0].width = $('#output')[0].scrollWidth;
+        // $(slide.cfd.canvas).first()[0].height = $('#output')[0].scrollHeight;
+        // addCanvas(slide, true);
+    });
+    $('.canvas-controls .disable').click(function() {
+        slide.cfd.disableDrawingMode();
+        $(slide.cfd.canvas).css('z-index', 0);
+        $('.canvas-controls .nav-link').not('.enable').addClass('disabled');
+        $('.canvas-controls .enable').removeClass('disabled');
+        // $('.carousel').attr('data-bs-touch', "true");
+    });
+    $('.canvas-controls .erase').click(function() {
+        slide.cfd.setErase();
+        $('.canvas-controls .nav-link').removeClass('disabled');        
+        $(this).addClass('disabled');
+    });
+    $('.canvas-controls .enable').click(function() {
+        slide.cfd.enableDrawingMode();
+        $(slide.cfd.canvas).show();
+        $(slide.cfd.canvas).css('z-index', 999);
+        slide.cfd.setDraw();
+        $('.canvas-controls .nav-link').removeClass('disabled');        
+        $(this).addClass('disabled');
+    });
+    $('.canvas-controls .undo').click(() => slide.cfd.undo());
+    $('.canvas-controls .redo').click(() => slide.cfd.redo());
+    $('.canvas-controls .red').click(() => slide.cfd.setDrawingColor([255, 0, 0]));
+    $('.canvas-controls .green').click(() => slide.cfd.setDrawingColor([0, 180, 0]));
+    $('.canvas-controls .blue').click(() => slide.cfd.setDrawingColor([0, 0, 255]));
+    $('.canvas-controls .orange').click(() => slide.cfd.setDrawingColor([255, 128, 0]));
+    $('.canvas-controls .black').click(() => slide.cfd.setDrawingColor([0, 0, 0]));
+    
+    $('.canvas-controls .disable').click();
+}
+
+function addCanvas(slide) {
+    if ($(slide).find('canvas').length || !$(slide).closest('#output').hasClass('present')) {
+            return 0;
+    }
+    
+    let width = $('#output')[0].scrollWidth;
+    let height = $('#output')[0].scrollHeight;
+
+    slide.cfd = new CanvasFreeDrawing.default({
+      elementId: slide.id,
+      width: width,
+      height: height,
+      showWarnings: true,
+    });
+    slide.cfd.setLineWidth(2);
+    slide.redrawCount = $(slide).find('.annotate.redraw-count').first()[0];
+    slide.cfd.on({ event: 'redraw', counter: 0 }, () => {
+      slide.redrawCount.innerText = parseInt(slide.redrawCount.innerText) + 1;
+    });    
+
+}
+
+
 function renderSlide(slide) {
+    
+    $(slide).find('.hidden_collapse').removeClass('hidden_collapse').addClass('collapse');
+    $(slide).find('a.collapsea').attr('data-bs-toggle', 'collapse');
 
     $(slide).find('img:not([src])').each(function() {
         imagePostprocess(this);
@@ -15,7 +122,7 @@ function renderSlide(slide) {
         $(slide).removeClass("tex2jax_ignore");
         // MathJax.typesetPromise([slide]);
         typeset([slide]);
-    }
+    }    
     
 }
 
@@ -35,7 +142,7 @@ function adjustHeight() {
     if (!$output.length) {
         return 0;
     }
-    if ($output[0].scrollHeight >  $output.innerHeight()) {
+    if ($output[0].scrollHeight >  $output.innerHeight() || $output.hasClass('annotate')) {
         $output.css('display', 'block');
         $('.carousel-item.active .slide_container > .slide_content').css('padding-bottom', '15em');
     } else {
@@ -390,87 +497,86 @@ function highlight(item) {
 
 }
 function imagePostprocess(image) {
-
-    if ($(image).hasClass('exempt')) {
-        $(image).attr('src', $(image).attr('data-src'));
-        return 1;
-    }
-
+    
     $(image).attr('src', $(image).attr('data-src'));
-
-    var image_width = $(image).closest('.image').css('width');
-
-    $(image).closest('.image').css('height', '');
-    $(image).closest('.dual-left').css('height', '');
-    $(image).closest('.dual-right').css('height', '');
-
-    var override = !((typeof $(image).closest('.image').css('width') === typeof undefined)|| ($(image).closest('.image').css('width') === false) || ($(image).closest('.image').css('width') === '0px') || (image_width == '600px'));
-
-    if ($(image).hasClass('exempt')) {
-        override = true;
-    }
-
-    if(/svg/.test($(image).attr('src'))) {
-        if (($(image).closest('.dual-left').length > 0) || ($(image).closest('.dual-right').length > 0)) {
-            var width = 300;
-            var height = 300;
-            $(image).attr('width', width);
-        } else if (!override) {
-            var width = 450;
-            var height = 450;
-            $(image).closest('.image').css('width', '450');
-            $(image).attr('width', width);
-        } else {
-            $(image).css('width', '100%');
+    $(image).on('load', function() {
+            
+        if ($(image).hasClass('exempt') || Math.max($(image).get(0).naturalWidth, $(image).get(0).naturalHeight) < 450) {
+            $(image).css('background', 'none');
+            $(image).show();
+            return 1;
         }
-    } else if (!override) {
-        $(image).removeAttr('style');
-        $(image).removeAttr('width');
-        $(image).removeAttr('height');
-        var width = $(image).get(0).naturalWidth;
-        var height = $(image).get(0).naturalHeight;
 
-        if (width > height) {
-            if (width > 600) {
-                $(image).css('width', '100%');
-                $(image).css('max-height', '100%');
+        var image_width = $(image).closest('.image').css('width');
+        
+        $(image).closest('.image').css('height', '');
+        $(image).closest('.dual-left').css('height', '');
+        $(image).closest('.dual-right').css('height', '');
+    
+        var override = !((typeof $(image).closest('.image').css('width') === typeof undefined)|| ($(image).closest('.image').css('width') === false) || ($(image).closest('.image').css('width') === '0px') || (image_width == '600px'));
+                
+        if(/svg/.test($(image).attr('src'))) {
+            if (($(image).closest('.dual-left').length > 0) || ($(image).closest('.dual-right').length > 0)) {
+                var width = 300;
+                var height = 300;
+                $(image).attr('width', width);
+            } else if (!override) {
+                var width = 450;
+                var height = 450;
+                $(image).closest('.image').css('width', '450');
+                $(image).attr('width', width);
             } else {
-                $(image).css('max-width', '100%');
-                $(image).css('height', 'auto');
+                $(image).css('width', '100%');
             }
-        } else {
-            if (height > 560) {
-                if (($(image).closest('.dual-left').length > 0) || ($(image).closest('.dual-right').length > 0)) {
+        } else if (!override) {
+            $(image).removeAttr('style');
+            $(image).removeAttr('width');
+            $(image).removeAttr('height');
+
+            var width = $(image).get(0).naturalWidth;
+            var height = $(image).get(0).naturalHeight;
+            
+            if (width > height) {
+                if (width > 600) {
                     $(image).css('width', '100%');
                     $(image).css('max-height', '100%');
                 } else {
-                    if((typeof $(image).closest('.image').css('width') === typeof undefined)|| ($(image).closest('.image').css('width') === false) || ($(image).closest('.image').css('width') === '0px') || (image_width == '600px')){
-                        $(image).css('height', '560px');
-                        $(image).css('width', 'auto');
-                    } else {
-                        $(image).css('height', 'auto');
-                        $(image).css('max-width', '100%');
-                    }
+                    $(image).css('max-width', '100%');
+                    $(image).css('height', 'auto');
                 }
             } else {
-                if((typeof $(image).closest('.image').css('width') === typeof undefined)|| ($(image).closest('.image').css('width') === false) || ($(image).closest('.image').css('width') === '0px')) {
-                    $(image).css('max-width', '100%');
-                    $(image).css('height', 'auto');
+                if (height > 560) {
+                    if (($(image).closest('.dual-left').length > 0) || ($(image).closest('.dual-right').length > 0)) {
+                        $(image).css('width', '100%');
+                        $(image).css('max-height', '100%');
+                    } else {
+                        if((typeof $(image).closest('.image').css('width') === typeof undefined)|| ($(image).closest('.image').css('width') === false) || ($(image).closest('.image').css('width') === '0px') || (image_width == '600px')){
+                            $(image).css('height', '560px');
+                            $(image).css('width', 'auto');
+                        } else {
+                            $(image).css('height', 'auto');
+                            $(image).css('max-width', '100%');
+                        }
+                    }
                 } else {
-                    $(image).css('max-width', '100%');
-                    $(image).css('height', 'auto');
+                    if((typeof $(image).closest('.image').css('width') === typeof undefined)|| ($(image).closest('.image').css('width') === false) || ($(image).closest('.image').css('width') === '0px')) {
+                        $(image).css('max-width', '100%');
+                        $(image).css('height', 'auto');
+                    } else {
+                        $(image).css('max-width', '100%');
+                        $(image).css('height', 'auto');
+                    }
                 }
             }
+        } else {
+            if ($(image).css('width') == '' || typeof $(image).css('width') === typeof undefined || $(image).css('width') === false) {
+                $(image).css('width', '100%');
+            }
         }
-    } else {
-        if ($(image).css('width') == '' || typeof $(image).css('width') === typeof undefined || $(image).css('width') === false) {
-            $(image).css('width', '100%');
-        }
-    }
 
-    $(image).css('background', 'none');
-    $(image).show();
-
+        $(image).css('background', 'none');
+        $(image).show();
+    });
 }
 
 function updateTitle(slide) {

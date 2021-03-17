@@ -133,16 +133,19 @@ function updateModal(cranach) {
 
 function updateSlideClickEvent(cranach) {
 
-    $('.slide').hover(function() {
-        $('#output_icon_container').show();
-    });
+    // $('.slide').hover(function() {
+    //     $('#output_icon_container').show();
+    // });
 
     $('.slide').off();
     $('.slide').click(function() {
-
-        console.log('SLIDE CLICKED');        
+        
+        // console.log('SLIDE CLICKED');        
+        $('.slide').removeClass('selected');
+        $(this).addClass('selected');
         var slideElement = this;
 
+        
         if (typeof editor !== typeof undefined) {
             scrollToLine(editor, $(slideElement).attr('canon_num'));
         }
@@ -179,13 +182,7 @@ function updateSlideClickEvent(cranach) {
             var statements = new Array();
 
             updateTitle(slideElement);
-
-            if ($(this).hasClass('collapsed')) {
-                $('#uncollapse_button').text('Uncollapse');
-            } else {
-                $('#uncollapse_button').text('Collapse');
-            }
-
+            
             var url = cranach.attr['contentURL'];
             var urlSlide = cranach.attr['contentURL'] +  '&query=' + cranach.attr['query'] + '&slide=' + slide;
 
@@ -204,95 +201,100 @@ function updateSlideClickEvent(cranach) {
                 $('#info_statements .chapter[chapter="' + $(slideElement).attr('chapter') + '"]').show();
             }
 
-            // updateSlideProgress(slideIndex, false);
+            if ($(this).find('a.collapsea[aria-expanded="false"]').length) {
+                $('#uncollapse_button').text('Uncollapse');
+            } else {
+                $('#uncollapse_button').text('Collapse');
+            }
+
         }
     });
 
 }
 
 function updateRefs(cranach) {
-
-        $('a.lcref').each(function() {
-            $(this).attr('lcref', "");
-
-            var label = $(this).attr('label');
-            var md5 = $(this).attr('md5');
-
-            var contentDir = cranach.attr['dir'];
-            var rootURL = cranach.attr['rootURL'];
+    
+    $('a.lcref').each(function() {
+        $(this).attr('lcref', "");
+        
+        var label = $(this).attr('label');
+        var md5 = $(this).attr('md5');
+        
+        var contentDir = cranach.attr['dir'];
+        var rootURL = cranach.attr['rootURL'];
+        if (cranach.hasXML) {
+            contentDir = cranach.attr['xmlPath'].replace(/[^\/]+\.xml$/, '');
+        } else if (cranach.hasWb) {
+            contentDir = cranach.attr['wbPath'].replace(/[^\/]+\.wb$/, '');
+        }
+        
+        let statementType = 'statement';
+        if ($(this).attr('type').match(/proof|solution|answer/i)) {
+            statementType = 'substatement';
+        }
+        if ($(this).attr('type').match(/figure/i)) {
+            statementType = 'figure';
+        }
+        
+        var rootURL = cranach.attr['rootURL'];
+        if ($(this).attr('filename') == 'self') {
             if (cranach.hasXML) {
-                contentDir = cranach.attr['xmlPath'].replace(/[^\/]+\.xml$/, '');
-            } else if (cranach.hasWb) {
-                contentDir = cranach.attr['wbPath'].replace(/[^\/]+\.wb$/, '');
-            }
-
-            let statementType = 'statement';
-            if ($(this).attr('type').match(/proof|solution|answer/i)) {
-                statementType = 'substatement';
-            }
-            if ($(this).attr('type').match(/figure/i)) {
-                statementType = 'figure';
-            }
-
-            var rootURL = cranach.attr['rootURL'];
-            if ($(this).attr('filename') == 'self') {
-                if (cranach.hasXML) {
-                    var lcref = rootURL + "?xml=" + cranach.attr['xmlPath'] + "&query=(//lv:" + statementType + "[@md5='" + md5 + "'])[1]";
-                } else {
-                    var lcref = rootURL + "?wb=" + cranach.attr['wbPath'] + "&query=(//lv:" + statementType + "[@md5='" + md5 + "'])[1]";
-                }
-            } else if ($(this).attr('src-filename')) {
-                if ($(this).attr('src-filename').match(/\.xml$/)) {
-                    var lcref = rootURL + "?xml=" + contentDir + '/' + $(this).attr('src-filename') + "&query=(//lv:" + statementType + "[@md5='" + md5 + "'])[1]";
-                } else {
-                    var lcref = rootURL + "?wb=" + contentDir + '/' + $(this).attr('src-filename') + "&query=(//lv:" + statementType + "[@md5='" + md5 + "'])[1]";
-                }
-            }
-
-            $(this).attr('lcref', lcref + '&version=' +Math.random());
-
-        });
-
-        $('a.href').each(function() {
-
-            var label = $(this).attr('label');
-            var serial = $(this).attr('serial');
-            var md5 = $(this).attr('md5');
-            var contentDir = ''
-
-            var rootURL = cranach.attr['rootURL'];
-            if (cranach.hasXML) {
-                contentDir = cranach.attr['xmlPath'].replace(/[^\/]+\.xml$/, '');
-            } else if (cranach.hasWb) {
-                contentDir = cranach.attr['wbPath'].replace(/[^\/]+\.wb$/, '');
-            }
-
-            if ($(this).attr('filename') == 'self') {
-                if (cranach.hasXML) {
-                    var href = rootURL + "?xml=" + cranach.attr['xmlPath'] + '&section=' + serial;
-                } else {
-                    var href = rootURL + "?wb=" + cranach.attr['wbPath'] + '&section=' + serial;
-                }
+                var lcref = rootURL + "?xml=" + cranach.attr['xmlPath'] + "&query=(//lv:" + statementType + "[@md5='" + md5 + "'])[1]";
             } else {
-                if (cranach.hasXML) {
-                    var href = rootURL + "?xml=" + contentDir + '/' + $(this).attr('src-filename') + '&section=' + serial;
-                } else {
-                    var href = rootURL + "?wb=" + contentDir + '/' + $(this).attr('src-filename') + '&section=' + serial;
-                }
+                var lcref = rootURL + "?wb=" + cranach.attr['wbPath'] + "&query=(//lv:" + statementType + "[@md5='" + md5 + "'])[1]";
             }
-
-            $(this).attr('target', '_blank');
-            $(this).attr('href', href);
-
-        });
-
+        } else if ($(this).attr('src-filename')) {
+            if ($(this).attr('src-filename').match(/\.xml$/)) {
+                var lcref = rootURL + "?xml=" + contentDir + '/' + $(this).attr('src-filename') + "&query=(//lv:" + statementType + "[@md5='" + md5 + "'])[1]";
+            } else {
+                var lcref = rootURL + "?wb=" + contentDir + '/' + $(this).attr('src-filename') + "&query=(//lv:" + statementType + "[@md5='" + md5 + "'])[1]";
+            }
+        }
+        
+        $(this).attr('lcref', lcref + '&version=' +Math.random());
+        
+    });
+                    
+    $('a.href').each(function() {
+                    
+        var label = $(this).attr('label');
+        var serial = $(this).attr('serial');
+        var md5 = $(this).attr('md5');
+        var contentDir = ''
+        
+        var rootURL = cranach.attr['rootURL'];
+        if (cranach.hasXML) {
+            contentDir = cranach.attr['xmlPath'].replace(/[^\/]+\.xml$/, '');
+        } else if (cranach.hasWb) {
+            contentDir = cranach.attr['wbPath'].replace(/[^\/]+\.wb$/, '');
+        }
+        
+        if ($(this).attr('filename') == 'self') {
+            if (cranach.hasXML) {
+                var href = rootURL + "?xml=" + cranach.attr['xmlPath'] + '&section=' + serial;
+            } else {
+                var href = rootURL + "?wb=" + cranach.attr['wbPath'] + '&section=' + serial;
+            }
+        } else {
+            if (cranach.hasXML) {
+                var href = rootURL + "?xml=" + contentDir + '/' + $(this).attr('src-filename') + '&section=' + serial;
+            } else {
+                var href = rootURL + "?wb=" + contentDir + '/' + $(this).attr('src-filename') + '&section=' + serial;
+            }
+        }
+        
+        $(this).attr('target', '_blank');
+        $(this).attr('href', href);
+        
+    });
+    
 }
 
 var timer = null;
 function updateScrollEvent(cranach) {
     $('#output').off();
+    
     // https://stackoverflow.com/questions/4620906/how-do-i-know-when-ive-stopped-scrolling
-
     $('#output').on('scroll', function() {
         if(timer !== null) {
             clearTimeout(timer);
@@ -305,17 +307,6 @@ function updateScrollEvent(cranach) {
             });
         }, 15*100);
     });
-
-    /*
-       $('#output').on("scroll", function() {
-       $('.slide.tex2jax_ignore').each(function() {
-            var slide = this;
-            if (isElementInViewport(slide) && ($(this).attr('slide') % 5 == 0)) {
-                window.setTimeout(function() {if (isElementInViewport(slide)) {batchRender(slide)}}, 1.5*1000);
-            }
-        });
-    });
-    */
 
 }
 
@@ -349,6 +340,7 @@ function updateToc(cranach) {
             statements[$(this).attr('type')] += "<a style='margin:1px 10px 1px 10px;' class='info_statements_num' serial='" + serial + "' href='javascript:void(0)'>" + serial + "</a>";
         });
         var html = '';
+        $('#info_statements').html('');
         for (var key in statements) {
             html += '<br/><a class="info_statements" target="_blank" href="' + url + '&query=//lv:statement[@chapter=' + chapter + ' and @type=%27' + key + '%27]">' + key + '</a><em> ' + statements[key] + '</em>';
         }
@@ -363,12 +355,10 @@ function updateToc(cranach) {
 
         var $slide = $('.slide[chapter="' + $(this).attr('chapter') + '"]').first();
         $(this).click(function() {
-            // $('#output').scrollTo($slide);
             jumpToSlide($('#output'), $slide);
-            // $slide.click();
         });
     });
-    console.log($('#info_statements')[0]);
+    // console.log($('#info_statements')[0]);
 
     $('.toc').find('a.section').each(function() {
         var $slide = $('.slide[section="' + $(this).attr('section') + '"][chapter="' + $(this).attr('chapter') + '"]').first();
@@ -378,10 +368,9 @@ function updateToc(cranach) {
             $slide.click();
         });
     });
-    $('.toc').find('a.subsection').each(function() {
+    $('.toc a.subsection').each(function() {
         var $slide = $('.slide[subsection="' + $(this).attr('subsection') + '"][section="' + $(this).attr('section') + '"][chapter="' + $(this).attr('chapter') + '"]').first();
         $(this).click(function() {
-            // $('#output').scrollTo($slide);
             jumpToSlide($('#output'), $slide);
             $slide.click();
         });
@@ -431,8 +420,11 @@ function updateEditor() {
 
 function updateSlideSelector(cranach) {
 
-    var numOfSlides = cranach.attr['cranachDoc'].getElementsByTagName('slide').length;
-    // $('#slide_sel').attr('max', numOfSlides);
+    try {
+        var numOfSlides = cranach.attr['cranachDoc'].getElementsByTagName('slide').length;
+    } catch(error) {
+        return 0;
+    }
     $("#slide_sel").html('');
     for (let i = 1; i <= numOfSlides; i++) {
         var o = new Option(i.toString(), i);
@@ -448,9 +440,6 @@ function postprocess(cranach) {
     console.log('POSTPROCESS CALLED');
     $('.icon.xml, .icon.latex').show();    
 
-    // $('.slide').find("table:not('.exempt'):not('.ltx_eqn_table')").addClass("table table-bordered");
-
-    // updateEditor();
     updateSlideClickEvent(cranach);
     updateRefs(cranach);
     updateModal(cranach);
@@ -460,6 +449,7 @@ function postprocess(cranach) {
     // updateSlideProgress(cranach.slideIndex, true);
     updateSlideSelector(cranach);
     updateTitle($('#s' + cranach.slideIndex)[0]);    
+    
     
     $(function() {
         console.log(cranach);        
@@ -512,19 +502,15 @@ function postprocess(cranach) {
         if (cranach.attr['selectedItem']) {
             console.log('SELECTED ITEM: ' + cranach.attr['selectedItem']);
 
-            // $item = $('.statement[item="' + cranach.attr['selectedItem'] + '"], .statement[md5="' + cranach.attr['selectedItem'] + '"], .substatement[item="' + cranach.attr['selectedItem'] + '"], .substatement[md5="' + cranach.attr['selectedItem'] + '"], .label[name="' + cranach.attr['selectedItem'] + '"]').first().closest('.statement, .substatement, ');
             $item = $('.item_title[serial="' + cranach.attr['selectedItem'] + '"], .item_title[md5="' + cranach.attr['selectedItem'] + '"], .label[name="' + cranach.attr['selectedItem'] + '"]').first().closest('.item_title');
 
-            //  var $selectedSlide = $item.closest('.slide');
             $('#output').scrollTo($item);
-            // $selectedSlide.click();
             $item.addClass('highlighted');
         } else if (cranach.attr['selectedSection']) {
             var $section = $('.section_title[serial="' + cranach.attr['selectedSection'] + '"], .label[name="' + cranach.attr['selectedSection'] + '"]').first().closest('.section_title').first();
             var $selectedSlide = $section.closest('.slide');
             $('#output').scrollTo($section);
             $section.addClass('highlighted');
-            // $selectedSlide.click();
         } else {
             var $selectedSlide = $('.slide[slide="' + cranach.attr['selectedSlide']  + '"], .label[name="' + cranach.attr['selectedSlide'] + '"]').first().closest('.slide');
             console.log('SCROLLING TO SLIDE ' + cranach.attr['selectedSlide']);
@@ -542,28 +528,29 @@ function postprocess(cranach) {
         $('#right_half').off();
         $('#right_half').mousemove(function() {
             clearTimeout(menu_timer);
-            $("#menu_container .navbar-nav, .present .controls, .present .slide_number").not('.hidden').fadeIn();
+            $(".present .menu_container .navbar-nav, .present .controls, .present .slide_number").not('.hidden').fadeIn();
             $('.present .controls.carousel-indicators').css('display', 'flex');
             menu_timer = setTimeout(function () {
-                $("#menu_container .navbar-nav, .controls, .present .active .slide_number").not('.hidden').fadeOut();
+                $(".present .menu_container.fadeout .navbar-nav, .controls, .present .active .slide_number").not('.hidden').fadeOut();
+                $(".controls, .present .active .slide_number").not('.hidden').fadeOut();
             }, 1000);
         })
         
-        $("#menu_container .navbar-nav, .present .slide_number").not('.hidden').off();
-        $("#menu_container .navbar-nav, .present .slide_number").not('.hidden').mouseover(function() {
+        $(".present #menu_container .navbar-nav, .present .slide_number").not('.hidden').off();
+        $(".present #menu_container .navbar-nav, .present .slide_number").not('.hidden').mouseover(function() {
             $('#right_half').off('mousemove');
             clearTimeout(menu_timer);
             $(this).show();
         });
-        $("#menu_container .navbar-nav, .present .slide_number").not('.hidden').mouseout(function() {
+        $(".present #menu_container .navbar-nav, .present .slide_number").not('.hidden').mouseout(function() {
             clearTimeout(menu_timer);
             $('#right_half').off('mousemove');
             $('#right_half').mousemove(function() {
                 clearTimeout(menu_timer);
-                $("#menu_container .navbar-nav, .present .controls, .present .slide_number").not('.hidden').fadeIn();
+                $(".present .menu_container .navbar-nav, .present .controls, .present .slide_number").not('.hidden').fadeIn();
                 $('.present .controls.carousel-indicators').css('display', 'flex');
                 menu_timer = setTimeout(function () {
-                    $("#menu_container .navbar-nav, .present .slide_number").not('.hidden').fadeOut();
+                    $(".present .menu_container.fadeout .navbar-nav, .present .slide_number").not('.hidden').fadeOut();
                     $(".controls").hide();
                 }, 1000);
             })
@@ -582,10 +569,10 @@ function postprocess(cranach) {
             $('#right_half').off('mousemove');
             $('#right_half').mousemove(function() {
                 clearTimeout(menu_timer);
-                $("#menu_container .navbar-nav, .present .controls, .present .slide_number").not('.hidden').fadeIn();
+                $(".present .menu_container .navbar-nav, .present .controls, .present .slide_number").not('.hidden').fadeIn();
                 $('.present .controls.carousel-indicators').css('display', 'flex');
                 menu_timer = setTimeout(function () {
-                    $("#menu_container .navbar-nav, .present .slide_number").fadeOut();
+                    $(".present .menu_container.fadeout .navbar-nav, .present .slide_number").fadeOut();
                     $(".controls").hide();
                 }, 1000);
             })
@@ -595,25 +582,35 @@ function postprocess(cranach) {
             $('#right_half .slide_number button').text('Slide ' + $('.carousel-item.active').attr('slide'));
             $('#right_half .slide_number button').attr('slide', $('.carousel-item.active').attr('slide'));
             $('.carousel').carousel('pause');
-            let $slide = $('#output div.slide.active');            
-            slideIndex = $slide.attr('slide');
+            let $slide = $('#output div.slide.active');
+            $slide.click();
             
             batchRender($slide[0]);
-            adjustHeight();            
+            adjustHeight();
+            // if ($slide.find('canvas').length == 0) {
+            //     $('canvas-controls').hide();
+            // }
+            updateCanvas($slide[0]);
         })
         $('#output div.collapse').on('shown.bs.collapse', function() {
             adjustHeight(); 
         });
-        if (cranach.attr['lectureMode']) {   
+        $('input.lecture_mode').change(function() {
+            if (this.checked) {
+                $('[data-lecture-skip="true"]').addClass('lecture_skip');
+            } else {
+                $('[data-lecture-skip="true"]').removeClass('lecture_skip');
+            }
+        });
+        if (cranach.attr['lectureMode'] || $('input.lecture_mode')[0].checked) {   
             console.log('LECTURE MODE');     
-            $('[data-lecture-skip="true"]').css('color', '#ccc');
-            $('[data-lecture-skip="true"] *').css('color', 'inherit');
+            $('[data-lecture-skip="true"]').addClass('lecture_skip');
         }
+        if (cranach.attr['present']) {
+            $('#present_button').click();
+        }
+        $('#loading_icon').hide();
+        
     });
-
-    if (cranach.attr['present']) {
-        $('#present_button').click();
-    }
-
-    $('#loading_icon').hide();    
+    
 }
