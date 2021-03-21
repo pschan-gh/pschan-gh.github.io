@@ -27,6 +27,7 @@ function updateCanvas(slide) {
             $('.canvas-controls').hide();
             $(slide).find('canvas').hide();            
         }
+        return 1;
     } 
     $('.canvas-controls .annotate').off();    
     $('.canvas-controls .clear').click(function() {
@@ -34,6 +35,7 @@ function updateCanvas(slide) {
         addCanvas(slide);
     });
     $('.canvas-controls .expand').click(function() {
+        slide.cfd.disableDrawingMode();
         // https://stackoverflow.com/questions/331052/how-to-resize-html-canvas-element
         var oldCanvas = slide.cfd.canvas.toDataURL("image/png");
         var img = new Image();
@@ -43,6 +45,8 @@ function updateCanvas(slide) {
             $(slide.cfd.canvas).first()[0].height = $('#output')[0].scrollHeight;
             let ctx = slide.cfd.canvas.getContext('2d');
             ctx.drawImage(img, 0, 0);
+            slide.cfd.enableDrawingMode();
+            slide.cfd.setDraw();
         }
         // $(slide.cfd.canvas).first()[0].width = $('#output')[0].scrollWidth;
         // $(slide.cfd.canvas).first()[0].height = $('#output')[0].scrollHeight;
@@ -142,6 +146,7 @@ function adjustHeight() {
     if (!$output.length) {
         return 0;
     }
+    $('.carousel-item.active .slide_container > .slide_content').css('padding-bottom', '');
     if ($output[0].scrollHeight >  $output.innerHeight() || $output.hasClass('annotate')) {
         $output.css('display', 'block');
         $('.carousel-item.active .slide_container > .slide_content').css('padding-bottom', '15em');
@@ -711,14 +716,19 @@ function updateModalRefby(md5String, cranach) {
 
 function updateModalProofs(md5String, cranach) {
     var contentURLDir = cranach.attr['contentURLDir'];
-    $.ajax({
-        url:  cranach.attr['dir'] + '/' + cranach.attr['index'],
-        dataType: "xml"
-    })
-    .done(function(index) {
-        var queryString = '//idx:branch[@type="Proof"][@ofmd5="' + md5String + '"]';
+    // cranach.then(function(renderer) {
+        // let index = renderer.attr['indexDoc'];
+    // $.ajax({
+    //     url:  cranach.attr['dir'] + '/' + cranach.attr['index'],
+    //     dataType: "xml"
+    //     // to be updated timestamp
+    // })    
+    let indexDoc = cranach.attr['indexDoc'];
+    console.log(indexDoc);
+    // .done(function(indexDoc) {
+        var queryString = '//idx:branch[@type="Proof" and @ofmd5="' + md5String + '"]|//lv:branch[@type="Proof" and @ofmd5="' + md5String + '"]';
         console.log(queryString);
-        var iterator = index.evaluate(queryString, index, nsResolver, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
+        var iterator = indexDoc.evaluate(queryString, indexDoc, nsResolver, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
         console.log(iterator);
         try {
             var thisNode = iterator.iterateNext();
@@ -742,9 +752,9 @@ function updateModalProofs(md5String, cranach) {
         catch (e) {
             alert( 'Error: Document tree modified during iteration ' + e );
         }
-    })
-    .fail(function() {
-        console.log("INDEX FILE DOESN'T EXIST");
-        return 0;
-    });
+    // };
+    // .fail(function() {
+    //     console.log("INDEX FILE DOESN'T EXIST");
+    //     return 0;
+    // });
 }
