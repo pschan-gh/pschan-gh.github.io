@@ -24,6 +24,10 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.0.4/iframeResizer.contentWindow.min.js" integrity="sha256-36C1/Kln8nS9OWK0+tTRIYQyhdp+eY117441VyJaj+o=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.0.4/iframeResizer.min.js" integrity="sha256-uHN1/UDJzJX8BIapjeOIyykot3SXC8YDG38tH+rM718=" crossorigin="anonymous"></script>
+        
+    <!-- <script src="https://raw.githubusercontent.com/davidjbradshaw/iframe-resizer/master/js/iframeResizer.contentWindow.min.js" type="text/javascript"></script>
+    <script src="https://raw.githubusercontent.com/davidjbradshaw/iframe-resizer/master/js/iframeResizer.min.js" type="text/javascript"></script> -->
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js" integrity="sha256-u6BamZiW5tCemje2nrteKC2KoLIKX9lKPSpvCkOhamw=" crossorigin="anonymous"></script>
 
     <!-- <script type="text/javascript" src="http://jsxgraph.uni-bayreuth.de/distrib/jsxgraphcore.js"></script> -->
@@ -33,6 +37,7 @@
     <script src="js/jquery.scrollTo.min.js"></script>
 
     <script src="js/Base64.js" type="text/javascript"></script>
+    <!-- <script type="text/javascript" src="https://aimath.org/knowl.js"></script> -->
     <script src="js/knowl.js" type="text/javascript" ></script>
     <script src="js/lcref.js" type="text/javascript" ></script>
 
@@ -96,10 +101,19 @@
                     $('.icon.latex, .icon.xml').hide();
                     baseRenderer = new Cranach(window.location.href).setup().then(cranach => {
                         console.log(cranach);
-                        return cranach.render(document.getElementById('output'))
+                        let output = cranach.bare ?  $('body')[0] : document.getElementById('output');
+                        console.log(output);
+                        // return cranach.render(document.getElementById('output'))
+                        return cranach.render(output)
                         .then(renderer => {
+                            if (renderer.bare) {
+                                return renderer;
+                            }
                             return renderer.displayIndexDocToHtml(document.getElementById('index'))
                             .then(renderer => {
+                                if (renderer.bare) {
+                                    return renderer;
+                                }
                                 postprocess(renderer);
                                 convertCranachDocToWb(renderer.attr['cranachDoc'], editor);
                                 $('#render_sel').prop('disabled', false);
@@ -258,7 +272,7 @@
                                 <!-- ⊞ -->
                             </a>
                             <div class="slide_info share collapse" id="slide_info_share" style="">
-                                <a style="text-decoration:none;color:LightBlue" target="_blank" id="url_open"><span>URL</span></a>
+                                <span>URL</span>
                                 <br><textarea class="url share_text slide_info"  onclick="this.select()" readonly="readonly"></textarea>
                                 <p><br></p>
                                 <span>HTML Hyperlink</span><br/>
@@ -560,18 +574,21 @@
                     <span id='modal_keywords'>
                     </span>
                     <hr/>
-                    <strong>URL</strong>
-                    <br><textarea id="share_url" class="url share_text"  onclick="this.select()" readonly="readonly"></textarea>
+                    <span>URL</span>
+                    <input type="text" id="share_url" class="url share_text"  onclick="this.select()" readonly="readonly"/>
                     <p><br></p>
-                    <stong>HTML Hyperlink</strong><br/>
-                    <textarea id="share_hyperlink" class="hyperlink share_text"  onclick="this.select()" readonly="readonly"><a href="" target="_blank" title=""></a></textarea>
-                    <p><br></p>
+                    <span>HTML Hyperlink</span>
+                    <input type="text" id="share_hyperlink" class="hyperlink share_text"  onclick="this.select()" readonly="readonly"/>
+                    <p><br/></p>
+                    <span>Knowl</span><br/>
+                    <input type="text" id="share_lcref" class="lcref share_text"  onclick="this.select()" readonly="readonly" />
+                    <p><br/></p>
                     <span class="latex_href"><img style="max-height:1em;width:auto" src="icons/LaTeX_logo_steelblue.svg" class="exempt"/> Hyperref</span>
                     <br/>
-                    <textarea id="share_hyperref" class="hyperref share_text"  onclick="this.select()" readonly="readonly"></textarea>
+                    <input type="text" id="share_hyperref" class="hyperref share_text"  onclick="this.select()" readonly="readonly" />
                     <br/><br/>
                     <span>MD5</span><br/>
-                    <textarea class="md5 share_text" style="height:2em"  onclick="this.select()" readonly="readonly"></textarea>
+                    <input type="text" class="md5 share_text" style="height:2em"  onclick="this.select()" readonly="readonly" />
                 </div>
                 <div class="modal-footer">
                     <div id="logo-box" class="pull-left">

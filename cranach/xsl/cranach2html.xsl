@@ -630,7 +630,7 @@
 					</xsl:element>
 					<xsl:apply-templates select="lv:label"/>
 				</button>
-				<xsl:apply-templates select="*[not(self::lv:title)and not(self::lv:of-title) and not(self::lv:label)]"/>
+				<xsl:apply-templates select="*[not(self::lv:title) and not(self::lv:of-title) and not(self::lv:label)]"/>
 			</blockquote>
 		</div>
 	</xsl:template>
@@ -1024,8 +1024,9 @@
 		</div>
 	</xsl:template>
 
-	<xsl:template match="xh:iframe|xh:img">
-		<xsl:element name="{local-name()}" namespace="{$xh}">
+    <xsl:template match="xh:img">
+        <xsl:element name="{local-name()}" namespace="{$xh}">
+            <xsl:attribute name="class">loading</xsl:attribute>
 			<xsl:copy-of select="@*[(name(.)!='src') and (name(.)!='environment')]"/>
 			<xsl:if test="@src">
 				<xsl:choose>
@@ -1034,11 +1035,41 @@
 							<xsl:value-of select="@src"/>
 						</xsl:attribute>
 					</xsl:when>
-					<xsl:otherwise>
+					<!-- <xsl:otherwise>
 						<xsl:attribute name="data-src">
 							<xsl:value-of select="concat($contentdir, '/', @src)"/>
 						</xsl:attribute>
-					</xsl:otherwise>
+					</xsl:otherwise> -->
+				</xsl:choose>
+			</xsl:if>
+			<xsl:attribute name="rendered">0</xsl:attribute>
+			<xsl:apply-templates select="text()|comment()|*"/>
+		</xsl:element>
+	</xsl:template>
+
+	<xsl:template match="xh:iframe">
+        <div class="loading_icon" wbtag="ignore">
+            <div class="spinner-border text-secondary" style="margin:2em" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <br/>
+            <div style="margin-top:-2.25cm" class="text-muted">Click to Load.</div>
+        </div>
+		<xsl:element name="{local-name()}" namespace="{$xh}">
+			<xsl:copy-of select="@*[(name(.)!='src') and (name(.)!='environment')]"/>
+            <xsl:attribute name="style">display:none</xsl:attribute>
+			<xsl:if test="@src">
+				<xsl:choose>
+					<xsl:when test="contains(@src, 'http')">
+						<xsl:attribute name="data-src">
+							<xsl:value-of select="@src"/>
+						</xsl:attribute>
+					</xsl:when>
+					<!-- <xsl:otherwise>
+						<xsl:attribute name="data-src">
+							<xsl:value-of select="concat($contentdir, '/', @src)"/>
+						</xsl:attribute>
+					</xsl:otherwise> -->
 				</xsl:choose>
 			</xsl:if>
 			<xsl:attribute name="rendered">0</xsl:attribute>
@@ -1189,7 +1220,7 @@
 				<xsl:attribute name="id">
 					<xsl:value-of select="concat('ww_inner_', @ww_id)" />
 				</xsl:attribute>
-				<div style="text-align:center;overflow-y:hidden;height:3.5cm;width:5cm" class="loading_icon">
+				<div class="loading_icon" wbtag="ignore">
                     <!-- <img class="exempt" style="height:3.5cm" src="icons/Loading_icon.gif"/> -->
                     <div class="spinner-border text-secondary" style="margin:2em" role="status">
                         <span class="visually-hidden">Loading...</span>
@@ -1238,7 +1269,9 @@
 
 	<xsl:template match="lv:paragraphs">
 		<span class="paragraphs">
-			<xsl:value-of select="text()" disable-output-escaping="yes"/>
+			<xsl:copy-of select="@*"/>
+			<!-- <xsl:value-of select="text()" disable-output-escaping="yes"/> -->
+			<xsl:apply-templates select="text()" />
 		</span>
 	</xsl:template>
 

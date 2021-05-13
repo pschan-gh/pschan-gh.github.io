@@ -23,6 +23,11 @@ body {
     background-color:inherit !important;
     border:none !important;
 }
+
+.nav-tabs .nav-link:focus, .nav-tabs .nav-link:hover {
+    border-color:#aaa !important;
+}
+
 .nav-tabs .nav-link {
     color:#bbb !important;
     background-color:inherit !important;
@@ -38,6 +43,7 @@ body {
     left:0;
     padding-left:5px;
     padding-right:5px;
+    display:none;
 }
 
 .light {
@@ -503,7 +509,15 @@ iframe {
     border:0;
     width: 1px;
     min-width: 100%;
-    background:transparent url(icons/Loading_icon.gif) center no-repeat;
+    background:transparent url("icons/Loading_icon.gif") center no-repeat;
+}
+
+.loading_icon {
+    text-align:center;
+    overflow-y:hidden;
+    height:3.5cm;
+    width:5cm;
+    margin:1cm auto    
 }
 
 ol {
@@ -951,9 +965,10 @@ max-width:600px;
 }
 
 
-#output img {
-    max-width:100%;
-    background:transparent url(icons/Loading_icon.gif) center no-repeat;
+#output img.loading {
+    max-width:10cm;
+    max-height:10cm;
+    background:transparent url("icons/Loading_icon.gif") center no-repeat !important;
 }
 
 .dual-left{
@@ -1173,7 +1188,7 @@ position:relative;
 
 .share_text {
     width:100%;
-    height:5em;
+    /* height:5em; */
     word-break:break-all;
     overflow-y:auto;
     font-family:Courier;
