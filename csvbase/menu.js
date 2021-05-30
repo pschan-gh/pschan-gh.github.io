@@ -36,8 +36,9 @@ class Key extends React.Component {
         return (
         <select name={this.props.name} className="form-control form-control-sm key" title="Set Key" onChange={this.props.keyhandler}>
             <option value="default">Select Key...</option>
-            {this.props.headers.map((field, i) => {
-                return <option key={field} className={field} value={field}>{field}</option>;
+            <option value="ordinal_index">Ordinal Index</option>
+            {Object.keys(this.props.headers).map((field, i) => {
+                return <option key={field} value={field}>{field}</option>;
             })}
         </select>
         );
@@ -57,6 +58,15 @@ class CsvInput extends React.Component {
         </label>
         );
     }
+}
+
+function XlsxInput(props) {
+    return (
+        <label className="dropdown-item">
+            Import XLSX
+            <input type="file" ref={props.xlsxinput} accept=".xlsx, .xls" style={{ display: "none" }} onChange={props.xlsxhandler}/>
+        </label>
+    );
 }
 
 class Nav extends React.Component {
@@ -86,11 +96,7 @@ class Nav extends React.Component {
                 
             }            
             lastChecked = this;            
-        });
-        
-        $('.dropdown-menu.query').click(function(e) {
-            e.stopPropagation();
-        });
+        });        
     }
     render() {
         return (
@@ -98,11 +104,12 @@ class Nav extends React.Component {
             <div className="navbar-collapse collapse">
             <ul className="navbar-nav">
             <li className="nav-item dropdown new_database">
-            <a className="nav-link dropdown-toggle" href="#" id="databaseDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <a className="nav-link dropdown-toggle" href="#" id="databaseDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Update Database
             </a>
             <div className="dropdown-menu" aria-labelledby="databaseDropdown" >
             <CsvInput fileinput={this.props.fileinput} csvhandler={e => this.props.csvhandler(e, this.props.fileinput)}/>
+            <XlsxInput xlsxinput={this.props.xlsxinput} xlsxhandler={e => this.props.xlsxhandler(e, this.props.xlsxinput)}/>
             <a className="pastebin dropdown-item" data-bs-toggle="modal" data-bs-target="#pastebin">Paste CSV</a>
             </div>
             </li>
@@ -115,20 +122,20 @@ class Nav extends React.Component {
         <a className="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         Columns
         </a>
-        <CheckBoxes headers={this.props.headers} reorderheaders={this.props.reorderheaders} />
+        <CheckBoxes headers={this.props.headers} reorderheaders={this.props.reorderheaders} freezecolindex={this.props.freezecolindex} />
         </li>
         <li className="nav-item query">
-        <a className="nav-link query dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Query</a>
+        <a className="nav-link query" href="#" role="button" data-bs-toggle="modal" data-bs-target="#query_modal">Query</a>
         <Query filter={this.props.filter} handlequery={this.props.handlequery} headers={this.props.headers} />
         </li>
         <li className="nav-item calculated_column">
         <AddColumn />
         </li>
         <li className="nav-item dropdown" id="export">
-            <a className="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Export
             </a>
-            <div className="dropdown-menu" aria-labelledby="navbarDropdown">
+            <div className="dropdown-menu">
                 <a id="exportCSV" className="dropdown-item" onClick={this.props.exporthandler}>
                     Export to CSV
                 </a>

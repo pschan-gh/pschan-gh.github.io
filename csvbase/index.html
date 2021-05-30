@@ -1,18 +1,20 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+<!-- CSS only -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+<!-- JavaScript Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.2.2/math.min.js" integrity="sha256-D/MkugLuxx4Xx0Kb92cUhpxlCMhUvQ0eOtEL8Ol23jM=" crossorigin="anonymous"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.15.4/xlsx.full.min.js" integrity="sha256-w4FbLoep/QMisX0AubgVd6NdLz1IBt9b1DATsT+hP2c=" crossorigin="anonymous"></script>
 
 
 <script src="table2csv.js" type='text/javascript'></script>
@@ -22,12 +24,12 @@
 
 <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+<!-- <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script> -->
 <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 
 <script src='statistics.js'></script>
 <script src='csvbase.js'></script>
-
-<!-- <script src="https://d3js.org/d3.v4.js"></script> -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.15.4/xlsx.full.min.js" integrity="sha256-w4FbLoep/QMisX0AubgVd6NdLz1IBt9b1DATsT+hP2c=" crossorigin="anonymous"></script>
 
@@ -43,6 +45,7 @@ strong {
 
 .table {
     /* font-size:1rem; */
+    white-space: nowrap !important;
 }
 
 
@@ -57,8 +60,11 @@ tbody {
 
 .table th, .table td {
     padding: 0.25rem !important;
+    font-size:12px !important;    
+}
+
+.table td {
     font-family:monospace;
-    font-size:12px !important;
 }
 
 .table td {
@@ -77,9 +83,17 @@ thead:hover th.groupby {
     color:white !important;
     background-color:SteelBlue !important;
 }
-th.groupby a.header {
-    color:white;
+th.groupby > a {
+    color:white !important;
     background-color:SteelBlue;
+}
+
+a.nav-link {
+    color:#666 !important;
+}
+
+a.header {
+    text-decoration:none;
 }
 
 #mainTable {
@@ -95,6 +109,11 @@ th.groupby a.header {
 }
 
 #container {
+    width:100%;
+    height:100%;
+}
+
+ .inner-container {
     position:relative;
     width:100%;
     height:100%;
@@ -113,7 +132,8 @@ th.groupby a.header {
 #table-container {
     height:100%; 
     width:auto; 
-    overflow-y:auto;
+    /* overflow-y:auto; */
+    overflow:scroll;
     /* overflow-x:hidden;     */
 }
 
@@ -156,11 +176,6 @@ img.loading {
     width:auto;
 }
 
-form.query {
-    width:100%; 
-    padding:5px;
-}
-
 .modal {
     color:#888;
 }
@@ -170,19 +185,13 @@ form.query {
 
 a.dropdown-item {
     font-family:sans-serif;
-    color:#666;
+    /* color:#666; */
 }
 </style>
-<!-- <script type="text/javascript" src="js/gridviewscroll.js"></script> -->
-
-<!-- <script src="csvbase.js" type='text/javascript'></script> -->
-
-<!-- <script>if (window.module) module = window.module;</script> -->
-
 </head>
 
 <body style="margin:0 10 10 10">
-<div id="container">    
+<div id="container">
 </div>
 <script src="query.js"  type = "text/babel"></script>
 <script src="columns.js"  type = "text/babel"></script>
@@ -194,9 +203,7 @@ a.dropdown-item {
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title field" id="Statistics">Statistics</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="stats">

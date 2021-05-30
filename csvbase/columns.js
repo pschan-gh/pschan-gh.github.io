@@ -1,3 +1,52 @@
+class RecalculateColumnModal extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+    componentDidUpdate(props) {
+        $('.field_reference button.field').off();
+        $('.field_reference button.field').click(function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            // console.log(e);
+            insertAtCursor($(this).closest('.modal').find('textarea')[0], '+(@' + $(this).text() + ')');
+        });
+        $('.dropdown-menu.query').off();
+        $('.dropdown-menu.query').click(function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    }
+    render() {
+        return (
+        <div id="recalculate_column_bin" className="modal" tabIndex="-1" role="dialog" aria-labelledby="column_bin" aria-hidden="true">
+            <div className="modal-dialog modal-lg" role="dialog" >
+                <div className="modal-content">
+                    <form onSubmit={this.props.handlerecalculatecolumn}>
+                        <div className="modal-header">
+                            <h5 style={{display:'inline'}} className="modal-title">Calculate Column</h5>
+                            <input style={{display:'inline'}} className="form-control column_name" style={{fontFamily:'Courier'}} type="text" name="calc_col_name" readOnly/>
+                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div className="field_reference" style={{padding:'10px'}}>
+                            {Object.keys(this.props.headers).map(field =>
+                                <button key={field} className="field btn btn-outline-info btn-sm">{field}</button>
+                            )}
+                        </div>                                    
+                        <div className="modal-body">                
+                            <textarea style={{width:'100%',height:'25em',fontFamily:'Courier'}} id="column_routine"  name="column_routine" ></textarea>
+                        </div>
+                        <div className="modal-footer">
+                            <button id="column_recalculate" type="submit" className="btn btn-primary" >Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        );
+    }
+}
+
+
 class RenameColumnModal extends React.Component {
     constructor(props) {
         super(props);
@@ -18,7 +67,7 @@ class RenameColumnModal extends React.Component {
                                 <div className="col">
                                     <input style={{display:'inline'}} className="form-control column_name" style={{fontFamily:'Courier'}} type="text" name="old_col_name" readOnly/>
                                 </div>
-                                <div className="col"> => </div>
+                                <div className="col" style={{textAlign:'center',marginTop:'10px'}}><i className="bi bi-arrow-right"></i></div>
                                 <div className="col">
                                     <input style={{display:'inline'}} className="form-control column_name" style={{fontFamily:'Courier'}} type="text" name="col_name"/>
                                 </div>             
@@ -51,7 +100,7 @@ class AddColumnModal extends React.Component {
             e.preventDefault();
             e.stopPropagation();
             // console.log(e);
-            insertAtCursor(document.getElementById('column_routine'), '+(@' + $(this).text() + ')');
+            insertAtCursor($(this).closest('.modal').find('textarea')[0], '+(@' + $(this).text() + ')');
         });
     }
     render() {
@@ -62,16 +111,16 @@ class AddColumnModal extends React.Component {
                     <form onSubmit={this.props.handleaddcolumn}>
                         <div className="modal-header">
                             <h5 style={{display:'inline'}} className="modal-title">Calculate Column</h5>
-                            <input style={{display:'inline'}} className="form-control column_name" style={{fontFamily:'Courier'}} type="text" id="calc_col_name" name="calc_col_name"/>
+                            <input style={{display:'inline'}} className="form-control column_name" style={{fontFamily:'Courier'}} type="text" name="calc_col_name"/>
                             <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div className="field_reference" style={{padding:'10px'}}>
-                            {this.props.headers.map(field =>
+                            {Object.keys(this.props.headers).map(field =>
                                 <button key={field} className="field btn btn-outline-info btn-sm">{field}</button>
                             )}
                         </div>                                    
                         <div className="modal-body">                
-                            <textarea style={{width:'100%',height:'25em',fontFamily:'Courier'}} id="column_routine"  name="column_routine" ></textarea>
+                            <textarea style={{width:'100%',height:'25em',fontFamily:'Courier'}} className="column_routine"  name="column_routine" ></textarea>
                         </div>
                         <div className="modal-footer">
                             <button id="column_submit" type="submit" className="btn btn-primary" >Submit</button>
@@ -93,7 +142,7 @@ class FieldCheckBox extends React.Component {
     
     render() {
         return (
-            <a className="dropdown-item" key={this.props.field}>
+            <a className="dropdown-item field" key={this.props.field}>
             <input className='field_checkbox' defaultChecked={true} type='checkbox' data-field={this.props.field} name={this.props.field} onClick={this.props.handlecheckboxes} /><span>{this.props.field}</span>
             </a>
         );
@@ -104,7 +153,7 @@ class CheckBoxes extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            visible:{}
+            visible:{},
         }
         this.handleCheckboxes = this.handleCheckboxes.bind(this);
     }
@@ -112,7 +161,7 @@ class CheckBoxes extends React.Component {
     handleCheckboxes(e) {
         const target = event.target;
         
-        let updated = this.props.headers.slice();
+        let updated = Object.keys({...this.props.headers});
         let scope = this;
         $('.field_checkbox').each(function() {
             let checked = this.checked;
@@ -128,19 +177,23 @@ class CheckBoxes extends React.Component {
             
         });
         this.setState({visible:updated}, () => {
-            this.props.headers.map(field => {
+            Object.keys(this.props.headers).map(field => {
                 if(scope.state.visible.includes(field)) {
                     $('th[data-field="' + field + '"], td[data-field="' + field + '"]').show();
                 } else {
                     $('th[data-field="' + field + '"], td[data-field="' + field + '"]').hide();
                 }
             });
-            updateTableWidth(computeColWidths(this.props.headers));
+            let widths = computeColWidths(this.props.headers);
+            updateTableWidth(widths);            
         });
     }
     
-    componentDidUpdate(props) {
-        $( function() {
+    componentDidUpdate() {
+        console.log(this.props.freezecolindex);
+        $(".freezeCol").remove();
+        $('<a id="freezeCol" class="dropdown-item freezeCol" key="freezeCol"><hr/></a>').insertAfter($('.sortable a.field').eq(this.props.freezecolindex));
+        $( function() {                        
             $( ".sortable" ).sortable();
             $( ".sortable" ).disableSelection();
         } );
@@ -149,8 +202,8 @@ class CheckBoxes extends React.Component {
     render() {
         return (            
         <div className="dropdown-menu sortable" id="columns_menu" aria-labelledby="dropdownMenuButton">
-            {this.props.headers.map(field => {
-                return <FieldCheckBox headers={this.props.headers} key={field} field={field} handlecheckboxes={this.handleCheckboxes} />
+            {Object.keys(this.props.headers).map((field, index) => {
+                return <FieldCheckBox headers={this.props.headers}  key={field} field={field} handlecheckboxes={this.handleCheckboxes} />
             })}
             <button className="btn btn-outline-secondary btn-sm ms-2" onClick={this.props.reorderheaders}>Reorder</button>
         </div>
