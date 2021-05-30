@@ -44,6 +44,7 @@
 \usepackage{hyperref}
 \usepackage[capitalise]{cleveref}
 \usepackage{tikz}
+\usepackage{float}
 <!-- \usepackage{booktabs} -->
 
 \newcounter{statement}
@@ -165,6 +166,12 @@
 			<xsl:value-of select="@title"/>
 			<xsl:text>]</xsl:text>
 		</xsl:when>
+		<xsl:when test="./lv:of-title">
+			<xsl:text>[</xsl:text>
+			<xsl:value-of select="@type"/>
+			<xsl:value-of select="concat(' of ', ./lv:of-title/text())"/>
+			<xsl:text>]</xsl:text>
+		</xsl:when>
 	</xsl:choose>
 	<!-- <xsl:text>&#xa;</xsl:text> -->
 	<xsl:choose>
@@ -174,7 +181,7 @@
 			<xsl:text>}</xsl:text>
 		</xsl:when>
 	</xsl:choose>
-	<xsl:apply-templates select="*|comment()" />
+	<xsl:apply-templates select="*[not(self::lv:of-title)]|comment()" />
 	<xsl:text>&#xa;\end{</xsl:text>
 	<xsl:value-of select="@wbtag"/>
 	<xsl:text>}</xsl:text>
@@ -288,6 +295,58 @@
 	<xsl:text>&#xa;\end{center}</xsl:text>
 </xsl:template>
 
+<xsl:template match="xh:img">
+    <xsl:variable name="url">
+        <xsl:choose>
+    		<xsl:when test="@data-src">
+                <xsl:value-of select="@data-src"/>			
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="@src"/>
+            </xsl:otherwise>
+        </xsl:choose>
+	</xsl:variable>
+	<xsl:choose>
+		<xsl:when test="contains($url, 'http')">
+			<xsl:value-of select="concat('&#xa;\href{', $url, '}{IMAGE}')"/>
+		</xsl:when>
+		<xsl:otherwise>			
+			<xsl:value-of select="concat('&#xa;\href{http://www.math.cuhk.edu.hk/~pschan/cranach-dev/', $url, '}{IMAGE}')"/>
+		</xsl:otherwise>
+	</xsl:choose>
+	<xsl:text>&#xa;&#xa;</xsl:text>
+</xsl:template>
+<xsl:template match="xh:iframe">
+    <xsl:variable name="url">
+        <xsl:choose>
+    		<xsl:when test="@data-src">
+                <xsl:value-of select="@data-src"/>			
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="@src"/>
+            </xsl:otherwise>
+        </xsl:choose>
+	</xsl:variable>
+    <xsl:choose>
+        <xsl:when test="contains($url, 'http')">			
+            <xsl:value-of select="concat('&#xa;\href{', $url, '}{IFRAME}')"/>			
+        </xsl:when>
+        <xsl:otherwise>
+            <xsl:value-of select="concat('&#xa;\href{http://www.math.cuhk.edu.hk/~pschan/cranach-dev/', $url, '}{IFRAME}')"/>
+        </xsl:otherwise>
+    </xsl:choose>
+    <xsl:text>&#xa;&#xa;</xsl:text>
+</xsl:template>
+
+<xsl:template match="lv:figure">
+	<xsl:apply-templates select="*|text()" />
+</xsl:template>
+<xsl:template match="lv:image">
+	<xsl:text>&#xa;\begin{figure}[H]&#xa;\centering</xsl:text>
+	<xsl:value-of select="concat('&#xa;\includegraphics{', @data-src ,'}')"/>
+	<xsl:text>&#xa;\end{figure}&#xa;</xsl:text>
+</xsl:template>
+
 <xsl:template match="lv:href">
 	<xsl:value-of select="concat('\href{', @src, '}{', @name, '}')"/>
 </xsl:template>
@@ -397,9 +456,6 @@
 	<xsl:apply-templates select="xh:tbody"/>
 </xsl:template> -->
 
-<xsl:template match="xh:img">
-	<xsl:text>IMAGE</xsl:text>
-</xsl:template>
 
 <xsl:template match="xh:script">
 	<xsl:variable name="slide">

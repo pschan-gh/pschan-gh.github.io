@@ -16,7 +16,7 @@
     <xsl:variable name="lv" select="'http://www.math.cuhk.edu.hk/~pschan/cranach'"/>
     <xsl:variable name="xh" select="'http://www.w3.org/1999/xhtml'"/>
 
-    <xsl:template match="*[@wbtag and @wbtag!='ignore' and @wbtag!='webwork' and @wbtag!='image' and @wbtag!='paragraphs' and @wbtag!='newline' and @wbtag!='skip' and @wbtag!='keyword' and @wbtag!='hc_keyword' and @wbtag!='transparent' and not(@metadata) and @wbtag!='qed' and @wbtag!='']">
+    <xsl:template match="*[@wbtag and @wbtag!='ignore' and @wbtag!='of' and @wbtag!='webwork' and @wbtag!='image' and @wbtag!='paragraphs' and @wbtag!='newline' and @wbtag!='skip' and @wbtag!='keyword' and @wbtag!='hc_keyword' and @wbtag!='transparent' and not(@metadata) and @wbtag!='qed' and @wbtag!='']">
         <xsl:element name="{@wbtag}" namespace="{$lv}">
             <xsl:copy-of select="@wbtag"/>
             <xsl:copy-of select="@label"/>
@@ -47,7 +47,7 @@
     <xsl:template match="*[@class='knowl-output']" priority='1'/>
     <xsl:template match="*[@class='lcref-output']"  priority='1'/>
 
-    <xsl:template match="*[not(self::xh:body) and not(self::xh:img) and not(@wbtag) and not(contains(@class, 'jxgbox')) and not(@class='comment')]">
+    <xsl:template match="*[not(self::xh:body) and not(self::xh:img) and not(self::xh:iframe) and not(@wbtag) and not(contains(@class, 'jxgbox')) and not(@class='comment')]">
       <xsl:element name="xh:{local-name()}">
           <xsl:copy-of select="@*"/>
           <xsl:apply-templates select="*|text()|comment()" />
@@ -60,7 +60,7 @@
         </xsl:element>
     </xsl:template>
 
-    <xsl:template match="xh:img|img">
+    <xsl:template match="xh:img|img|xh:iframe|iframe">
       <xsl:element name="xh:{local-name()}">
           <xsl:copy-of select="@*[name()!='data-src']"/>
           <xsl:if test="not(@src) and @data-src">
@@ -166,6 +166,7 @@
             <xsl:copy-of select="@type"/>
             <xsl:copy-of select="@title"/>
             <xsl:copy-of select="@wbtag"/>
+            <xsl:copy-of select="@of"/>
             <xsl:copy-of select="@data-lecture-skip"/>
             <xsl:apply-templates select="text()|*"/>
             <!-- <xsl:text>&#xa;</xsl:text> -->
@@ -200,6 +201,12 @@
     <xsl:template match="*[@wbtag='hc_keyword']">
         <xsl:element name="hc_keyword" namespace="{$lv}">
            <xsl:value-of select="./text()" disable-output-escaping="no"/>
+       </xsl:element>
+    </xsl:template>
+    
+    <xsl:template match="*[@wbtag='of']">
+        <xsl:element name="of" namespace="{$lv}">
+           <xsl:copy-of select="@of"/>
        </xsl:element>
     </xsl:template>
 
