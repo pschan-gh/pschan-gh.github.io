@@ -615,7 +615,7 @@
 						<xsl:value-of select="'transparent'"/>
 					</xsl:attribute>
 					<xsl:element name="h5">
-						<xsl:attribute name="wbtag">ignore</xsl:attribute>
+						<xsl:attribute name="wbtag">skip</xsl:attribute>
 						<xsl:attribute name="class">item_title</xsl:attribute>
 						<xsl:value-of select="@type"/>
 						<xsl:if test="lv:title">
@@ -624,7 +624,12 @@
 						</xsl:if>
                         <xsl:if test="lv:of-title">
 							<xsl:value-of select="'&#160;'"/>
-							<xsl:apply-templates select="lv:of-title"/>
+							<xsl:if test="not(lv:of-title/@hidden = 'true')">
+								<span wbtag="skip">of </span>
+								<xsl:apply-templates select="lv:of-title">
+									<xsl:with-param name="of" select="@of"/>
+								</xsl:apply-templates>
+							</xsl:if>
 						</xsl:if>
 						<xsl:value-of select="'.'"/>
 					</xsl:element>
@@ -636,9 +641,28 @@
 	</xsl:template>
 
     <xsl:template match="lv:of-title">
-		<div wbtag="skip" style="display:none" class="of-title">
-            <xsl:apply-templates select="*[not(self::lv:label)]|text()"/>
-		</div>
+		<xsl:param name="of" select="''"/>
+		<span wbtag="of" class="of-title">
+			<xsl:attribute name="of">
+				<xsl:value-of select="$of"/>
+			</xsl:attribute>
+			<xsl:apply-templates select="*[not(self::lv:label)]|text()"/>
+		</span>
+		<!-- <xsl:choose>
+			<xsl:when test="@hidden = 'true'">				
+				<span wbtag="skip" class="of-title">
+					<xsl:attribute name="of">
+						<xsl:value-of select="$of"/>
+					</xsl:attribute>
+					<xsl:apply-templates select="*[not(self::lv:label)]|text()"/>
+				</span>
+			</xsl:when>
+			<xsl:otherwise>
+				<span wbtag="skip" class="of-title">
+					<xsl:apply-templates select="*[not(self::lv:label)]|text()"/>
+				</span>
+			</xsl:otherwise>
+		</xsl:choose> -->
 	</xsl:template>
 
 	<xsl:template match="lv:title[@scope='course']">
@@ -1024,23 +1048,26 @@
 		</div>
 	</xsl:template>
 
-    <xsl:template match="xh:img">
+    <xsl:template match="xh:img|img">
         <xsl:element name="{local-name()}" namespace="{$xh}">
             <xsl:attribute name="class">loading</xsl:attribute>
 			<xsl:copy-of select="@*[(name(.)!='src') and (name(.)!='environment')]"/>
 			<xsl:if test="@src">
-				<xsl:choose>
-					<xsl:when test="contains(@src, 'http')">
+				<xsl:attribute name="data-src">
+					<xsl:value-of select="@src"/>
+				</xsl:attribute>
+				<!-- <xsl:choose> -->
+					<!-- <xsl:when test="contains(@src, 'http')">
 						<xsl:attribute name="data-src">
 							<xsl:value-of select="@src"/>
 						</xsl:attribute>
-					</xsl:when>
+					</xsl:when> -->
 					<!-- <xsl:otherwise>
 						<xsl:attribute name="data-src">
 							<xsl:value-of select="concat($contentdir, '/', @src)"/>
 						</xsl:attribute>
 					</xsl:otherwise> -->
-				</xsl:choose>
+				<!-- </xsl:choose> -->
 			</xsl:if>
 			<xsl:attribute name="rendered">0</xsl:attribute>
 			<xsl:apply-templates select="text()|comment()|*"/>

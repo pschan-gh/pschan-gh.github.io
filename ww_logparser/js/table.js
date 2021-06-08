@@ -321,7 +321,11 @@ class Table extends React.Component {
             quizDisplayMode:quizDisplayMode
         }, function(){ 
             console.log(this.state.headers);
+<<<<<<< HEAD
             this.props.updatecheckboxes(headers);
+=======
+            // if(updateCheckboxes) {this.props.updatecheckboxes(headers)};
+>>>>>>> 7cc3c9fb7cdee6448225e11d132cf7c2218cb4be
             this.props.updatequery(headers);
         });
     }

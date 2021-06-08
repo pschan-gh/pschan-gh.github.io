@@ -8,18 +8,24 @@ class Student extends React.Component {
 			sid : null
 		};
 		this.studentHandler = this.studentHandler.bind(this);
+<<<<<<< HEAD
         this.updateCheckboxes = this.updateCheckboxes.bind(this);
+=======
+>>>>>>> 7cc3c9fb7cdee6448225e11d132cf7c2218cb4be
 		this.updateTableHeaders = this.updateTableHeaders.bind(this);
 		this.table = React.createRef();		
 		this.checkboxes = React.createRef();	
 	}
 	
+<<<<<<< HEAD
     updateCheckboxes(headers) {
         this.checkboxes.current.setState({
             headers:this.state.headers
         });
     }
     
+=======
+>>>>>>> 7cc3c9fb7cdee6448225e11d132cf7c2218cb4be
 	updateTableHeaders(headers) {
         this.table.current.setState({headers:headers});
     }
@@ -34,9 +40,15 @@ class Student extends React.Component {
 	        console.log(filter);
 	        const filterFunc =  new Function('item', 'return ' + filter);
 			this.table.current.resetProblemGroups(this.props.database.filter(filterFunc), this.state.headers, false, 'result');
+<<<<<<< HEAD
 			// this.checkboxes.current.setState({
 			// 	headers:this.state.headers
 			// });
+=======
+			this.checkboxes.current.setState({
+				headers:this.state.headers
+			});
+>>>>>>> 7cc3c9fb7cdee6448225e11d132cf7c2218cb4be
 		});
     }
 	
@@ -54,11 +66,19 @@ class Student extends React.Component {
 							<button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 						</div>
 						<div className="modal-body" style={{margin:'20px', height:'100%',overflowX:'scroll'}} >
+<<<<<<< HEAD
 							<Table ref={this.table} columnlist="student_column_list" updatecheckboxes={this.updateCheckboxes} updatequery={()=>{return true;}} container='student_modal' />
+=======
+							<Table ref={this.table} columnlist="student_column_list" updatecheckboxes={this.props.updatecheckboxes} updatequery={()=>{return true;}} container='student_modal' />
+>>>>>>> 7cc3c9fb7cdee6448225e11d132cf7c2218cb4be
 						</div>
 					</div>
 				</div>
 			</div>
 		);
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 7cc3c9fb7cdee6448225e11d132cf7c2218cb4be
