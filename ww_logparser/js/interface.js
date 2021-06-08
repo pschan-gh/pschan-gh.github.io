@@ -10,11 +10,7 @@ function computeColWidths(headers) {
         $("th[data-field='" + field + "']").each(function() {
             widths.push($(this).find('a.header').first().text().length);
         });
-<<<<<<< HEAD
         colWidths[field] = Math.min(400, 10*Math.max(...widths)) + 30;
-=======
-        colWidths[field] = Math.min(400, 12*Math.max(...widths)) + 50;
->>>>>>> 7cc3c9fb7cdee6448225e11d132cf7c2218cb4be
     });
     return colWidths;
 }
