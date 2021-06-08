@@ -96,7 +96,7 @@ class CheckBoxes extends React.Component {
     
     render() {
         return (            
-        <div id={this.props.id} className="dropdown-menu sortable" aria-labelledby="dropdownMenuButton">
+        <div id={this.props.id} className="dropdown-menu sortable" aria-labelledby={this.props.dropdownmenubutton}>
             {Object.keys(this.state.headers).map((field, index) => {
                 return <FieldCheckBox headers={this.state.headers}  key={field} field={field} handlecheckboxes={this.handleCheckboxes} checked={this.state.headers[field].visible}/>
             })}

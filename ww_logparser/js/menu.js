@@ -128,10 +128,10 @@ class Nav extends React.Component {
                             <QuizDisplayMode handlequizdisplay={this.props.handlequizdisplay} /> : null}
                         </li>
                         <li className="nav-item dropdown" id="columns_toggle">
-                        <a className="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <a className="nav-link dropdown-toggle" href="#" id="main_columns_button" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Columns
                         </a>
-                        <CheckBoxes id={this.props.columnlist} ref={this.checkboxes} headers={this.props.headers} updatetableheaders={this.props.updatetableheaders} freezecolindex={this.props.freezecolindex} container="table-container" />
+                        <CheckBoxes id={this.props.columnlist} ref={this.checkboxes} headers={this.props.headers} updatetableheaders={this.props.updatetableheaders} freezecolindex={this.props.freezecolindex} container="table-container"  dropdownmenubutton="main_columns_button"/>
                         </li>
                         <li className="nav-item query">
                             <a className="nav-link query" href="#" role="button" data-bs-toggle="modal" data-bs-target="#query_modal">Query</a>
