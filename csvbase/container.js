@@ -27,7 +27,9 @@ class Container extends React.Component {
         this.fileInput = React.createRef(); 
         this.xlsxInput = React.createRef();    
         this.table = React.createRef();
-        this.nav = React.createRef()
+        this.nav = React.createRef();
+        this.renamecolumn = React.createRef();
+        this.recalculatecolumn = React.createRef();
     }
 
     sanitizeDB(plaintextDB, headers) {
@@ -72,6 +74,8 @@ class Container extends React.Component {
         this.setState({
             headers: headers,
             freezeColIndex:freezeColIndex
+        }, function(){
+            this.table.current.setState({headers:headers});
         });
     }
     
@@ -280,7 +284,7 @@ class Container extends React.Component {
         this.setState({
             database:database, 
             headers:headers
-        }, function(){this.table.current.resetGroups();});
+        }, function(){this.table.current.resetGroups(database, headers, this.state.primarykey);});
     }
     
     recalculateDatabase(database, headers, primarykey = this.state.primarykey) {
@@ -324,7 +328,7 @@ class Container extends React.Component {
             database:database,
             headers:headers,
             headers2:{}
-        },  function(){this.table.current.resetGroups();});
+        },  function(){this.table.current.resetGroups(database, headers, primarykey);});
     }
     
     handleAddColumn(e) {
@@ -369,19 +373,56 @@ class Container extends React.Component {
 
     handleQuery(e, queryItems) {
         e.preventDefault();
-        let filter;
-        queryItems.map(item => {            
-            if (item.field == 'Show All') { 
+        console.log(e);
+        console.log(queryItems);
+        let filter = 'true';
+        queryItems.map(query => {            
+            if (query.field == 'Show All') { 
                 filter = 'true';
             } else {
-                filter = 'item["' + item.field + '"]' + ' ' + item.condition;
+                filter += ' ' + query.conjunction +  ' (item["' + query.field + '"] ' + query.condition + ')';
             }
             console.log(filter);            
         });
-        // $('.dropdown-menu.query').dropdown('toggle');                        
+        $('#query_modal').modal('toggle');
+        console.log(filter);
         this.setState({
             filter:filter,
-        }, function(){$('#query_modal').modal('toggle');this.table.current.resetGroups();}); 
+        }, function(){
+            $('#query_modal').modal('toggle');
+            this.table.current.resetGroups(this.state.database, this.state.headers, this.state.primarykey);
+        }); 
+    }
+
+    // handleQuery(e, queryItems) {
+    //     e.preventDefault();
+    //     let filter;
+    //     queryItems.map(item => {            
+    //         if (item.field == 'Show All') { 
+    //             filter = 'true';
+    //         } else {
+    //             filter = 'item["' + item.field + '"]' + ' ' + item.condition;
+    //         }
+    //         console.log(filter);            
+    //     });
+    //     // $('.dropdown-menu.query').dropdown('toggle');                        
+    //     this.setState({
+    //         filter:filter,
+    //     }, function(){$('#query_modal').modal('toggle');this.table.current.resetGroups(this.state.database, this.state.headers, this.state.primarykey);}); 
+    // }
+    
+    handleScroll() {
+        const height = this.offsetHeight;
+        const scrollTop = this.scrollTop;
+        // console.log(height);
+        // console.log(scrollTop);
+        if (scrollTop / height > 0.75) {
+            // console.log(scrollTop);
+        }
+    }
+    
+    componentDidUpdate() {
+        $('#table-container').scroll(this.handleScroll);
     }
 
     render() {
@@ -390,10 +431,11 @@ class Container extends React.Component {
             <Nav ref={this.nav} fileinput={this.fileInput} xlsxinput={this.xlsxInput} csvhandler={this.CsvHandler} xlsxhandler={this.XlsxHandler} csvpastehandler={this.CsvPasteHandler} keyhandler={this.KeyHandler} headers={this.state.headers} freezecolindex={this.state.freezeColIndex} headers2={this.state.headers2} filter={this.state.filter} handlequery={this.handleQuery} handleaddcolumn={this.handleAddColumn} handlerenamecolumn={this.handleRenameColumn} reorderheaders={this.ReorderHeaders} exporthandler={this.ExportHandler}/>
             <div id="outer-table-container">
                 <div id="table-container">
-                    <Table ref={this.table} database={this.state.database} headers={this.state.headers} freezecolindex={this.state.freezeColIndex} filter={this.state.filter} primarykey={this.state.primarykey}/>
+                    <Table ref={this.table} renamecolumn={this.renamecolumn} recalculatecolumn={this.recalculatecolumn} filter={this.state.filter} />
                 </div>
             </div>
-            <RecalculateColumnModal headers={this.state.headers} handlerecalculatecolumn={this.handleRecalculateColumn} />
+            <RenameColumnModal ref={this.renamecolumn} handlerenamecolumn={this.handleRenameColumn} /> 
+            <RecalculateColumnModal ref={this.recalculatecolumn} headers={this.state.headers} handlerecalculatecolumn={this.handleRecalculateColumn} />
         </div>
         )
     }
