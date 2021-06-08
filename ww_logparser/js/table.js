@@ -159,7 +159,7 @@ class Table extends React.Component {
             datalist:[],
             hwSortArray:{},
             hwSortField:'',
-            problemHeaders:{count:{}, rank:{}, unixtime:{}, time:{}, sid:{}, result:{}, score:{}, answer:{}},
+            problemHeaders:{count:{}, rank:{}, index:{}, unixtime:{}, time:{}, sid:{}, result:{}, score:{}, answer:{}},
             headers:{},
             quizMode:false,
             quizDisplayMode:'result'
@@ -248,15 +248,11 @@ class Table extends React.Component {
         }, function() {
             const filterFunc =  new Function('item', 'return ' + filter);
             this.updateTable('index', '', datalist.filter(filterFunc), headers, quizMode, quizDisplayMode);
+            this.props.updatecheckboxes(headers);
         });
     }
 
-    resetProblemGroups(
-        datalist, 
-        headers = this.state.problemHeaders,
-        quizMode = this.state.quizMode, 
-        quizDisplayMode = this.state.quizDisplayMode
-    ) {
+    resetProblemGroups(datalist, headers = this.state.problemHeaders, quizMode = this.state.quizMode, quizDisplayMode = this.state.quizDisplayMode) {
         console.log('resetting groups');
         console.log(headers);
         Object.keys(headers).map(field => {
@@ -325,7 +321,7 @@ class Table extends React.Component {
             quizDisplayMode:quizDisplayMode
         }, function(){ 
             console.log(this.state.headers);
-            this.props.updatecheckboxes(headers);
+            // if(updateCheckboxes) {this.props.updatecheckboxes(headers)};
             this.props.updatequery(headers);
         });
     }

@@ -20,7 +20,8 @@ class Student extends React.Component {
 			const filter = 'item["sid"] == "' + sid + '"';
 	        console.log(filter);
 	        const filterFunc =  new Function('item', 'return ' + filter);
-			this.table.current.resetProblemGroups(this.props.database.filter(filterFunc), this.state.headers);
+			this.table.current.resetProblemGroups(this.props.database.filter(filterFunc), this.state.headers, false, 'result');
+			// this.props.updatecheckboxes(this.state.headers);
 		});
     }
 	

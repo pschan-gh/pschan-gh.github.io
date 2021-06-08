@@ -85,7 +85,7 @@ class Nav extends React.Component {
         this.query = React.createRef();
     }
     
-    updateCheckboxes(headers) {
+    updateCheckboxes(headers =  this.props.headers) {
         const oldHeaders = {...this.checkboxes.current.state.headers};
         let updatedHeaders = {...headers};
         for (let field in headers) {

@@ -56,6 +56,7 @@ class Container extends React.Component {
             this.table.current.resetHw(this.state.database, this.state.hwset, this.state.problems, this.state.quizMode, this.state.quizDisplayMode, filter);
         } else {
             this.table.current.resetProblemGroups(this.state.database.filter(filterFunc));
+            this.updateCheckboxes();
         }
     }
     
@@ -181,7 +182,9 @@ class Container extends React.Component {
             filter:'true',
             quizMode:quizMode,
             quizDisplayMode:quizDisplayMode
-        },  function(){this.table.current.resetHw(database, selectedSet, problemsSorted, quizMode, quizDisplayMode);});
+        },  function() {
+            this.table.current.resetHw(database, selectedSet, problemsSorted, quizMode, quizDisplayMode);
+        });
     }
     
     hwsetHandler(e) {
@@ -189,6 +192,7 @@ class Container extends React.Component {
         const hwset = value;
         this.setState({
             problems:[],
+            problem:'default',
             quizMode:false
         }, function() { this.updateDatabase(hwset, this.state.quizMode) });
     }
@@ -205,6 +209,7 @@ class Container extends React.Component {
                 const filter = 'item["prob"] == ' + problem;
                 const filterFunc =  new Function('item', 'return ' + filter);                
                 this.table.current.resetProblemGroups(this.state.database.filter(filterFunc));
+                this.updateCheckboxes();
             });
         } else {
             this.setState({
