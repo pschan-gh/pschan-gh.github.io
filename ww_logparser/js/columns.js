@@ -26,7 +26,7 @@ class CheckBoxes extends React.Component {
     
     updateHeaders() {
         let oldHeaders = this.state.headers;
-        let freezeColIndex = $('#' + this.props.id + ".sortable a").index($('.freezeCol').first()[0]);
+        let freezeColIndex = $('#' + this.props.id + ".sortable a").index($('#' + this.props.id + ' .freezeCol').first()[0]);
         console.log('updating col: ' + freezeColIndex);
         let $boxes = $('#' + this.props.id + '.sortable input');
         let headers = {count:{}, rank:{}};
@@ -61,9 +61,23 @@ class CheckBoxes extends React.Component {
         });
     
         console.log(headers);
-
         this.setState({headers:headers});
+                        
+    }
+    
+    componentDidUpdate() {
+        console.log('#' + this.props.id + ".sortable");
+        let $sortable = $('#' + this.props.id + ".sortable" );
+        $('#' + this.props.id + " .freezeCol").remove();
+        $('<a class="dropdown-item freezeCol" key="freezeCol"><hr/></a>').insertAfter($('#' + this.props.id + '.sortable a.field').eq(this.state.freezeColIndex - 1));
         
+        $( function() {                        
+            $sortable.sortable();
+            $sortable.disableSelection();
+        } );
+        console.log(this.state.freezeColIndex);        
+        
+        const headers = this.state.headers;
         console.log(headers); 
         Object.keys(headers).map(field => {
             if ('visible' in this.state.headers[field]) {
@@ -74,19 +88,6 @@ class CheckBoxes extends React.Component {
                 }
             }
         });
-        
-    }
-    
-    componentDidUpdate() {
-        console.log('#' + this.props.id + ".sortable");
-        let $sortable = $('#' + this.props.id + ".sortable" );
-        $( function() {                        
-            $sortable.sortable();
-            $sortable.disableSelection();
-        } );
-        console.log(this.state.freezeColIndex);
-        $(".freezeCol").remove();
-        $('<a class="dropdown-item freezeCol" key="freezeCol"><hr/></a>').insertAfter($('#' + this.props.id + '.sortable a.field').eq(this.state.freezeColIndex - 1));
         
         let widths = computeColWidths(this.state.headers);
         let $frozen = $('#' + this.props.id + ".sortable a").slice(0, this.state.freezeColIndex);

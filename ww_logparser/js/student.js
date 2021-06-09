@@ -16,7 +16,7 @@ class Student extends React.Component {
 	
     updateCheckboxes(headers) {
         this.checkboxes.current.setState({
-            headers:this.state.headers
+            headers:headers
         });
     }
     
@@ -25,9 +25,12 @@ class Student extends React.Component {
     }
 	
 	studentHandler(sid) {
+		this.checkboxes.current.setState({
+			freezeColIndex:2
+		});
 		this.setState({
 			sid:sid,
-			headers : {count:{}, rank:{}, index:{}, time:{}, unixtime:{}, prob:{}, result:{}, answer:{}},
+			// headers : {count:{visible:true}, rank:{visible:true}, index:{visible:true}, time:{visible:true}, unixtime:{visible:true}, prob:{visible:true}, result:{visible:true}, answer:{visible:true}},
 		}, function() {
 			console.log('updating student');
 			const filter = 'item["sid"] == "' + sid + '"';

@@ -125,7 +125,7 @@ class Tbody extends React.Component {
         }
         console.log('updating table width');
         let widths = computeColWidths(this.props.headers);
-        let colIndex = $('#' + this.props.columnlist + ".sortable a").index($('.freezeCol').first()[0]);
+        let colIndex = $('#' + this.props.columnlist + ".sortable a").index($('#' + this.props.columnlist + ' .freezeCol').first()[0]);
         let $frozen = $('#' + this.props.columnlist + ".sortable a").slice(0, colIndex);        
         freezeColumns($frozen, widths, this.props.container);
         updateTableWidth(widths, this.props.container);

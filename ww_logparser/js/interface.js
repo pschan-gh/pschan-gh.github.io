@@ -1,7 +1,7 @@
 function computeColWidths(headers) {
     let colWidths = {};
     let widths;
-    console.log(headers);
+    // console.log(headers);
     Object.keys(headers).filter(field => {return headers[field].visible;}).map(field => {
         widths = [];
         $("td[data-field='" + field + "']").each(function() {
@@ -18,7 +18,7 @@ function computeColWidths(headers) {
 function updateTableWidth(colWidths, container) {
     let tableWidth = 0;
     let c = '#' + container;
-    console.log('updating ' + c);
+    // console.log('updating ' + c);
     
     Object.keys(colWidths).map(field => {
         tableWidth += colWidths[field];
@@ -34,11 +34,11 @@ function updateTableWidth(colWidths, container) {
 
 function freezeColumns($frozen, colWidths, container) {
     console.log('freezing columns');
-    console.log(colWidths);
-    console.log($frozen);
+    // console.log(colWidths);
+    // console.log($frozen);
     
     let c = '#' + container;
-    console.log('updating ' + c);
+    // console.log('updating ' + c);
     $(c + ' thead th').css('position', '');
     $(c + ' thead th').css('left', '');
     $(c + ' thead th').css('z-index', '');
@@ -61,8 +61,8 @@ function freezeColumns($frozen, colWidths, container) {
         $(c + ' tr td:nth-child(' + (i + 1) + ')').css('z-index', 1);
         $(c + ' tr td:nth-child(' + (i + 1) + ')').css('background-color', '#eee');        
         offset += colWidths[$frozen.eq(i).find('input').attr('data-field')];
-        console.log($frozen.eq(i).find('input').attr('data-field'));
-        console.log(colWidths[$frozen.eq(i).find('input').attr('data-field')]);
-        console.log(offset);
+        // console.log($frozen.eq(i).find('input').attr('data-field'));
+        // console.log(colWidths[$frozen.eq(i).find('input').attr('data-field')]);
+        // console.log(offset);
     }
 }
