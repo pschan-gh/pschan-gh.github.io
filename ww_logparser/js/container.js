@@ -17,6 +17,7 @@ class Container extends React.Component {
             // freezeColIndex:2
         };
         
+        // this.handleMaxPerPage = this.handleMaxPerPage.bind(this);
         this.handleQuery = this.handleQuery.bind(this);
         this.exportHandler = this.exportHandler.bind(this);
         this.fileHandler = this.fileHandler.bind(this);
@@ -34,6 +35,12 @@ class Container extends React.Component {
         this.student = React.createRef();
         this.nav = React.createRef();
     }    
+    
+    // handleMaxPerPage(e) {
+    //     const max = e.target.value;
+    //     this.table.current.handleMaxPerPage(max);
+    // 
+    // }
     
     handleQuery(e, queryItems) {
         e.preventDefault();
@@ -170,7 +177,10 @@ class Container extends React.Component {
                     'prob': prob,
                     'result': result,
                     'score': Math.round(100*(result.match(/1/g) || []).length/(result.length))
-                };                
+                };
+                if (isNaN(row.score)) {
+                    row['score'] = '';
+                }
                 database.push(row);
             }
         }
@@ -273,11 +283,9 @@ class Container extends React.Component {
     render() {
         return (
         <div className="inner-container">
-            <Nav ref={this.nav} fileinput={this.fileInput} table={this.table} filehandler={this.fileHandler} hwsets={this.state.hwsets} hwsethandler={this.hwsetHandler} problems={this.state.problems} problem={this.state.problem} problemhandler={this.problemHandler} handlequizmode={this.handleQuizMode} handlequizdisplay={this.handleQuizDisplay} updatemasterheaders={this.updateHeaders} updatetableheaders={this.updateTableHeaders} headers={this.state.headers} quizmode={this.state.quizMode} exporthandler={this.exportHandler} handlequery={this.handleQuery} columnlist='main-column-list'/>
-            <div id="outer-table-container">
-                <div id="table-container">
-                    <Table ref={this.table} id='mainTable' updatecheckboxes={this.updateCheckboxes} updatequery={this.updateQuery} student={this.student} container='table-container' columnlist='main-column-list' />
-                </div>
+            <Nav ref={this.nav} fileinput={this.fileInput} table={this.table} filehandler={this.fileHandler} hwsets={this.state.hwsets} hwsethandler={this.hwsetHandler} problems={this.state.problems} problem={this.state.problem} problemhandler={this.problemHandler} handlequizmode={this.handleQuizMode} handlequizdisplay={this.handleQuizDisplay} updatemasterheaders={this.updateHeaders} updatetableheaders={this.updateTableHeaders} headers={this.state.headers} quizmode={this.state.quizMode} exporthandler={this.exportHandler} handlequery={this.handleQuery} columnlist='main-column-list' container='main-table-container'/>
+            <div id="main-table-container">                
+                <Table ref={this.table} id='mainTable' updatecheckboxes={this.updateCheckboxes} updatequery={this.updateQuery} student={this.student} container='main-table-container' columnlist='main-column-list' />
             </div>    
             <Student ref={this.student} updatecheckboxes={this.updateCheckboxes} updatequery={this.updateQuery} database={this.state.database} hwset={this.state.hwset} />
         </div>

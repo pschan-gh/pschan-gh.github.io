@@ -61,12 +61,15 @@ class CheckBoxes extends React.Component {
         });
     
         console.log(headers);
-        this.setState({headers:headers});
+        this.setState({
+            headers:headers
+        });
                         
     }
     
     componentDidUpdate() {
         console.log('#' + this.props.id + ".sortable");
+        console.log('#' + this.props.container);
         let $sortable = $('#' + this.props.id + ".sortable" );
         $('#' + this.props.id + " .freezeCol").remove();
         $('<a class="dropdown-item freezeCol" key="freezeCol"><hr/></a>').insertAfter($('#' + this.props.id + '.sortable a.field').eq(this.state.freezeColIndex - 1));
@@ -82,9 +85,9 @@ class CheckBoxes extends React.Component {
         Object.keys(headers).map(field => {
             if ('visible' in this.state.headers[field]) {
                 if(this.state.headers[field].visible) {
-                    $('#' + this.props.container + ' th[data-field="' + field + '"], td[data-field="' + field + '"]').show();
+                    $('#' + this.props.container + ' th[data-field="' + field + '"],' + '#' + this.props.container + ' td[data-field="' + field + '"]').show();
                 } else {
-                    $('#' + this.props.container + ' th[data-field="' + field + '"], td[data-field="' + field + '"]').hide();
+                    $('#' + this.props.container + ' th[data-field="' + field + '"],' + '#' + this.props.container + ' td[data-field="' + field + '"]').hide();
                 }
             }
         });

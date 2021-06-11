@@ -112,21 +112,30 @@ a.header {
 #container {
     width:100%;
     height:100%;
+    padding:0 10 0 10;
 }
 
-#outer-table-container {
+#main-table-container {
     width:100%;
     flex:auto;
-    overflow-x:auto;
+    overflow-x:hidden;
     overflow-y:hidden;
     position:relative;    
 }
 
-#table-container {
+.table-container {
     height:100%; 
-    width:auto; 
-    overflow:scroll;
+    width:100%;
+    /* overflow:scroll; */
+    overflow-x:auto;
     margin: 0 auto;
+    flex:auto    
+}
+
+.page-container {
+    height:100%; 
+    display:flex;
+    flex-flow:column;
 }
 
 .inner-container {
@@ -240,10 +249,25 @@ a.dropdown-item {
     overflow-x : auto !important;
     white-space:normal !important;
 }
+
+a.selected {
+    color:SteelBlue;
+}
+
+.pagination .page-item .page-link {
+    color:#444 !important;
+}
+
+.pagination .page-item.active .page-link {
+    background-color:SteelBlue !important;
+    border-color:SteelBlue !important;
+    color:white !important;
+}
+
 </style>
 </head>
 
-<body style="margin:0 10 10 10">
+<body>
 <div id="container">
 </div>
 <script src="js/columns.js"  type = "text/babel"></script>

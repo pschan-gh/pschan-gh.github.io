@@ -56,7 +56,7 @@ class Student extends React.Component {
 							<CheckBoxes id="student_column_list" ref={this.checkboxes} headers={this.state.headers} updatetableheaders={this.updateTableHeaders} container="student_modal" dropdownmenubutton="student_columns_button"/>
 							<button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 						</div>
-						<div className="modal-body" style={{margin:'20px', height:'100%',overflowX:'scroll'}} >
+						<div className="modal-body" style={{margin:'20px', height:'100%'}} >
 							<Table ref={this.table} columnlist="student_column_list" updatecheckboxes={this.updateCheckboxes} updatequery={()=>{return true;}} container='student_modal' />
 						</div>
 					</div>

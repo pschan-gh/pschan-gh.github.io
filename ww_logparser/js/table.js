@@ -1,3 +1,17 @@
+function MaxPerPage(props) {
+    return (
+        <div className='me-5' style={{display:'inline-block'}}>
+        <select className="form-control" style={{width:'auto'}} name="maxperpage" onChange={props.handlemaxperpage} >
+        <option value="50">Max Per Page</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+            <option value="200">200</option>
+            <option value="500">500</option>
+        </select>
+    </div>
+);
+}
+
 function Sort(props) {
     if (props.sort == 1) {
         return(            
@@ -12,6 +26,15 @@ function Sort(props) {
             <a className="triangle" onClick={() => props.handlesort(props.field)}><i className="bi bi-caret-right"></i></a>
         );
     }
+}
+
+function Page(props) {
+    return(
+        <table id={props.id} className="table table-bordered table-hover">
+            <Header groups={props.groups} grouphandler={props.grouphandler} groupfield={props.groupfield} headers={props.headers} handlesort={props.handlesort} />
+            <TbodyPage datalist={props.datalist} groups={props.groups} groupfield={props.groupfield} container={props.container} columnlist={props.columnlist} headers={props.headers} student={props.student} page={props.page} maxperpage={props.maxperpage}/>
+        </table>
+    );
 }
 
 class Header extends React.Component {
@@ -58,11 +81,11 @@ class Header extends React.Component {
 }
 
 function TableRow(props) {
-    let rank = props.index;
+    // let rank = props.index;
     return (
-        <tr data-group-index={props.groupindex}>
+        <tr data-group-index={props.groupindex.toString()}>
             <td key='count' data-field='count' className='col_count' data-count={props.count}><div className="count-number" style={{float:'left'}}>{props.count}</div><div style={{float:'right'}} className="expandcollapse">+</div></td>
-            <td key='rank' data-field='rank' className='col_rank' >{rank}</td>        
+            <td key='rank' data-field='rank' className='col_rank' ><span>{props.row['rank']}</span></td>
             {Object.keys(props.headers).filter(field => field != 'rank' && field != 'count').map((field, index) => {
                 if (field != 'sid') {           
                     return (
@@ -81,7 +104,7 @@ function TableRow(props) {
     );
 }
 
-class Tbody extends React.Component {
+class TbodyBase extends React.Component {
     constructor(props) {
         super(props); 
     }    
@@ -94,32 +117,46 @@ class Tbody extends React.Component {
         // $(function() {
         const container = '#' + this.props.container;
         console.log(container);
+        
+        $('a.page[data-index]').removeClass('selected');
+        $('a.page[data-index="' + this.props.page + '"]').addClass('selected');
+        
+        $(container + ' tbody tr').css('background-color', '');
+        $(container + ' tbody tr').show();
         $(container + ' tbody tr').off();
-        $(container + ' td.col_count').off();
+        $(container + ' td.col_count').off();        
         $(container + ' tbody tr').click(function() {
             $(container + ' td').css('color', '');
             $(this).find('td').css('color', 'red');
         });
         if (groupField != 'index' && groupField != '') {
+            $(container + ' td.col_rank span').hide();
             let groupCount = $(container + ' tbody').attr('data-group-count');
             for (let i = 1; i <= groupCount; i++) {            
                 $(container + ' tbody tr[data-group-index=' + i + ']').not(":eq(0)").hide();
-                $(container + ' tbody tr[data-group-index="' + i + '"] div.expandcollapse').text('+');
+                if ($(container + ' tbody tr[data-group-index="' + i + '"]').length > 1) {
+                    $(container + ' tbody tr[data-group-index="' + i + '"] div.expandcollapse').text('+');
+                } else {
+                    $(container + ' tbody tr[data-group-index="' + i + '"] div.expandcollapse').text('');
+                }
                 $(container + ' tbody tr[data-group-index="' + i + '"] td.col_count').click(() => {
                     if ($(container + ' tbody tr[data-group-index="' + i + '"]').length > 1) {
                         if ($(container + ' tbody tr[data-group-index="' + i + '"]:eq(1)').is(":visible")) {
                             $(container + ' tbody tr[data-group-index="' + i + '"]:not(:first)').hide();
                             $(container + ' tbody tr[data-group-index="' + i + '"] div.expandcollapse').text('+');
                             $(container + ' tbody tr[data-group-index="' + i + '"]').css('background-color', '');
+                            $(container + ' tbody tr[data-group-index="' + i + '"] td.col_rank span').hide();
                         } else {
                             $(container + ' tbody tr[data-group-index="' + i + '"]').show();
                             $(container + ' tbody tr[data-group-index="' + i + '"] div.expandcollapse').text('-');
                             let bgcolor = 'hsl(' + (i * 150) % 360 + ', 55%, 95%)';
                             $(container + ' tbody tr[data-group-index="' + i + '"]').css('background-color', bgcolor);
+                            $(container + ' tbody tr[data-group-index="' + i + '"] td.col_rank span').show();
                         }
-                    }
+                    } 
                 });
             }
+            $(container + ' div.expandcollapse').show();
         } else {
             $(container + ' div.expandcollapse').hide();
         }
@@ -131,7 +168,9 @@ class Tbody extends React.Component {
         updateTableWidth(widths, this.props.container);
         
     }
-    
+}
+
+class Tbody extends TbodyBase {        
     render() {
         return (
             <tbody data-group-count={this.props.groups.length}>
@@ -144,8 +183,24 @@ class Tbody extends React.Component {
             }
             </tbody>
         );
-    }
-    
+    }    
+}
+
+class TbodyPage extends TbodyBase {    
+    render() {
+        // console.log(this.props.datalist.slice(this.props.page, this.props.page + this.props.maxperpage));
+        return (
+            <tbody data-group-count={this.props.groups.length}>
+            {
+                this.props.datalist.slice(+(this.props.page)*(+(this.props.maxperpage)), Math.min(+(this.props.page)*(+(this.props.maxperpage)) + +(this.props.maxperpage), this.props.datalist.length)).map((row, index) => {
+                    return (
+                        <TableRow  groupindex={row['group-index']} row={row} count={row.count} headers={this.props.headers} index={index + 1} key={index} student={this.props.student} />
+                    );
+                })
+            }
+            </tbody>
+        );
+    }    
 }
 
 class Table extends React.Component {
@@ -162,11 +217,34 @@ class Table extends React.Component {
             problemHeaders:{count:{}, rank:{}, index:{}, unixtime:{}, time:{}, sid:{}, result:{}, score:{}, answer:{}},
             headers:{},
             quizMode:false,
-            quizDisplayMode:'result'
+            quizDisplayMode:'result',
+            page:0,
+            maxPerPage:50,
+            numPage:1
         };
+        
+        this.handleMaxPerPage = this.handleMaxPerPage.bind(this);
         this.handleSort = this.handleSort.bind(this);
+        this.handlePage = this.handlePage.bind(this);
         this.updateTable = this.updateTable.bind(this);
     }        
+
+    handleMaxPerPage(e) {
+        const max = e.target.value;
+        console.log(max);
+        this.setState({
+            page:0,
+            maxPerPage:parseInt(max),
+            numPages:Math.floor(this.state.datalist.length/max) + 1
+        });
+    }
+
+    handlePage(page) {
+        const p = page >= this.state.numPages ? this.state.numPages -1 : (page < 0 ? 0 : page);
+        this.setState({
+            page:parseInt(p)
+        });
+    }
 
     resetHw(database, selectedSet, problems, quizMode = this.state.quizMode, quizDisplayMode = this.state.quizDisplayMode, filter = 'true') {
         console.log('resetting groups');
@@ -223,15 +301,15 @@ class Table extends React.Component {
         }
         console.log(finalAnswers);
         console.log(problems);
-        let headers = {count:{}, rank:{}, sid:{}};
+        let headers = {count:{}, rank:{}, index:{}, sid:{}};
         problems.map(field => {
             headers['Problem ' + field.toString()] = {sort:0, visible:true};
         });
         
         let item, datum;
-        let datalist = Object.keys(finalAnswers).map(sid => {
+        let datalist = Object.keys(finalAnswers).map((sid, index) => {
             item = finalAnswers[sid][selectedSet];
-            datum = {sid:sid};
+            datum = {index:index, sid:sid};
             problems.map(prob => {
                 try {
                     datum['Problem ' + prob] = item[prob][quizDisplayMode];
@@ -264,11 +342,13 @@ class Table extends React.Component {
         this.updateTable('index', 'unixtime', datalist, headers, quizMode, quizDisplayMode);
     }
 
-    updateTable(gf = this.state.groupField, sortField = this.state.sortField, datalist = this.state.datalist.slice(), headers = this.state.headers, quizMode = this.state.quizMode, quizDisplayMode = this.state.quizDisplayMode) {
+    updateTable(gf = this.state.groupField, sortField = this.state.sortField, datalist = this.state.datalist.slice(), oldHeaders = this.state.headers, quizMode = this.state.quizMode, quizDisplayMode = this.state.quizDisplayMode) {
         console.log('updating table');
-        
         const groupField = gf;
+        
+        let headers = {...oldHeaders};
         console.log(headers);
+        
         let values = datalist.map(item => {
             return item[groupField];
         });
@@ -277,7 +357,8 @@ class Table extends React.Component {
         
         if(groupField != 'index') {
             let unique = values.filter((value, index, self) => { return self.indexOf(value) === index; });
-            let order = headers[groupField].sort;
+            let order = headers[groupField].sort == 0 ? 1 : headers[groupField].sort;
+            headers[groupField].sort = order;
             uniqueSorted = unique.sort((a, b) => {                
                 if (!(isNaN(parseFloat(a)) || isNaN(parseFloat(b)))) {
                     return order*(parseFloat(a) - parseFloat(b));
@@ -288,7 +369,7 @@ class Table extends React.Component {
         }
     
         let datum;
-        let updatedGroups = uniqueSorted.map(value => {
+        let updatedGroups = uniqueSorted.map((value, index) => {
             let table = [];
             for (let i = 0; i < datalist.length; i++) {
                 let item = datalist[i];
@@ -303,12 +384,21 @@ class Table extends React.Component {
                         datum[field] = item[field];
                     }
                 });
+                datum['group-index'] = index + 1;
                 table.push(datum);
             }
             return table.sort((a, b) => {return this.sortByField(headers, a, b, sortField);});
-        });                
+        }); 
         
-        datalist = [].concat.apply([], updatedGroups);
+        let countedGroups = updatedGroups.map(group => {            
+            return group.map((datum, rank, group) => {
+                let counted = {...datum};
+                counted['rank'] = rank;
+                counted['count'] = group.length;
+                return counted;
+            });
+        });
+        datalist = [].concat.apply([], countedGroups);
                 
         console.log(headers);
         this.setState({
@@ -318,7 +408,9 @@ class Table extends React.Component {
             datalist: datalist,
             headers:headers,
             quizMode:quizMode,
-            quizDisplayMode:quizDisplayMode
+            quizDisplayMode:quizDisplayMode,
+            page:0,
+            numPages:Math.floor(datalist.length/this.state.maxPerPage) + 1
         }, function(){ 
             console.log(this.state.headers);
             this.props.updatecheckboxes(headers);
@@ -354,14 +446,66 @@ class Table extends React.Component {
     }
     
     componentDidUpdate() {
+        $('#' + this.props.container + ' .pagination .page-item').removeClass('active');
+        $('#' + this.props.container + ' .pagination .page-item[data-page="' + this.state.page + '"]').addClass('active');
     }
 
     render() {
+        // <table id={this.props.id} className="table table-bordered table-hover">
+        //     <Header groups={this.state.groups} grouphandler={this.updateTable} groupfield={this.state.groupField} headers={this.state.headers} handlesort={this.handleSort} />
+        //     <Tbody groups={this.state.groups} groupfield={this.state.groupField} columnlist={this.props.columnlist} headers={this.state.headers} student={this.props.student} container={this.props.container} />
+        // </table>
+        const numPages = this.state.numPages;
         return(
-            <table id={this.props.id} className="table table-bordered table-hover">
-            <Header groups={this.state.groups} grouphandler={this.updateTable} groupfield={this.state.groupField} headers={this.state.headers} handlesort={this.handleSort} />
-            <Tbody groups={this.state.groups} groupfield={this.state.groupField} container={this.props.container} columnlist={this.props.columnlist} headers={this.state.headers} student={this.props.student} container={this.props.container} />
-            </table>
+            <div className="page-container">
+                <div className="table-container">
+                    <Page datalist={this.state.datalist} page={this.state.page} groups={this.state.groups} groupfield={this.state.groupField} grouphandler={this.updateTable} container={this.props.container} columnlist={this.props.columnlist} headers={this.state.headers} student={this.props.student} container={this.props.container} handlesort={this.handleSort} maxperpage={this.state.maxPerPage}/>
+                </div>
+                <div className="pages d-flex justify-content-start pt-2">
+                    <MaxPerPage handlemaxperpage={this.handleMaxPerPage} />
+                    <nav>
+                        <ul className="pagination">
+                            <li key="prev" className="page-item">
+                                <a className="page-link" href="#" aria-label="Previous" onClick={()=>{this.handlePage(this.state.page - 1);}} >
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            <li key="first" style={{display:'inline-block'}} className="page-item">
+                                <a className="page-link" href="#" onClick={()=>{this.handlePage(0)}}>
+                                    First
+                                </a>
+                            </li>
+                            {
+                                [...Array(numPages).keys()].slice(
+                                    Math.max(this.state.page - 4 - Math.max(4 - numPages + 1 + this.state.page , 0), 0), 
+                                    Math.min(this.state.page + 4 + Math.max(4 - this.state.page , 0), numPages - 1)  + 1
+                                ).map( page => {
+                                    return (
+                                        <li key={page} style={{display:'inline-block'}} className="page-item" data-page={page}>
+                                            <a className="page-link" href="#" onClick={()=>{this.handlePage(page)}}>
+                                                {
+                                                    // Math.min(this.state.maxPerPage*(index + 1), this.state.datalist.length)
+                                                    page + 1
+                                                }
+                                            </a>
+                                        </li>
+                                    )
+                                })
+                            }
+                            <li key="last" style={{display:'inline-block'}} className="page-item">
+                                <a className="page-link" href="#" onClick={()=>{this.handlePage(numPages - 1)}}>
+                                    Last ({numPages})
+                                </a>
+                            </li>
+                            <li key="next" className="page-item">
+                                <a className="page-link" href="#" aria-label="Next" onClick={()=>{this.handlePage(this.state.page + 1);}} >
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
         )
     }
 }
