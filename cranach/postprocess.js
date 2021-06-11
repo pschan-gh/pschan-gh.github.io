@@ -39,6 +39,8 @@ function updateModal(cranach) {
         $('.modal-title > span').hide();
         $('.md5.share_text').text('');
         $('.modal_refby').hide();
+        $('.modal_proofs').hide();
+        $('.modal_proof_of').hide();
 
         $('.current_course').text(course).show();
         $('.current_chapter').text(chapter).show();
@@ -64,9 +66,9 @@ function updateModal(cranach) {
         $('#item_modal').find('#modal_keywords').html('<hr><b class="notkw">Keywords:</b>').append($('#slide_keywords').clone(true));
 
         $('#item_modal').find('#item_modal_link').attr('href', url);
-        $('#item_modal').find('#share_url').html(url);
-        $('#item_modal').find('#share_hyperlink').html('<a href="' + url + '" target="_blank" title="Course:' + course + '">' + course + ' ' + chapterType + ' ' + chapter + ' Slide ' + slide + '</a>');
-        $('#item_modal').find('#share_hyperref').html('\\href{' + url.replace('#', '\\#') + '}{' + course + ' ' + chapterType + ' ' + chapter + ' Slide ' + slide + '}');
+        $('#item_modal').find('#share_url').val(url);
+        $('#item_modal').find('#share_hyperlink').val('<a href="' + url + '" target="_blank" title="Course:' + course + '">' + course + ' ' + chapterType + ' ' + chapter + ' Slide ' + slide + '</a>');
+        $('#item_modal').find('#share_hyperref').val('\\href{' + url.replace('#', '\\#') + '}{' + course + ' ' + chapterType + ' ' + chapter + ' Slide ' + slide + '}');
 
     });
 

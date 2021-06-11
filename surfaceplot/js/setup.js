@@ -407,7 +407,7 @@ function shareURL(surfaceplot, path) {
     url = getJSON(surfaceplot, path);
 
     $('.share').val(url);
-    $('.embed').val("<iframe style=\"width:100%;height:500px\" frameBorder=\"0\" src=\"" + url + "&dimensions=[480,480]\"></iframe>");
+    $('.embed').val("<iframe style=\"width:100%;\" height=\"500\" frameBorder=\"0\" src=\"" + url + "&dimensions=[480,480]\"></iframe>");
 }
 
 function add_equation(surfaceplot, eqInfo, isParam) {
