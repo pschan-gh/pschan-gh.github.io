@@ -368,12 +368,12 @@ function Stack(node, doc) {
             case "@course":
             // var re = new RegExp(word + '{(.*?)}');
             // var match = originalWord.trim().match(re)[1];
-            if (argument != this.course) {
+            if (argument.trim().toLowerCase() != this.course.trim().toLowerCase()) {
                 secNums['chapter'] = 1;
                 child = addSection('course', argument, child, options);
                 child.node.setAttribute('course', argument);
                 child.node.setAttribute('title', argument);
-                course = argument;
+                child.course = argument;
             }
             break;
             case '@setchapter':
@@ -550,13 +550,13 @@ function Stack(node, doc) {
             if (child.node.nodeName.match(/PARAGRAPHS/i)) {
                 child = child.close();
             }
-            var match = originalWord.trim().match(/@caption{(.*?)}/);
-            if (match) {
-                // parent.node.setAttribute("title", match[1].replace(/[^a-z0-9\s\']/ig, ''));
-                child = child.addChild("caption");
-                child.node.textContent += match[1];
-                child = child.close();
-            }
+            // var match = originalWord.trim().match(/@caption{(.*?)}/);
+            // if (match) {
+            child = child.addChild("caption");
+            // child.node.textContent += match[1];
+            child.node.textContent += argument;
+            child = child.close();
+            // }
             break;
             case "@framebox":
             child = child.addChild("framebox");

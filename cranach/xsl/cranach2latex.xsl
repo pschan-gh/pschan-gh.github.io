@@ -131,13 +131,20 @@
 	</xsl:template>
 
 	<xsl:template match="lv:slide">
+		<xsl:text>&#xa;</xsl:text>
+		<xsl:text>&#xa;</xsl:text>
 		<xsl:apply-templates select="*[not(self::lv:topic)]" />
 	</xsl:template>
 
 	<xsl:template match="lv:keywords|lv:keyword|lv:hc_keyword|lv:title"/>
 
-	<xsl:template match="xh:a">
+	<xsl:template match="xh:a[@href]">
 		<xsl:value-of select="concat('\href{',  @href, '}{')"/>
+		<xsl:apply-templates select="*|text()|comment()" />
+		<xsl:text>}</xsl:text>
+	</xsl:template>
+    <xsl:template match="xh:a[@lcref]">
+		<xsl:value-of select="concat('\href{',  @lcref, '}{')"/>
 		<xsl:apply-templates select="*|text()|comment()" />
 		<xsl:text>}</xsl:text>
 	</xsl:template>
@@ -327,12 +334,13 @@
             </xsl:otherwise>
         </xsl:choose>
 	</xsl:variable>
+	<xsl:text>&#xa;&#xa;</xsl:text>
     <xsl:choose>
-        <xsl:when test="contains($url, 'http')">			
-            <xsl:value-of select="concat('&#xa;\href{', $url, '}{IFRAME}')"/>			
-        </xsl:when>
+        <xsl:when test="contains($url, 'http')">
+            <xsl:value-of select="concat('{\bf \href{', $url, '}{IFRAME}}')"/>
+		</xsl:when>
         <xsl:otherwise>
-            <xsl:value-of select="concat('&#xa;\href{http://www.math.cuhk.edu.hk/~pschan/cranach-dev/', $url, '}{IFRAME}')"/>
+            <xsl:value-of select="concat('{\bf \href{http://www.math.cuhk.edu.hk/~pschan/cranach-dev/', $url, '}{IFRAME}}')"/>
         </xsl:otherwise>
     </xsl:choose>
     <xsl:text>&#xa;&#xa;</xsl:text>
@@ -343,7 +351,7 @@
 </xsl:template>
 <xsl:template match="lv:image">
 	<xsl:text>&#xa;\begin{figure}[H]&#xa;\centering</xsl:text>
-	<xsl:value-of select="concat('&#xa;\includegraphics{', @data-src ,'}')"/>
+	<xsl:value-of select="concat('&#xa;\includegraphics[width=7cm]{', @data-src ,'}')"/>
 	<xsl:text>&#xa;\end{figure}&#xa;</xsl:text>
 </xsl:template>
 
@@ -390,6 +398,13 @@
 	<xsl:apply-templates select="text()" />
 	<xsl:text>&#xa;\end{verbatim}</xsl:text>
 </xsl:template>
+
+<xsl:template match="xh:div[@class='framebox']">
+	<xsl:text>&#xa;&#xa;\borderedbox{</xsl:text>
+	<xsl:apply-templates select="*|text()" />
+	<xsl:text>}</xsl:text>
+</xsl:template>
+
 
 <xsl:template match="lv:escaped">
 	<xsl:text>@</xsl:text>
