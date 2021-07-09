@@ -326,7 +326,8 @@ if (urlParams.has('data')) {
     });
 } else {
     add_equation(surfacePlot, {str:'1 - y+x*y - x*y^2', color:'', alpha:null, isParam:false},  false);
-    add_equation(surfacePlot, {str:'s*sin(t),s*cos(t),20*(s + t)', domain:{s:'-5,5', t:'-2,2'}, isParam:true, color:'', alpha:null}, true);
+add_equation(surfacePlot, {str:'cos(s)*(4 + 2cos(t)cos(s)+sin(t)sin(s)),sin(s)*(4 + 2cos(t)cos(s)+sin(t)sin(s)), -2cos(t)sin(s)+sin(t)cos(s)', domain:{s:'0,7', t:'0,7'}, isParam:true, color:'', alpha:null}, true);
+//    add_equation(surfacePlot, {str:'s*sin(t),s*cos(t),20*(s + t)', domain:{s:'-5,5', t:'-2,2'}, isParam:true, color:'', alpha:null}, true);
 }
 
 var eqStructs = new eqStructs();
