@@ -70,7 +70,7 @@ class Container extends React.Component {
     exportHandler() {
         console.log('export');
         
-        let $table = $('#mainTable');
+        let $table = $('#main-table-container table').first();
         var csv = $table.table2csv('return', {
             "separator": ",",
             "newline": "\n",
@@ -143,19 +143,23 @@ class Container extends React.Component {
             if (typeof(match) !== 'undefined' && match !== null)  {
                 
                 metaData = match[1].split(/\|/);
+                            
                 hwset = metaData[2];
                 if (hwset != selectedSet) {
                     continue;
-                }                
+                }    
                 
                 utime = match[2];
                 
+                answer = match[3].replace(dqRegex, "").replace(/\t/g, '; ').replace(/([^a-z0-9,\s\.\;\+\-\_\^\(\)\[\]\*\/\\])/ig, "__$1__"); 
+                //.replace(/inf/g, '\\infty');
+                // answer = match[3].replace(dqRegex, "").replace(/\t/g, '; ');
+                // .replace(/[^a-z0-9\s\;\+\-\_\^\(\)\[\]\*\/\\]/ig, '__'); 
+                        
                 time = metaData[0];
                 
                 // sid = maskSID == 0 ? metaData[1] : CryptoJS.MD5(metaData[1] + salt).toString(CryptoJS.enc.Hex).slice(0, 8);
                 sid = metaData[1];
-                
-                answer = match[3].replace(dqRegex, "").replace(/\t/g, '; ').replace(/[^a-z0-9\s\;\+\-\_\^\(\)\[\]\*\/\\]/ig, ''); //.replace(/inf/g, '\\infty');
                         
                 prob = parseInt(metaData[3]);
                 if (!(problems.includes(prob))) {
@@ -163,25 +167,31 @@ class Container extends React.Component {
                 }
                 
                 result = metaData[4];
-                if (typeof(result) == 'undefined' || result == null) {
-                    result = '1';
+                if (typeof result == 'undefined' || result == null) {
+                    result = 'UNDEFINED';
                 }
                 
-                row = {
-                    'index': i,
-                    'unixtime': utime,
-                    'sid': sid,
-                    'answer': answer,
-                    'time': time,
-                    'hwset': hwset,
-                    'prob': prob,
-                    'result': result,
-                    'score': Math.round(100*(result.match(/1/g) || []).length/(result.length))
-                };
-                if (isNaN(row.score)) {
-                    row['score'] = '';
+                if (result != 'UNDEFINED' ) {
+                    row = {
+                        'index': i,
+                        'unixtime': utime,
+                        'sid': sid,
+                        'answer': answer,
+                        'time': time,
+                        'utime':utime,
+                        'hwset': hwset,
+                        'prob': prob,
+                        'result': result,
+                        'score': result.toString().match(/1/g) ? Math.round(100*(result.toString().match(/1/g).length/result.length)) : 0,
+                    };
+                    // if (isNaN(row.score) || row.score == '') {
+                    //     row['score'] = 'EMPTY';
+                    // }
+                    // if (result == 'UNDEFINED' && typeof row['score'] == 'undefined') {
+                    //     row['score'] = 'EMPTY';
+                    // }
+                    database.push(row);
                 }
-                database.push(row);
             }
         }
         const problemsSorted = problems.sort((a, b) => a - b);
@@ -272,12 +282,12 @@ class Container extends React.Component {
     componentDidUpdate() {
         const headers = this.state.headers;
         
-        let widths = computeColWidths(this.state.headers);
+        let widths = computeColWidths(this.state.headers, "main-table-container");
         console.log(widths);
         let colIndex = $('#main-column-list.sortable a').index($('.freezeCol').first()[0]);
         let $frozen = $('#main-column-list.sortable a').slice(0, colIndex);        
-        freezeColumns($frozen, widths, this.props.container);
-        updateTableWidth(widths, this.props.container);
+        freezeColumns($frozen, widths, "main-table-container");
+        updateTableWidth(widths, "main-table-container");
     }
     
     render() {

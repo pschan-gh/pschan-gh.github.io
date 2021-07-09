@@ -63,7 +63,7 @@ class CheckBoxes extends React.Component {
         console.log(headers);
         this.setState({
             headers:headers
-        });
+        }, function() {this.props.updatetableheaders(headers);});
                         
     }
     
@@ -82,20 +82,20 @@ class CheckBoxes extends React.Component {
         
         const headers = this.state.headers;
         console.log(headers); 
-        Object.keys(headers).map(field => {
-            if ('visible' in this.state.headers[field]) {
-                if(this.state.headers[field].visible) {
-                    $('#' + this.props.container + ' th[data-field="' + field + '"],' + '#' + this.props.container + ' td[data-field="' + field + '"]').show();
-                } else {
-                    $('#' + this.props.container + ' th[data-field="' + field + '"],' + '#' + this.props.container + ' td[data-field="' + field + '"]').hide();
-                }
-            }
-        });
-        
-        let widths = computeColWidths(this.state.headers);
-        let $frozen = $('#' + this.props.id + ".sortable a").slice(0, this.state.freezeColIndex);
-        freezeColumns($frozen, widths, this.props.container);
-        updateTableWidth(widths, this.props.container);
+        // Object.keys(headers).map(field => {
+        //     if ('visible' in this.state.headers[field]) {
+        //         if(this.state.headers[field].visible) {
+        //             $('#' + this.props.container + ' th[data-field="' + field + '"],' + '#' + this.props.container + ' td[data-field="' + field + '"]').show();
+        //         } else {
+        //             $('#' + this.props.container + ' th[data-field="' + field + '"],' + '#' + this.props.container + ' td[data-field="' + field + '"]').hide();
+        //         }
+        //     }
+        // });
+        // 
+        // let widths = computeColWidths(this.state.headers);
+        // let $frozen = $('#' + this.props.id + ".sortable a").slice(0, this.state.freezeColIndex);
+        // freezeColumns($frozen, widths, this.props.container);
+        // updateTableWidth(widths, this.props.container);
     }
     
     render() {

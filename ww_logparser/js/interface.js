@@ -1,33 +1,62 @@
-function computeColWidths(headers) {
+function computeColWidths(headers, container) {    
     let colWidths = {};
     let widths;
-    // console.log(headers);
-    Object.keys(headers).filter(field => {return headers[field].visible;}).map(field => {
-        widths = [];
-        $("td[data-field='" + field + "']").each(function() {
-            widths.push($(this).text().length);
+    let c = '#' + container;
+    let tableWidth = 0;
+    console.log(headers);
+    
+    // Object.keys(headers).filter(field => {return headers[field].visible;}).map(field => {
+    //     widths = [];
+    //     $("td[data-field='" + field + "']").each(function() {
+    //         widths.push($(this).text().length);
+    //     });
+    //     $("th[data-field='" + field + "']").each(function() {
+    //         widths.push($(this).find('a.header').first().text().length);
+    //     });
+    //     colWidths[field] = Math.min(400, 12*Math.max(...widths)) + 50;
+    // });
+    Object.keys(headers).map(field => {
+        tableWidth += 400;
+        $(c + ' th[data-field="' + field + '"]').each(function() {
+            $(this).css('width', 400);
         });
-        $("th[data-field='" + field + "']").each(function() {
-            widths.push($(this).find('a.header').first().text().length);
+        $(c + ' td[data-field="' + field + '"]').each(function() {
+            $(this).css('width', 400);
         });
-        colWidths[field] = Math.min(400, 10*Math.max(...widths)) + 30;
     });
+    
+    $(c + ' table').css('width', tableWidth + 20);
+    
+    let width;
+    let currWidth;
+    Object.keys(headers).filter(field => {return headers[field].visible;}).map(field => {
+        width = 0;
+        $(c + " td[data-field='" + field + "']").each(function() {
+            if ($(this).find('span').length) {
+                currWidth = $(this).find('span')[0].offsetWidth;
+                width = currWidth > width ? currWidth : width;
+            }
+        });
+        if ($(c + " th[data-field='" + field + "'] a").length) {
+            currWidth = $(c + " th[data-field='" + field + "'] a")[0].offsetWidth;
+            width = currWidth > width ? currWidth : width;
+        }
+        console.log(field + ' ' + width);
+        // colWidths[field] = Math.min(400, Math.max(...widths)) + 50;
+        colWidths[field] = field.match(/count|rank/i) ? Math.min(400, width) : Math.min(400, width) + 40;
+    });
+    console.log(colWidths);            
     return colWidths;
 }
 
 function updateTableWidth(colWidths, container) {
     let tableWidth = 0;
     let c = '#' + container;
-    // console.log('updating ' + c);
-    
+        
     Object.keys(colWidths).map(field => {
         tableWidth += colWidths[field];
-        $(c + ' th[data-field="' + field + '"]').each(function() {
-            $(this).css('width', colWidths[$(this).attr('data-field')]);
-        });
-    });
-    
-    // $(c).css('width', tableWidth + 50);    
+        $(c + ' th[data-field="' + field + '"]').css('width', colWidths[field]);
+    });    
     $(c + ' table').css('width', tableWidth + 20);
     $(c + ' tbody').css('margin-top', parseInt($('th').first().css('height')));
 }

@@ -59,8 +59,8 @@ class Header extends React.Component {
         return(
             <thead>
                 <tr id="header_row" className="table-secondary">
-                    <th key='count' data-field='count' className='col_count'>Count</th>
-                    <th key='rank' data-field='rank' className='col_rank'>Rank</th>                    
+                    <th key='count' data-field='count' className='col_count'><a>Count</a></th>
+                    <th key='rank' data-field='rank' className='col_rank'><a>Rank</a></th>                    
                     {Object.keys(this.props.headers).filter(field => field != 'rank' && field != 'count').map((field, i) => {
                         let groupby = this.props.groupfield == field ? 'groupby' : '';
                         return (
@@ -89,7 +89,8 @@ function TableRow(props) {
             {Object.keys(props.headers).filter(field => field != 'rank' && field != 'count').map((field, index) => {
                 if (field != 'sid') {           
                     return (
-                        <td key={field} className={'col_' + field} data-field={field}>{props.row[field]}
+                        <td key={field} className={'col_' + field} data-field={field}>
+                            <span>{props.row[field]}</span>
                         </td>
                     )
                 } else {
@@ -160,8 +161,20 @@ class TbodyBase extends React.Component {
         } else {
             $(container + ' div.expandcollapse').hide();
         }
+        
+        Object.keys(this.props.headers).map(field => {
+            if ('visible' in this.props.headers[field]) {
+                if(this.props.headers[field].visible) {
+                    $('#' + this.props.container + ' th[data-field="' + field + '"],' + '#' + this.props.container + ' td[data-field="' + field + '"]').show();
+                } else {
+                    $('#' + this.props.container + ' th[data-field="' + field + '"],' + '#' + this.props.container + ' td[data-field="' + field + '"]').hide();
+                }
+            }
+        });
+        
         console.log('updating table width');
-        let widths = computeColWidths(this.props.headers);
+        console.log(this.props.container);
+        let widths = computeColWidths(this.props.headers, this.props.container);
         let colIndex = $('#' + this.props.columnlist + ".sortable a").index($('#' + this.props.columnlist + ' .freezeCol').first()[0]);
         let $frozen = $('#' + this.props.columnlist + ".sortable a").slice(0, colIndex);        
         freezeColumns($frozen, widths, this.props.container);
@@ -264,15 +277,19 @@ class Table extends React.Component {
             hwset = row.hwset;
             result = row.result;
             time = row.time;
+            utime = row.utime;
             answer = row.answer;
             prob = row.prob;
             score = row.score;
             
             let processed_ans = answer;
             if (quizMode) {
-                if (!answer.match(/submit/ig) || answer.match(/no answer entered/ig)) {
+                if (!answer.match(/submit/ig) || (answer.match(/no answer entered|no_answer/ig) && score == '0')) {
                     continue;
                 }
+                // if (!answer.match(/submit/ig)) {
+                //     continue;
+                // }
                 processed_ans = answer.replace(/\[submit\] */ig, '');
             }
 
@@ -299,9 +316,14 @@ class Table extends React.Component {
                 }
             }
         }
-        console.log(finalAnswers);
-        console.log(problems);
-        let headers = {count:{}, rank:{}, index:{}, sid:{}};
+        // console.log(finalAnswers);
+        // console.log(problems);
+        let headers = {
+            count:{sort:0, visible:true}, 
+            rank:{sort:0, visible:true}, 
+            index:{sort:0, visible:true}, 
+            sid:{sort:0, visible:true}
+        };
         problems.map(field => {
             headers['Problem ' + field.toString()] = {sort:0, visible:true};
         });
@@ -314,7 +336,7 @@ class Table extends React.Component {
                 try {
                     datum['Problem ' + prob] = item[prob][quizDisplayMode];
                 } catch(e) {
-                    console.log(datum);
+                    datum['Problem ' + prob] = quizDisplayMode == 'score' ? 0 : 'EMPTY';
                 }
             });
             return datum;
@@ -357,13 +379,14 @@ class Table extends React.Component {
         
         if(groupField != 'index') {
             let unique = values.filter((value, index, self) => { return self.indexOf(value) === index; });
+            console.log(unique);
             let order = headers[groupField].sort == 0 ? 1 : headers[groupField].sort;
             headers[groupField].sort = order;
             uniqueSorted = unique.sort((a, b) => {                
                 if (!(isNaN(parseFloat(a)) || isNaN(parseFloat(b)))) {
                     return order*(parseFloat(a) - parseFloat(b));
                 } else {
-                    return order*a.localeCompare(b); 
+                    return order*(a.toString().localeCompare(b.toString())); 
                 }
             });            
         }
@@ -393,7 +416,11 @@ class Table extends React.Component {
         let countedGroups = updatedGroups.map(group => {            
             return group.map((datum, rank, group) => {
                 let counted = {...datum};
-                counted['rank'] = rank;
+                if(groupField != 'index') {
+                    counted['rank'] = rank;
+                } else {
+                    counted['rank'] = '';
+                }
                 counted['count'] = group.length;
                 return counted;
             });
