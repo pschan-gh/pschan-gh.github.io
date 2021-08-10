@@ -320,7 +320,6 @@ function print(promise) {
     $('#print_content').find('.collapsea').hide();
     $('#print_content').find('.collapse').show();
     $('#print_content').find('.hidden_collapse').show();
-
 }
 
 function removeTypeset() { // i.e. Show LaTeX source

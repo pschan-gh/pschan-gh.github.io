@@ -9,8 +9,8 @@
 
     <xsl:strip-space elements="xh:* lv:title lv:*"/>
     <xsl:preserve-space elements="xh:textarea xh:pre lv:paragraphs"/>
-    <xsl:output method="xml" />
-
+    <xsl:output method="xml" omit-xml-declaration="yes" />
+    
     <xsl:template match="/">
         <xsl:apply-templates select="lv:document" />
     </xsl:template>
@@ -172,7 +172,8 @@
     <xsl:template match="lv:course|lv:chapter|lv:section|lv:subsection|lv:subsubsection">
         <xsl:text>&#xa;</xsl:text>
         <xsl:text>@</xsl:text>
-        <xsl:value-of select="@wbtag"/>
+        <!-- <xsl:value-of select="@wbtag"/> -->
+        <xsl:value-of select="local-name()"/>
         <xsl:text>{</xsl:text>
         <xsl:apply-templates select="./lv:title/*|./lv:title/text()" />
         <xsl:text>}</xsl:text>

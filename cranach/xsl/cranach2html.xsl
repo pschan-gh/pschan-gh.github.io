@@ -177,9 +177,9 @@
 		<xsl:param name="chapter" select="@chapter"/>
 		<xsl:param name="chapter_type" select="@chapter_type"/>
 		<xsl:param name="chapter_title" select="@chapter_title"/>
-		<xsl:variable name="section">
+		<!-- <xsl:variable name="section">
 			<xsl:number level="any" count="lv:chapter//lv:section" from="lv:chapter"/>
-		</xsl:variable>
+		</xsl:variable> -->
 		<xsl:apply-templates select="lv:subsection|lv:subsubsection|lv:slides">
 			<xsl:with-param name="course" select="@course"/>
 			<xsl:with-param name="chapter" select="@chapter"/>
@@ -623,9 +623,9 @@
 							<xsl:apply-templates select="lv:title"/>
 						</xsl:if>
                         <xsl:if test="lv:of-title">
-							<xsl:value-of select="'&#160;'"/>
+							<!-- <xsl:value-of select="'&#160;'"/> -->
 							<xsl:if test="not(lv:of-title/@hidden = 'true')">
-								<span wbtag="skip">of </span>
+								<span wbtag="skip"> of </span>
 								<xsl:apply-templates select="lv:of-title">
 									<xsl:with-param name="of" select="@of"/>
 								</xsl:apply-templates>
