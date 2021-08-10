@@ -631,7 +631,7 @@
                 </xsl:choose>
             </xsl:variable>             
             <xsl:choose>
-                <xsl:when test="@type='Proof' or @type='Solution'">
+                <xsl:when test="@type='Proof'">
                     <xsl:variable name="of">
                         <xsl:choose>
                             <xsl:when test="@of">
