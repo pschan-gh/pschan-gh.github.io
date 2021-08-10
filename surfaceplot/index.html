@@ -296,15 +296,17 @@ var params = ['zscale', 'domain', 'numsamples', 'autozscale', 'showaxes', 'cente
 
 if (urlParams.has('data')) {
     data = JSON.parse(urlParams.get('data'));
-    console.log(data);
-    params.forEach(function(param) {
-        if (data[param]) {
-            $('#' + param).val(data[param]);
-            console.log($('#' + param)[0]);
-        }
-    });
+    console.log(data);    
     rotationMatrix = data['rotationMatrix'];
+} else {
+    data = {numsamples:40, zscale:1.5};
 }
+params.forEach(function(param) {
+    if (data[param]) {
+        $('#' + param).val(data[param]);
+        console.log($('#' + param)[0]);
+    }
+});
 
 init_settings(rotationMatrix, dimensions);
 var surfacePlot = new SurfacePlot(document.getElementById("surfacePlotDiv"));
@@ -325,8 +327,18 @@ if (urlParams.has('data')) {
         add_equation(surfacePlot, eqstruct, eq.isParam);
     });
 } else {
-    add_equation(surfacePlot, {str:'1 - y+x*y - x*y^2', color:'', alpha:null, isParam:false},  false);
-    add_equation(surfacePlot, {str:'s*sin(t),s*cos(t),20*(s + t)', domain:{s:'-5,5', t:'-2,2'}, isParam:true, color:'', alpha:null}, true);
+    let eqstruct = {
+        str : 'cos(s)*(4 + 2cos(t)cos(s)+sin(t)sin(s)),sin(s)*(4 + 2cos(t)cos(s)+sin(t)sin(s)), -2cos(t)sin(s)+sin(t)cos(s)',
+        isParam : true,
+	domain:{s:'0,7', t:'0,7'}, 
+	color:"6db9d9",
+	alpha:null
+    }
+    console.log(eqstruct);
+    add_equation(surfacePlot, eqstruct, true);
+//    add_equation(surfacePlot, {str:'1 - y+x*y - x*y^2', color:'', alpha:null, isParam:false},  false);
+//add_equation(surfacePlot, {str:'cos(s)*(4 + 2cos(t)cos(s)+sin(t)sin(s)),sin(s)*(4 + 2cos(t)cos(s)+sin(t)sin(s)), -2cos(t)sin(s)+sin(t)cos(s)', domain:{s:'0,7', t:'0,7'}, isParam:true, color:'', alpha:null, numsamples:'40', zmin:'-10', zmax:'10'}, true);
+//    add_equation(surfacePlot, {str:'s*sin(t),s*cos(t),20*(s + t)', domain:{s:'-5,5', t:'-2,2'}, isParam:true, color:'', alpha:null}, true);
 }
 
 var eqStructs = new eqStructs();
