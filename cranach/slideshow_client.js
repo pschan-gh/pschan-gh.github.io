@@ -9,7 +9,6 @@ function annotate() {
         $('.output.present:visible').first().addClass('annotate');
         $('.carousel').attr('data-bs-touch', "false");
     }
-    // let slide = $('div.slide[slide="' + slideIndex + '"]')[0];
     let slide = $('.output.present:visible div.slide.active')[0];
     updateCanvas(slide);
     
@@ -110,8 +109,8 @@ function addCanvas(slide) {
 function renderSlide(slide) {
 
     $(slide).find('a.collapsea').attr('data-bs-toggle', 'collapse');
-    $(slide).find('.hidden_collapse').removeClass('hidden_collapse').addClass('collapse');    
-
+    $(slide).find('.hidden_collapse').removeClass('hidden_collapse').addClass('collapse');
+    
     $(slide).find('img:not([src])').each(function() {
         imagePostprocess(this);
     });
@@ -124,20 +123,19 @@ function renderSlide(slide) {
     // });
 
     if ($(slide).hasClass("tex2jax_ignore")) {
-        $(slide).removeClass("tex2jax_ignore");        
+        $(slide).removeClass("tex2jax_ignore");
+        // console.log('typesetting slide ' + $(slide).attr('slide'));
         typeset([slide]);
     }    
 }
 
 
 function batchRender(slide) {
-    
-    
-    $('.slide').not('.selected').find('a.collapsea').removeAttr('data-bs-toggle');    
-    $(slide).nextAll('.slide.tex2jax_ignore:lt(1)').each(function() {
+        
+    $(slide).nextAll('div.slide.tex2jax_ignore:lt(1)').each(function() {
         renderSlide(this);        
     });
-    $(slide).prevAll('.slide.tex2jax_ignore:lt(1)').each(function() {
+    $(slide).prevAll('div.slide.tex2jax_ignore:lt(1)').each(function() {
         renderSlide(this);        
     });
     renderSlide(slide);
@@ -263,11 +261,14 @@ function updateCarousel(slideNum) {
     
 }
 
-function showDivs(n, cranach) {
+function showDivs(slide, cranach) {
     
-    $('#right_half').addClass('slide');
+    $('#right_half').addClass('slide').addClass('present');
     
     // $('#output div.slide').addClass('carousel-item');
+    
+    console.log(slide);
+    let $slide = $(slide);
     
     let $slides = $('#output > .slide');
     
@@ -275,19 +276,14 @@ function showDivs(n, cranach) {
         return 0;
     }
 
-    let index = ((parseInt(n) - 1 + $slides.length) % $slides.length) + 1;
-    // index = index == 0 ? $slides.length : index;    
-    
-    let slideNum = parseInt(n);
-    
+    let slideNum = $slide.attr('slide');    
     let prevNum = ((slideNum - 2 + $slides.length) % $slides.length) + 1;
     let nextNum = slideNum + 1 % $slides.length;
 
-    let $slide = $('.output.present:visible div.slide[slide="' + index + '"]');
-    
+    // let $slide = $('.output.present:visible div.slide[slide="' + index + '"]');
+        
     $('#carousel.present').removeClass('carousel-inner');
     $('#carousel .slide').removeClass('carousel-item');
-    // removeTypeset(document.getElementById('output'));
     if ($slides.length > 50) {
         $('#carousel .slide').not('.slide[slide="' + slideNum + '"]').remove();
         $('#output .slide[slide="' + slideNum + '"]').first().clone().appendTo($('#carousel'));;
@@ -296,11 +292,10 @@ function showDivs(n, cranach) {
     } else {
         $('#carousel').html($('#output').html());
     }
-    $('#carousel .slide').removeClass('hidden').addClass('carousel-item').addClass('tex2jax_ignore');
-    $('#carousel .slide').find('.tex2jax_ignore').removeClass('tex2jax_ignore');
-    $('#carousel .slide').find('.latexSource').removeClass('latexSource');
-    $slide = $('#carousel div.slide[slide="' + index + '"]');
-    updateCarousel(index);
+    $('#carousel div.slide').removeClass('hidden').addClass('carousel-item').addClass('tex2jax_ignore');
+    $slide = $('#carousel div.slide[slide="' + slideNum + '"]');
+    console.log($slide);
+    updateCarousel(slideNum);
     $slide.addClass('active');
     
     // $('#carousel.present').addClass('carousel-inner');
@@ -308,8 +303,8 @@ function showDivs(n, cranach) {
     batchRender($slide[0]);
     
     adjustHeight($slide[0]);
-    $('#right_half .slide_number button').text('Slide ' + index);
-    $('#right_half .slide_number button').attr('slide', index);
+    $('#right_half .slide_number button').text('Slide ' + slideNum);
+    $('#right_half .slide_number button').attr('slide', slideNum);
     
     $('.lcref-output').remove();
 }
@@ -335,7 +330,7 @@ function print(promise) {
         $('#print_content').find('.title_box').css('font-size', '0.5em');
         $('#print_content').find('.title_box').css('padding-bottom', '1em');
         $('#print_content').find('.title_box').find('h3').css('color', '#888');
-        $('#print_content').append($('#s' + slideIndex).html());
+        $('#print_content').append($('.output:visible div.slide.selected').html());
     }
 
     $('#print').show();
@@ -366,7 +361,7 @@ function print(promise) {
 
 function removeTypeset(el) { // i.e. Show LaTeX source
 
-        console.log('removeTypset called ' + slideIndex);
+        console.log('removeTypset called ' + el.attr('slide'));
         // let jax = MathJax.getAllJax();
         let jax = MathJax.startup.document.getMathItemsWithin(el);
         console.log(jax);
@@ -397,8 +392,7 @@ function renderTexSource(slide) {
 
 function showTexSource(showSource, editor) {    
     
-    // let $slide = $('.output:visible div.slide[slide="' + slideIndex + '"]');
-    let $slide = $('#output div.slide[slide="' + slideIndex + '"]');
+    let $slide = $('#output div.slide.selected').length > 0 ? $('#output div.slide.selected') : $('#output div.slide').first();
     
     $slide.attr('contentEditable', showSource);
     $slide.find('.slide_content *, .paragraphs').css('border', '').css('padding', '');
@@ -409,25 +403,30 @@ function showTexSource(showSource, editor) {
             $('#output').css('display', '');            
             $('#output div.slide').css('display', '');
             $('#carousel').css('display', '');
-            $('#carousel div.slide[slide="' + slideIndex + '"]').html($slide.html());
+            $('#carousel div.slide.selected').html($slide.html());
         }
-        MathJax.startup.document.state(0);
-        MathJax.texReset();
+        // MathJax.startup.document.state(0);
+        // MathJax.texReset();
 
         renderTexSource($slide[0]);
-        if ($('#carousel div.slide[slide="' + slideIndex + '"]').length) {
-            renderTexSource($('#carousel div.slide[slide="' + slideIndex + '"]')[0]);
-        }
+        $('#carousel div.slide[slide="' + $slide.attr('slide') + '"]').each(function() {
+            renderTexSource(this);
+        });
         
         editor.container.style.pointerEvents="auto";
         editor.container.style.opacity = 1; // or use svg filter to make it gray
         editor.renderer.setStyle("disabled", false);
         editor.focus();
         
-        adjustHeight($('#carousel div.slide[slide="' + slideIndex + '"]')[0]);
+        $('#carousel div.slide.selected').each(function() {
+            adjustHeight(this);
+        });
+        
+        $('#output div.slide').addClass('tex2jax_ignore');
     } else {
         if ($('.carousel-item').length) {
             $('#output div.slide').hide();
+            $('#output div.slide').removeClass('tex2jax_ignore');
             $('#output').show();
             $('#carousel').hide();
             $slide.show();
@@ -510,10 +509,13 @@ function destroyClickedElement(event) {
     document.body.removeChild(event.target);
 }
 
-function collapseToggle(slideIndex) {
+function collapseToggle(slideNum) {
 
-    let $slide = $('#s' + slideIndex);
+    let $slide = $('.output:visible div.slide[slide="' + slideNum + '"]');
 
+    $slide.find('a.collapsea').attr('data-bs-toggle', 'collapse');
+    $slide.find('.hidden_collapse').removeClass('hidden_collapse').addClass('collapse');
+    
     if ($slide.hasClass('collapsed')) {
         $slide.removeClass('collapsed');
         $slide.find('.collapse').collapse('show');        
@@ -540,7 +542,7 @@ function focusOn($item, text) {
     }
     if($('#right_half').hasClass('present')) {
         baseRenderer.then(cranach => {
-            showDivs(slideNum, cranach);
+            showDivs($slide[0], cranach);
         });
     }
 }
@@ -549,7 +551,7 @@ function jumpToSlide($output, $slide) {
     $output.scrollTo($slide);
     if($('#right_half').hasClass('present')) {
         baseRenderer.then(cranach => {
-            showDivs($slide.attr('slide'), cranach);
+            showDivs($slide[0], cranach);
         });
     }
 }
@@ -702,7 +704,6 @@ function updateTitle(slide) {
 
     $('#info_half div.keywords[slide!="all"]').hide();
     $('#info_half div.keywords[chapter="' + chapter + '"][slide="' + index + '"]').show();
-    // typeset([document.getElementById('left_half')]);
 
 }
 

@@ -1,8 +1,8 @@
 function scrollToLine(editor, slide) {
     // var slideLine = Array();
     lines = editor.getSession().doc.getAllLines();
-    var isComment = false;
-    var slideCount = 0;
+    let isComment = false;
+    let slideCount = 0;
     for (var i = 0; i < lines.length; i++) {
         if (lines[i].match(/\<\!\-\-/g)) {
             isComment = true;
@@ -151,8 +151,7 @@ function updateSlideClickEvent(cranach) {
     $('.slide').click(function() {
         
         // console.log('SLIDE CLICKED');        
-        $('.slide').removeClass('selected');
-        $(this).addClass('selected');
+        
         var slideElement = this;
         
         if (typeof editor !== typeof undefined) {
@@ -176,7 +175,7 @@ function updateSlideClickEvent(cranach) {
             // iFrameResize({ log: true }, this);
         });
 
-        if ($(this).attr('slide') != slideIndex) {
+        if (!$(this).hasClass('selected')) {
             if (cranach.attr['editMode']) {
                 $('#edit_button').click();
             }
@@ -186,8 +185,7 @@ function updateSlideClickEvent(cranach) {
             var course = $(this).attr('course');
             var chapterType = $(this).attr('chapter_type');
             var chapter = $(this).attr('chapter');
-            slideIndex = +$(this).attr('slide');
-            var slide = slideIndex;
+            var slide = +$(this).attr('slide');
             var statements = new Array();
 
             updateTitle(slideElement);
@@ -215,8 +213,9 @@ function updateSlideClickEvent(cranach) {
             } else {
                 $('#uncollapse_button').text('Collapse');
             }
-
-        }
+            $('#output div.slide').removeClass('selected');
+            $(this).addClass('selected');
+        }        
     });
 
 }
@@ -304,12 +303,12 @@ function updateScrollEvent(cranach) {
     $('#output').off();
     
     // https://stackoverflow.com/questions/4620906/how-do-i-know-when-ive-stopped-scrolling
-    $('#output:visible').on('scroll', function() {
+    $('.output:visible').on('scroll', function() {
         if(timer !== null) {
             clearTimeout(timer);
         }
         timer = window.setTimeout(function() {
-            $('#output:visible .slide.tex2jax_ignore').each(function() {
+            $('.output:visible .slide.tex2jax_ignore').each(function() {
                 if (isElementInViewport(this)) {
                     batchRender(this);
                 };
@@ -454,11 +453,9 @@ function postprocess(cranach) {
     updateScrollEvent(cranach);
     updateToc(cranach);
     updateKeywords();
-    // updateSlideProgress(cranach.slideIndex, true);
     updateSlideSelector(cranach);
-    updateTitle($('#s' + cranach.slideIndex)[0]);    
-    
-    
+    updateTitle($('.output:visible div.slide.selected')[0] || $('.output:visible div.slide:lt(1)')[0]);    
+        
     console.log(cranach);        
     
     $(function() {
@@ -472,7 +469,7 @@ function postprocess(cranach) {
             return MathJax.tex2chtmlPromise(cranach.macrosString);
             // return MathJax.tex2svgPromise(cranach.macrosString);
         }).then(() => {
-            $('#output:visible .slide').each(function() {
+            $('.output:visible .slide').each(function() {
                 if (isElementInViewport(this)) {
                     batchRender(this);                    
                 }
@@ -590,7 +587,12 @@ function postprocess(cranach) {
             $('#right_half .slide_number button').text('Slide ' + $('.carousel-item.active').attr('slide'));
             $('#right_half .slide_number button').attr('slide', $('.carousel-item.active').attr('slide'));
                         
-            let $slide = $('.output.present:visible div.slide.active').first();            
+            let $slide = $('.output.present:visible div.slide.active').first();
+            let slideNum = parseInt($slide.attr('slide'));
+            
+            $('#output .slide.selected').removeClass('selected');
+            $('#output div.slide[slide="' + slideNum + '"]').addClass('selected');
+            
             batchRender($slide[0]);
             adjustHeight($slide[0]);
             updateCanvas($slide[0]);
@@ -603,8 +605,7 @@ function postprocess(cranach) {
             // });
             
             let $slides = $('#output > .slide');
-            let slideNum = parseInt($slide.attr('slide'));
-            slideIndex = slideNum;
+            
             let prevNum = ((slideNum - 2 + $slides.length) % $slides.length) + 1;
             let nextNum = slideNum + 1 % $slides.length;
             

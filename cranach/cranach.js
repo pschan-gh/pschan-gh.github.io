@@ -98,7 +98,16 @@ function Cranach(url) {
 
     this.setup = function(options) {
         this.output = document.getElementById(this.attr['outputID']);
-        var domparser = new DOMParser();
+        var domparser = new DOMParser();        
+        
+        if(options) {
+            for (let key in options){
+                if(options.hasOwnProperty(key)){
+                    this.attr[key] = options[key];
+                }
+            }
+        }
+        
         if (this.params) {
             var params = this.params;
             var urlParams = new URLSearchParams(params[1]);
@@ -138,9 +147,7 @@ function Cranach(url) {
             }
 
             if (urlParams.has('slide')) {
-                // this.attr['slideIndex'] = urlParams.get('slide');;
                 this.attr['selectedSlide'] = urlParams.get('slide');
-                // console.log('SLIDE: ' + this.attr['selectedSlide']);
             }
             if (urlParams.has('present')) {
                 this.attr['present'] = true;
@@ -162,17 +169,6 @@ function Cranach(url) {
                 console.log(this.bare);
             }
         }
-
-        if(options) {
-            for (let key in options){
-                if(options.hasOwnProperty(key)){
-                    this.attr[key] = options[key];
-                }
-            }
-        }
-
-        // console.log(this.attr);
-
 
         var el = this;
 
