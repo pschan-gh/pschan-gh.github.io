@@ -154,7 +154,6 @@ function updateSlideClickEvent(cranach) {
         $('.slide').removeClass('selected');
         $(this).addClass('selected');
         var slideElement = this;
-
         
         if (typeof editor !== typeof undefined) {
             scrollToLine(editor, $(slideElement).attr('canon_num'));
@@ -305,12 +304,12 @@ function updateScrollEvent(cranach) {
     $('#output').off();
     
     // https://stackoverflow.com/questions/4620906/how-do-i-know-when-ive-stopped-scrolling
-    $('#output').on('scroll', function() {
+    $('#output:visible').on('scroll', function() {
         if(timer !== null) {
             clearTimeout(timer);
         }
         timer = window.setTimeout(function() {
-            $('.slide.tex2jax_ignore').each(function() {
+            $('#output:visible .slide.tex2jax_ignore').each(function() {
                 if (isElementInViewport(this)) {
                     batchRender(this);
                 };
@@ -461,24 +460,24 @@ function postprocess(cranach) {
     
     
     console.log(cranach);        
-
-    MathJax.startup.promise.then(() => {
-        // MathJax.typesetClear();
-        MathJax.startup.document.state(0);
-        MathJax.texReset();
-        return;
-    }).then(() => {
-        // console.log(cranach.macrosString);
-        return MathJax.tex2chtmlPromise(cranach.macrosString);
-        // return MathJax.tex2svgPromise(cranach.macrosString);
-    }).then(() => {
-        $('.slide').each(function() {
-            if (isElementInViewport(this)) {
-                batchRender(this);                    
-            }
+    
+    $(function() {
+        MathJax.startup.promise.then(() => {
+            // MathJax.typesetClear();
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            return;
+        }).then(() => {
+            // console.log(cranach.macrosString);
+            return MathJax.tex2chtmlPromise(cranach.macrosString);
+            // return MathJax.tex2svgPromise(cranach.macrosString);
+        }).then(() => {
+            $('#output:visible .slide').each(function() {
+                if (isElementInViewport(this)) {
+                    batchRender(this);                    
+                }
+            });
         });
-    });
-    $(function() {        
 
         $('#output').find('b:not([text]), h5:not([text]), h4:not([text]), h3:not([text]), h2:not([text]), h1:not([text])').each(function() {
             var text = $(this).text();
@@ -590,19 +589,51 @@ function postprocess(cranach) {
         $('.carousel').on('slid.bs.carousel', function () {
             $('#right_half .slide_number button').text('Slide ' + $('.carousel-item.active').attr('slide'));
             $('#right_half .slide_number button').attr('slide', $('.carousel-item.active').attr('slide'));
-            $('.carousel').carousel('pause');
-            let $slide = $('#output div.slide.active');
-            $slide.click();
-            
+                        
+            let $slide = $('.output.present:visible div.slide.active').first();            
             batchRender($slide[0]);
-            adjustHeight();
+            adjustHeight($slide[0]);
             updateCanvas($slide[0]);
+            
+            // $(slide).nextAll('.slide:lt(1)').each(function() {
+            //     $(this).addClass('carousel-item');
+            // });
+            // $(slide).prevAll('.slide:lt(1)').each(function() {
+            //     $(this).addClass('carousel-item');
+            // });
+            
+            let $slides = $('#output > .slide');
+            let slideNum = parseInt($slide.attr('slide'));
+            slideIndex = slideNum;
+            let prevNum = ((slideNum - 2 + $slides.length) % $slides.length) + 1;
+            let nextNum = slideNum + 1 % $slides.length;
+            
+            $('#carousel.present').removeClass('carousel-inner');
+            
+            // updateCarousel(parseInt(slideNum));
+            if ($slides.length > 50) {
+                $('#carousel .slide').removeClass('carousel-item');
+                $('#carousel .slide').not('.slide[slide="' + slideNum + '"]').remove();
+                if ($('#carousel .slide[slide="' + prevNum + '"]').length == 0) {
+                    $('#carousel').prepend($('#output .slide[slide="' + prevNum + '"]').first().clone());
+                }
+                if ($('#carousel .slide[slide="' + nextNum + '"]').length == 0) {
+                    $('#output .slide[slide="' + nextNum + '"]').first().clone().appendTo($('#carousel'));;        
+                }
+            }
+            $('#carousel .slide').removeClass('hidden').addClass('carousel-item');            
+            updateCarousel(parseInt(slideNum));
+            // $('#carousel.present').addClass('carousel-inner');
+            $('.carousel').carousel('pause');
+            
         })
-        $('#output').on('shown.bs.collapse', 'div.collapse', function() {
-            adjustHeight(); 
+        $('.carousel').on('shown.bs.collapse', 'div.collapse', function() {
+            let $slide = $('.output.present:visible div.slide.active');
+            adjustHeight($slide[0]); 
         });
-        $('#output').on('hidden.bs.collapse', 'div.collapse', function() {
-            adjustHeight(); 
+        $('.carousel').on('hidden.bs.collapse', 'div.collapse', function() {
+            let $slide = $('.output.present:visible div.slide.active');
+            adjustHeight($slide[0]); 
         });
         
         $('input.lecture_mode').change(function() {
