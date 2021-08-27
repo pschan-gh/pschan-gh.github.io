@@ -22,7 +22,7 @@ function renderTexSource(slide) {
     $(slide).find('.latexSource').remove();
 }
 
-function showTexSource(showSource, editor) {    
+function inlineEdit(showSource, editor) {    
     let $slide = $('#output div.slide.selected').length > 0 ? $('#output div.slide.selected').first() : $('#output div.slide').first();
     
     $slide.attr('contentEditable', showSource);
@@ -149,6 +149,7 @@ function renderSlide(slide) {
     if ($(slide).hasClass("tex2jax_ignore")) {
         $(slide).removeClass("tex2jax_ignore");        
         typeset([slide]).then(() => {
+            // renderScriptMath(slide);            
             adjustHeight(slide);
         });
     }    
@@ -178,6 +179,28 @@ function adjustHeight(slide) {
     } else {
         $output.css('display', '');
     }
+}
+
+function updateSlideContent(slide) {
+    if ( $(slide).hasClass('tex2jax_ignore') ) {
+        batchRender(slide);
+    }
+    $(slide).find('iframe:not([src])').each(function() {
+        $(this).attr('src', $(this).attr('data-src')).show();
+        $(this).iFrameResize({checkOrigin:false});
+        // iFrameResize({ log: true }, slide);
+    });
+    
+    if ($(slide).find('a.collapsea[aria-expanded="false"]').length) {
+		$('#uncollapse_button').text('Uncollapse');
+	} else {
+		$('#uncollapse_button').text('Collapse');
+	}
+	$('#uncollapse_button').off();
+	$('#uncollapse_button').click(function() {
+		collapseToggle(slideNum);
+	});
+    $(slide).find('.loading_icon').hide();    
 }
 
 function showStep(el) {
@@ -308,7 +331,6 @@ function collapseToggle(slideNum, forced = '') {
     
     $slides.each(function() {
         let $slide = $(this);
-        console.log('collapseToggle ' + forced);
         if (forced == '') {
             if ($slide.hasClass('collapsed')) {
                 $slide.removeClass('collapsed');
@@ -337,28 +359,35 @@ function collapseToggle(slideNum, forced = '') {
 }
 
 function focusOn($item, text = '') {
-    let $slide = $item.closest('div.slide').first();
+    if ($item.closest('div.slide').length == 0) {
+        return 0;
+    }
+    let $slide = $item.closest('div.slide').first();    
     let slideNum = $slide.attr('slide');
     renderSlide($slide[0]);
-    collapseToggle(slideNum, 'show');
-    $slide.on('shown.bs.collapse', 'div.collapse', function() {
-        $item[0].scrollIntoView();     
-    });
-    $item[0].scrollIntoView();
     
+    $item[0].scrollIntoView();
     if (text != '') {
-        // $('.output:visible').scrollTo($item);
-        // $item[0].scrollIntoView();
-        $item.find('*[text=' + text.replace(/[^a-zA-Z0-9\-]/g, '') + ']').addClass('highlighted');
+        console.log(text.toLowerCase().replace(/[^a-z0-9]/g, ''));
+        // let $textItem = $item.find('*[text="' + text.replace(/[^a-zÀ-ÿ0-9\s\-\']/ig, '') + '"]').addClass('highlighted');
+        let $textItem = $item.find('*[text="' + text.toLowerCase().replace(/[^a-z0-9]/g, '') + '"]').addClass('highlighted');
+        if ($textItem.length) {
+            $textItem[0].scrollIntoView();
+            if ($textItem.first().closest('.collapse, .hidden_collapse').length > 0) {
+                collapseToggle(slideNum, 'show');
+                $slide.on('shown.bs.collapse', 'div.collapse', function() {
+                    $textItem[0].scrollIntoView();
+                });
+            }            
+        }
     } else {
         $item.addClass('highlighted');
+        $item[0].scrollIntoView();
     }
-    // else {
-    //     $('.output:visible').scrollTo($item, 150);
-    // }
+    
     if($('#right_half').hasClass('present')) {
         baseRenderer.then(cranach => {
-            showDivs($slide[0], cranach);
+            showSlide($slide[0], cranach);
         });
     }
 }
@@ -368,7 +397,7 @@ function jumpToSlide($output, $slide) {
     $slide[0].scrollIntoView();
     if($('#right_half').hasClass('present')) {
         baseRenderer.then(cranach => {
-            showDivs($slide[0], cranach);
+            showSlide($slide[0], cranach);
         });
     }
 }

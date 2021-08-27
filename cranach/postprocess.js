@@ -83,27 +83,6 @@ function updateTitle(slide) {
 
 }
 
-function updateSlideContent(slide) {
-    if ( $(slide).hasClass('tex2jax_ignore') ) {
-        batchRender(slide);
-    }
-    $(slide).find('iframe:not([src])').each(function() {
-        $(this).attr('src', $(this).attr('data-src')).show();
-        $(this).iFrameResize({checkOrigin:false});
-        // iFrameResize({ log: true }, slide);
-    });
-    
-    if ($(slide).find('a.collapsea[aria-expanded="false"]').length) {
-		$('#uncollapse_button').text('Uncollapse');
-	} else {
-		$('#uncollapse_button').text('Collapse');
-	}
-	$('#uncollapse_button').off();
-	$('#uncollapse_button').click(function() {
-		collapseToggle(slideNum);
-	});	  
-}
-
 function updateSlideInfo(slide, cranach) {
     
     let slideNum = +$(slide).attr('slide');
@@ -114,8 +93,7 @@ function updateSlideInfo(slide, cranach) {
 
     $('*[text]').removeClass('highlighted');
     $('button').removeClass('highlighted');
-    $('.item_button').css('background-color', '');
-    $(slide).find('.loading_icon').hide();
+    $('.item_button').css('background-color', '');    
 
     $('.separator').css('font-weight', 'normal');
     $('.separator').find('a').css('color', 'pink');
@@ -134,13 +112,11 @@ function updateSlideInfo(slide, cranach) {
         let url = cranach.attr['contentURL'];
         let urlSlide = cranach.attr['contentURL'] +  '&query=' + cranach.attr['query'] + '&slide=' + slideNum;
 
-        $('.url.share_text.slide_info').html(urlSlide);
-
         $('#url_open').attr('href', urlSlide);
+        $('.url.share_text').val(urlSlide);
+        $('.hyperlink.share_text').val('<a href="' + urlSlide + '" target="_blank" title="Course:' + course + '">' + 'Chapter ' + chapter + ' Slide ' + slideNum + '</a>');
 
-        $('.hyperlink.share_text.slide_info').html('<a href="' + urlSlide + '" target="_blank" title="Course:' + course + '">' + 'Chapter ' + chapter + ' Slide ' + slideNum + '</a>');
-
-        $('.hyperref.share_text.slide_info').html('\\href{' + urlSlide.replace('#', '\\#') + '}{Chapter ' + chapter + ' Slide ' + slideNum + '}');
+        $('.hyperref.share_text').val('\\href{' + urlSlide.replace('#', '\\#') + '}{Chapter ' + chapter + ' Slide ' + slideNum + '}');
 
         $('#slide_info').show();
 
@@ -155,8 +131,8 @@ function updateSlideInfo(slide, cranach) {
 }
 
 function updateSlideClickEvent(cranach) {
-    $('.slide').off();
-    $('.slide').click(function() {
+    $('.output .slide').off();
+    $('.output .slide').click(function() {
         updateSlideContent(this);
         updateSlideInfo(this, cranach);
     });
@@ -224,9 +200,11 @@ function updateToc(cranach) {
             highlight($(this).attr('serial'));
         });
 
-        let $slide = $('.slide[chapter="' + $(this).attr('chapter') + '"]').first();
+        let $slide = $('.output:visible .slide[chapter="' + $(this).attr('chapter') + '"]').first();
+        $(this).off();
         $(this).click(function() {
-            jumpToSlide($('#output'), $slide);
+            console.log($slide);
+            jumpToSlide($('.output:visible').first(), $slide);
         });
     });
     // console.log($('#info_statements')[0]);
@@ -393,24 +371,35 @@ function postprocess(cranach) {
     updateTitle($('.output:visible div.slide.selected')[0] || $('.output:visible div.slide:lt(1)')[0]);    
         
     $(function() {
-        MathJax.startup.promise.then(() => {
-            MathJax.startup.document.state(0);
-            MathJax.texReset();
-            return;
-        }).then(() => {
-            return MathJax.tex2chtmlPromise(cranach.macrosString);
-        }).then(() => {
-            $('.output:visible .slide').each(function() {
-                if (isElementInViewport(this)) {
-                    batchRender(this);                    
-                }
-            });
-        });
-
         $('#output').find('b:not([text]), h5:not([text]), h4:not([text]), h3:not([text]), h2:not([text]), h1:not([text])').each(function() {
             let text = $(this).text();
-            $(this).attr('text', text.replace(/[^a-zA-Z0-9À-ÿ\-]/g, ''));
+            // $(this).attr('text', text.replace(/[^a-z0-9À-ÿ\s\-\']/ig, ''));
+            $(this).attr('text', text.toLowerCase().replace(/[^a-z0-9]/ig, ''));
         });
+        
+        $('.output:visible .slide').each(function() {
+            if (isElementInViewport(this)) {
+                batchRender(this);                    
+            }
+        });
+        if (cranach.attr['selectedItem']) {
+            console.log('SELECTED ITEM: ' + cranach.attr['selectedItem']);
+            
+            $item = $('.item_title[serial="' + cranach.attr['selectedItem'] + '"], .item_title[md5="' + cranach.attr['selectedItem'] + '"], .label[name="' + cranach.attr['selectedItem'] + '"]').first().closest('.item_title');
+            focusOn($item);            
+        } else if (cranach.attr['selectedSection']) {
+            let $section = $('.section_title[serial="' + cranach.attr['selectedSection'] + '"], .label[name="' + cranach.attr['selectedSection'] + '"]').first().closest('.section_title').first();
+            let $selectedSlide = $section.closest('.slide');            
+            focusOn($section);
+        } else {
+            let $selectedSlide = $('.output:visible .slide[slide="' + cranach.attr['selectedSlide']  + '"], .label[name="' + cranach.attr['selectedSlide'] + '"]').first().closest('.slide');
+            focusOn($selectedSlide);
+        }        
+        
+        if (cranach.attr['selectedKeyword']) {
+            let $selectedSlide = $('.output:visible div.slide[slide="' + cranach.attr['selectedSlide']  + '"]');
+            focusOn($selectedSlide, cranach.attr['selectedKeyword'].replace(/\s/g, ''));
+        }                     
 
         // https://stackoverflow.com/questions/13202762/html-inside-twitter-bootstrap-popover
         $("[data-bs-toggle=popover]").popover({
@@ -433,43 +422,20 @@ function postprocess(cranach) {
                 });
             });
         });
-
-        if (cranach.attr['selectedItem']) {
-            console.log('SELECTED ITEM: ' + cranach.attr['selectedItem']);
-
-            $item = $('.item_title[serial="' + cranach.attr['selectedItem'] + '"], .item_title[md5="' + cranach.attr['selectedItem'] + '"], .label[name="' + cranach.attr['selectedItem'] + '"]').first().closest('.item_title');
-
-            // $('#output').scrollTo($item);
-            // $item.addClass('highlighted');
-            focusOn($item);            
-        } else if (cranach.attr['selectedSection']) {
-            let $section = $('.section_title[serial="' + cranach.attr['selectedSection'] + '"], .label[name="' + cranach.attr['selectedSection'] + '"]').first().closest('.section_title').first();
-            let $selectedSlide = $section.closest('.slide');            
-            // $('#output').scrollTo($section);
-            // $section.addClass('highlighted');
-            focusOn($section);
-        } else {
-            let $selectedSlide = $('.slide[slide="' + cranach.attr['selectedSlide']  + '"], .label[name="' + cranach.attr['selectedSlide'] + '"]').first().closest('.slide');
-            console.log('SCROLLING TO SLIDE ' + cranach.attr['selectedSlide']);
-            // $('#output').scrollTo($selectedSlide);
-            focusOn($selectedSlide);
-        }        
-
-        if (cranach.attr['selectedKeyword']) {
-            console.log('SELECTED KEYWORD: ' + cranach.attr['selectedKeyword']);
-            focusOn($selectedSlide, cranach.attr['selectedKeyword'].replace(/\s/g, ''));
-        }                
         
         if (cranach.attr['lectureMode']) {   
-			console.log('LECTURE MODE');     
-			$('[data-lecture-skip="true"]').addClass('lecture_skip');
-		}
+            console.log('LECTURE MODE');     
+            $('[data-lecture-skip="true"]').addClass('lecture_skip');
+        }
         
         $('#loading_icon').hide();
         $('#right_half .navbar').show();
         if (cranach.attr['present']) {
-        	console.log('PRESENT MODE');
-        	$('#present_button').click();
-        }
-    });    
+            console.log('PRESENT MODE');
+            $('#present_button').click();
+        }        
+        
+    });
+        
+    // });    
 }
