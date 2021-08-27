@@ -307,7 +307,7 @@
                                             <a id="xml_icon" class="menu_button dropdown-item" data-bs-toggle="tooltip" data-bs-placement="right" title="XML source">XML</a>
                                         </li>
                                         <!-- <li>
-                                            <a id="index_icon" class="menu_button dropdown-item" onclick="$('#wb_modal').modal('toggle');showIndex(baseRenderer);" data-bs-toggle="tooltip" data-bs-placement="right" title="Index source">Index</a>
+                                            <a id="index_icon" class="menu_button dropdown-item" onclick="$('#text_modal').modal('toggle');showIndex(baseRenderer);" data-bs-toggle="tooltip" data-bs-placement="right" title="Index source">Index</a>
                                         </li> -->
                                         <li>
                                             <a id="gh_commit" class="menu_button dropdown-item" onclick="initGhDialog(editor); $('#gh_modal').modal('toggle')" data-bs-toggle="tooltip" data-bs-placement="right" title="Index source">GitHub</a>
@@ -455,7 +455,7 @@
     </div>
     <script src="item_modal.js"></script>
     <!-- Wb code window -->
-    <div id="wb_modal" class="modal" tabindex="-1" role="dialog" aria-labelledby="wb_source" aria-hidden="true">
+    <div id="text_modal" class="modal" tabindex="-1" role="dialog" aria-labelledby="wb_source" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="dialog" style="height:80%">
             <div class="modal-content" style="height:100%">
                 <div class="modal-header">
@@ -472,7 +472,7 @@
                         <input class="btn btn-outline-info load-index" style="display:none" type="file" onchange="cranach.openIndex(this);" id="index-file-input"/>
                         <button class="btn btn-outline-info btn-sm render xml" ext="" onclick="baseRenderer.then(el => {el.attr['cranachDoc'] = new DOMParser().parseFromString($('#source_text').val(), 'application/xml');el.xmlDocQueryAndRender().then(el => {postprocess(el)})})">Render</button>
                         <button class="btn btn-outline-info btn-sm update-index" ext="" onclick="baseRenderer.then(el => {el.attr['indexDoc'] = new DOMParser().parseFromString($('#source_text').val(), 'application/xml');el.updateIndexAndRender();})">Update</button>
-                        <button class="btn btn-outline-info btn-sm save" ext="" onclick="saveText($('#source_text').val(), baseRenderer, $(this).attr('ext'));">Save</button>
+                        <button class="btn btn-outline-info btn-sm save" ext="" >Save</button>
                     </div>
                 </div>
             </div>

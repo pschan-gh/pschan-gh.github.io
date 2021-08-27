@@ -1,17 +1,16 @@
-function saveText(text, el, ext) {
+function saveText(text, renderer, ext) {
     var dummyLink = document.createElement('a');
     uriContent = "data:application/octet-stream," + encodeURIComponent(text);
-    console.log('URICONTENT');
-    console.log(uriContent);
     dummyLink.setAttribute('href', uriContent);
-
-    var filename = el.attr['localName'];
+    
+    var filename = renderer.attr['localName'];
+    console.log(filename);
     dummyLink.setAttribute('download', filename.replace(/\.[^\.]+$/, '') + '.' + ext);
     dummyLink.click();
 }
 
-function saveWb(editor, el) {
-    saveText(editor.session.getValue(), el, 'wb');
+function saveWb(editor, renderer) {
+    saveText(editor.session.getValue(), renderer, 'wb');
 }
 
 function collectNewcommands(str) {
@@ -42,8 +41,8 @@ function showLatex(el) {
     $('.modal-footer').find('.btn.save').show();
     
     var xsltProcessor = new XSLTProcessor();
-    $('#wb_modal').find('button.save').attr('ext', 'tex');
-    $('#wb_modal').find('.modal-title').html('LaTeX');
+    $('#text_modal button.save').attr('ext', 'tex');
+    $('#text_modal .modal-title').html('LaTeX');
     
     var docCranach = el.attr['cranachDoc'];
     var contentURLDir = el.attr['contentURLDir'];
@@ -69,10 +68,10 @@ function showLatex(el) {
         fragmentStr = new XMLSerializer().serializeToString(fragment);
         $('#source_text').val('');
         var latex = fragmentStr.replace(/\n\n\n*/g, "\n\n")
-        .replace(/\n(\ )*/g, "\n")
-        .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+        .replace(/\n(\ )*/g, "\n")            
         .replace(/\<!--.*?--\>/g, '')
         .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, '< ').replace(/&gt;/g, '>')
         .replace(/\\class{.*?}/g, '')
         .replace(/\\cssId{.*?}/g, '')
         .replace(/&ocirc/g, '\\^o');
@@ -92,8 +91,8 @@ function showXML(el) {
     $('.modal-footer').find('.btn.render').show();
     
     $('#source_text').val('');
-    $('#wb_modal').find('button.save').attr('ext', 'xml');
-    $('#wb_modal').find('.modal-title').text('Cranach XML');
+    $('#text_modal').find('button.save').attr('ext', 'xml');
+    $('#text_modal').find('.modal-title').text('Cranach XML');
     $('#source_text').val(new XMLSerializer().serializeToString(el.attr['cranachDoc']));
 }
 
@@ -162,8 +161,8 @@ function initGhDialog(editor) {
 //     $('.modal-footer').find('.btn.save').show();
 //     $('.modal-footer').find('.btn.update-index').show();
 //     $('.modal-footer').find('.btn.load-index').show();
-//     $('#wb_modal').find('button.save').attr('ext', 'xml');
-//     $('#wb_modal').find('.modal-title').text('Index XML');
+//     $('#text_modal').find('button.save').attr('ext', 'xml');
+//     $('#text_modal').find('.modal-title').text('Index XML');
 // 
 //     $('#source_text').val('');
 //     promise.then(el => {
@@ -208,19 +207,19 @@ function openXML(renderer, filePath) {
     let reader  = new FileReader();
     $('.progress-bar').css('width', '20%').attr('aria-valuenow', '20');
     $('#loading_icon').show();
+    console.log(filePath);
     if (file) {
         // https://stackoverflow.com/questions/857618/javascript-how-to-extract-filename-from-a-file-input-control
         let fullPath = filePath.value;
         if (fullPath) {
             let startIndex = (fullPath.indexOf('\\') >= 0 ? fullPath.lastIndexOf('\\') : fullPath.lastIndexOf('/'));
-            let filename = fullPath.substring(startIndex);
+            filename = fullPath.substring(startIndex);
             if (filename.indexOf('\\') === 0 || filename.indexOf('/') === 0) {
                 filename = filename.substring(1);
             }
-            console.log(fullPath);
         }
     }
-    var el = this;
+    console.log(filename);
     reader.addEventListener("load", function () {
         $('.progress-bar').css('width', '50%').attr('aria-valuenow', '50');
         let cranachDoc = new DOMParser().parseFromString(reader.result, "application/xml");
@@ -235,7 +234,8 @@ function openXML(renderer, filePath) {
         }).then(cranach => {
             postprocess(cranach);            
             convertCranachDocToWb(cranach.attr['cranachDoc'], editor);
-            $('#loading_icon').show();
+            
+            $('#loading_icon').hide();
             return cranach;
         });
     }, false);
@@ -243,3 +243,11 @@ function openXML(renderer, filePath) {
     reader.readAsText(file);
     
 }
+
+$(function() {
+    baseRenderer.then(cranach => {        
+        $('.modal .btn.save').click(function() {
+            saveText($('#source_text').val(), cranach, $(this).attr('ext'));
+        });
+    });
+});
