@@ -213,11 +213,14 @@ $(function() {
         mutations.forEach(function(mutation) {
             if (mutation.type == "attributes") {
                 if (mutation.attributeName == 'data-selected-slide') {
+                    console.log('data-selected-slide mutated');
+                    console.log($('#output').attr('data-selected-slide'));
                     let $slide = $('#output div.slide[slide="' + $('#output').attr('data-selected-slide') + '"]');
                     updateSlideContent($slide[0]);
                     updateSlideInfo($slide[0]);               
                 }
                 if (mutation.attributeName == 'data-content-url') {
+                    console.log('data-content-url mutated');
                     baseRenderer.then(cranach => {
                         updateToc(cranach);
                     });
