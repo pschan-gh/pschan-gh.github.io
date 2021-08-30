@@ -185,7 +185,7 @@ function adjustHeight(slide) {
     }
 }
 
-function updateSlideContent(slide) {
+function updateSlideContent(slide, carousel = 'false') {
     if ( $(slide).hasClass('tex2jax_ignore') ) {
         batchRender(slide);
     }
@@ -207,7 +207,20 @@ function updateSlideContent(slide) {
     $(slide).find('.loading_icon').hide();
     
     adjustHeight(slide);
-    updateCanvas(slide);
+    
+    $('*[text]').removeClass('highlighted');
+    $('button').removeClass('highlighted');
+    $('.item_button').css('background-color', '');    
+
+    $('.separator').css('font-weight', 'normal');
+    $('.separator').find('a').css('color', 'pink');
+
+    $(slide).find('.separator').css('font-weight', 'bold');
+    $(slide).find('.separator').find('a').css('color', 'red');
+    
+    if (carousel) {
+        updateCanvas(slide);
+    }
 }
 
 function showStep(el) {
@@ -251,6 +264,7 @@ function collapseToggle(slideNum, forced = '') {
     
     $slides.each(function() {
         let $slide = $(this);
+        renderSlide(this);
         if (forced == '') {
             if ($slide.hasClass('collapsed')) {
                 $slide.removeClass('collapsed');
@@ -555,7 +569,7 @@ $(function() {
             if (mutation.type == "attributes") {
                 if (mutation.attributeName == 'data-selected-slide') {
                     let $slide = $('.output:visible div.slide[slide="' + $('#output').attr('data-selected-slide') + '"]');
-                    updateSlideContent($slide[0]);
+                    updateSlideContent($slide[0], $('.carousel-item').length > 0);
                 }
             }
         });
