@@ -147,7 +147,7 @@ function lcref_click_handler($el) {
                 baseRenderer.then(baseDoc => {
                     new Cranach(url).setup().then(cranach => {
                         return cranach.setCranachDoc(baseDoc.attr['cranachDoc']).setIndexDoc(baseDoc.attr['indexDoc']).setBare().setOutput($output[0]).render();
-                    }).then(() => {
+                    }).then(cranach => {
                         renderElement($lcref);
                     });
                 });
@@ -155,7 +155,7 @@ function lcref_click_handler($el) {
                 console.log(pathname);
                 new Cranach(url).setup().then(cranach => {
                     return cranach.setBare().xmlDocQueryAndRender($output[0]);
-                }).then(() => {
+                }).then(cranach => {
                     renderElement($lcref);
                 });
             }

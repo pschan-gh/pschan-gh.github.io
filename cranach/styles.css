@@ -56,7 +56,7 @@ mjx-math {
     height:100%;
     width:100%;
     background-color:hsla(0, 0%, 100%, 0.8);
-    z-index:999;    
+    z-index:999;
 }
 #loading_icon > div {
     display:table-cell;
@@ -816,11 +816,10 @@ font-size:1rem;
     margin: 25mm 25mm 25mm 25mm;
 }
 .image {
-margin:0px auto;
-/* padding:10px; */
-/* font-size:80%; */
+margin:1em auto;
+padding:1em;
 text-align:center;
-/* max-width:600px; */
+
 }
 .center {
     padding:1em;
@@ -1047,7 +1046,7 @@ position:relative;
 #info {
     padding-top:1em;
     padding-bottom:1em;
-    padding-right:1em;    
+    padding-right:1em;
     height:100%;
     overflow-y:auto;
 }
@@ -1156,7 +1155,7 @@ font-weight:bolder;
         height:100% !important;
         width:100% !important;
     }
-    
+
     #left_half, #menu_container {
         visibility:hidden;
         display:none;
@@ -1187,7 +1186,7 @@ font-weight:bolder;
     }
     .collapse {
         display:block;
-    }    
+    }
 }
 @media screen
 and (min-width : 320px)
