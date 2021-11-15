@@ -9,7 +9,7 @@ const htmlTagCloseRe = new RegExp('\\<\\/(' + htmlElements.source +')(\\s+.*?|)\
 
 const nested = /((?:([^{}]*)|(?:{(?:([^{}]*)|(?:{(?:([^{}]*)|(?:{[^{}]*}))*}))*}))+)/;
 
-const mainTokensRe = new RegExp('(\\<\\!\\-\\-)|(\\-\\-\\>)|(@@\\w+)|(@(?:[a-zA-Z\*]+)(?:{\\n*' + nested.source + '\\n*})?(?:\\[.*?\\])?)|(' + htmlRe.source + ')|(' + htmlCloseRe.source + ')|((?:\\s|\\n)*((?!\\<\\/*(' + htmlElements.source + ')|@|\\<\\!\\-\\-|\\-\\-\\>).|\\n)+)', 'g');
+const mainTokensRe = new RegExp('(\\<\\!\\-\\-)|(\\-\\-\\>)|(@@\\w+)|(@(?!md5|name)(?:[a-zA-Z\*]+)(?:{\\n*' + nested.source + '\\n*})?(?:\\[.*?\\])?)|(' + htmlRe.source + ')|(' + htmlCloseRe.source + ')|((?:\\s|\\n)*((?!\\<\\/*(' + htmlElements.source + ')|@(?!md5|name)|\\<\\!\\-\\-|\\-\\-\\>).|\\n)+)', 'g');
 
 
 const dictionary = {
@@ -64,7 +64,7 @@ let secNums = {
 }
 
 function weaveHtml(child, word, htmlMatches) {
-	report('HTML TAG: ' + htmlMatches[1]);				
+	report('HTML TAG: ' + htmlMatches[1]);
 	if (htmlMatches[1].match(/^li$/i)) {
 		child = child.closeTo(/ol|ul/i);
 	}
@@ -295,7 +295,6 @@ function Stack(node, doc) {
 			child.is_comment = false;
 			return child;
 		} else if (child.is_comment) {
-			console.log('COMMENT ' + originalWord);
 			child.node.textContent += originalWord;
 			return child;
 		}
