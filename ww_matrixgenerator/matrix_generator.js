@@ -407,7 +407,7 @@ function matrixEditor(popupdiv, report, input) {
         // });
 		const rrefValues = rref(values);
 		console.log(rrefValues);
-        let tableHTML =  '<table>' + rrefValues.map(row => {
+        let tableHTML =  '<table class="table table-bordered">' + rrefValues.map(row => {
             return '<tr>' + row.map(value => {
                 return '<td>' + value + '</td>';
             }).join('') + '</tr>';
