@@ -1,3 +1,22 @@
+// This software is released under the MIT license:
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 // https://stackoverflow.com/questions/6139107/programmatically-select-text-in-a-contenteditable-html-element/6150060#6150060
 function selectElementContents(el) {
     var range = document.createRange();
@@ -8,6 +27,52 @@ function selectElementContents(el) {
 }
 
 var curr = {row: 0, col: 0};
+
+function rref(B) { // from https://github.com/substack/rref
+	let A = B;
+	console.log(A);
+	var rows = A.length;
+    var columns = A[0].length;
+
+	console.log(rows + ' ' + columns);
+    var lead = 0;
+    for (var k = 0; k < rows; k++) {
+        if (columns <= lead) return;
+
+        var i = k;
+		console.log(parseFloat(A[i][lead]));
+		console.log(A);
+
+        while (parseFloat(A[i][lead]) == 0) {
+            i++;
+            if (rows === i) {
+                i = k;
+                lead++;
+                if (columns === lead) {
+					return A;
+				}
+            }
+        }
+        var irow = A[i], krow = A[k];
+        A[i] = krow, A[k] = irow;
+        var val = parseFloat(A[k][lead]);
+		console.log(val);
+        for (var j = 0; j < columns; j++) {
+            A[k][j] = parseFloat(A[k][j]) / val;
+        }
+
+        for (var i = 0; i < rows; i++) {
+            if (i === k) continue;
+            val = parseFloat(A[i][lead]);
+            for (var j = 0; j < columns; j++) {
+                A[i][j] = parseFloat(A[i][j]) - val * parseFloat(A[k][j]);
+            }
+        }
+        lead++;
+    }
+
+    return A;
+}
 
 function matrixEditor(popupdiv, report, input) {
 
@@ -28,8 +93,8 @@ function matrixEditor(popupdiv, report, input) {
         var html =  rows.map(function(row_str) {
             return '<tr>' + row_str.split(/\s*,\s*/).map(function(value) {
                 return '<td>' + value + '</td>';
-            }).join() + '</tr>';
-        }).join();
+            }).join('') + '</tr>';
+        }).join('');
         console.log(html);
         $(this.table).append(html);
         $(this.table).find('td').attr('contenteditable', 'true');
@@ -290,14 +355,17 @@ function matrixEditor(popupdiv, report, input) {
         var ww_code = '[';
 
         var values = [];
-        $(this.table).find('tr').each(function() {
-            var row = $(this).find('td').map(function() {
-                if ($(this).text() != '' && $(this).text() != null) {
-                    return $( this ).text();
+        $(this.table)[0].querySelectorAll('tr').forEach(tr => {
+			console.log(tr);
+			let row = [];
+			tr.querySelectorAll('td').forEach(td => {
+                if (td.textContent != '' && td.textContent != null) {
+                    row.push(td.textContent);
                 } else {
-                    return '0';
+                    row.push('0');
                 }
-            }).get();
+            });
+			console.log(row);
             values.push(row);
         });
         console.log(values);
@@ -317,7 +385,7 @@ function matrixEditor(popupdiv, report, input) {
             }).join(" , ");
             return row_code;
         }).join("; ") + ']';
-		document.querySelector('#octave').textContent = octaveCode;
+		document.querySelector('#octave').value = octaveCode;
 
         var latex_code = "\n$\\begin{pmatrix}\n" + values.map(function(row) {
             var row_code = row.map(function(val) {
@@ -337,6 +405,14 @@ function matrixEditor(popupdiv, report, input) {
             $(report).find('.cached_tex').text(latex_code);
         }
         // });
+		const rrefValues = rref(values);
+		console.log(rrefValues);
+        let tableHTML =  '<table>' + rrefValues.map(row => {
+            return '<tr>' + row.map(value => {
+                return '<td>' + value + '</td>';
+            }).join('') + '</tr>';
+        }).join('') + '</table>';
+		document.querySelector('#rref').innerHTML = tableHTML;
     }
 
 }
