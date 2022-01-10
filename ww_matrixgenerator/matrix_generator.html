@@ -82,12 +82,12 @@
     <button class="generate btn btn-primary">
         Generate Matrix
     </button>
-    <hr/>        
-    <div id="report" class="report hidden" style="margin-top:10px;padding: 10px;border:solid 2px #ddd;border-radius:10px">        
+    <hr/>
+    <div id="report" class="report hidden" style="margin-top:10px;padding: 10px;border:solid 2px #ddd;border-radius:10px">
         <div class="hidden">
             latex: <span id='latex' class="cached_tex"></span>
             <hr/>
-        </div>        
+        </div>
         <div style="text-align:left">
             <strong>Preview</strong>
             <div style="width:90%" class='jax_preview'></div>
@@ -98,7 +98,7 @@
         <input type='text' id='matrix' readonly style="width:100%;border:#ddd 2px solid;border-radius:5px;color:red" onclick="selectText(this);"></input>
         <br/>
          Select, copy, and paste.
-        <div class="hidden">
+        <div>
             octave: <span id='octave'></span>
         </div>
     </div>
@@ -112,9 +112,9 @@
       $('.matrix-field tr:eq(' + curr.row + ') td:eq(' + curr.col + ')').attr('contenteditable', 'true')[0].focus();
       $('.matrix-field').keydown(function(e) {
           $('.report').addClass('hidden');
-          me.checkKey(e);    
+          me.checkKey(e);
 	});
-    
+
     $('.generate.btn').click(function() {
        me.updateMatrix();
        $('.report').removeClass('hidden');
@@ -123,7 +123,7 @@
         $('.ww.import').removeClass('hidden');
         $('.report').addClass('hidden');
     });
-    $('.btn.import.submit').click(function() {             
+    $('.btn.import.submit').click(function() {
        me.updateFromCode($('#matrix_import').val());
        $('.ww.import').addClass('hidden');
     });

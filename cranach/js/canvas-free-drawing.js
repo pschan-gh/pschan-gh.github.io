@@ -36,24 +36,20 @@
 	var CanvasFreeDrawing = /** @class */ (function () {
 	    function CanvasFreeDrawing(params) {
 	        var elementId = params.elementId, width = params.width, height = params.height, _a = params.backgroundColor,
-			backgroundColor = _a === void 0 ? [255, 255, 255] : _a, 
+			backgroundColor = _a === void 0 ? [255, 255, 255] : _a,
 			_b = params.lineWidth, lineWidth = _b === void 0 ? 5 : _b, _c = params.strokeColor, strokeColor = _c === void 0 ? [255, 0, 0] : _c, disabled = params.disabled, _d = params.showWarnings, showWarnings = _d === void 0 ? false : _d, _e = params.maxSnapshots, maxSnapshots = _e === void 0 ? 10 : _e;
 	        this.requiredParam(params, 'elementId');
 	        this.requiredParam(params, 'width');
 	        this.requiredParam(params, 'height');
 	        this.elementId = elementId;
-	        // this.canvasNode = document.getElementById(this.elementId);
-			this.canvasNode = $('.output.present:visible').first().find('#' + this.elementId)[0];
+	        this.canvasNode = document.getElementById(this.elementId);
 	        if (this.canvasNode instanceof HTMLCanvasElement) {
 	            this.canvas = this.canvasNode;
 	        }
 	        else if (this.canvasNode instanceof HTMLElement) {
 	            var newCanvas = document.createElement('canvas');
 	            this.canvasNode.appendChild(newCanvas);
-	            this.canvas = newCanvas;
-				$(this.canvas).css('position', 'absolute');
-				$(this.canvas).css('top', 0);
-				$(this.canvas).css('left', 0);
+	            this.canvas = newCanvas;				
 	        }
 	        else {
 	            throw new Error("No element found with following id: " + this.elementId);
@@ -74,7 +70,7 @@
 	        this.strokeColor = this.toValidColor(strokeColor);
 	        this.bucketToolColor = this.toValidColor(strokeColor);
 	        this.bucketToolTolerance = 0;
-	        this.isBucketToolEnabled = false;			
+	        this.isBucketToolEnabled = false;
 	        this.listenersList = [
 	            'mouseDown',
 	            'mouseMove',
@@ -116,9 +112,9 @@
 	        this.isNodeColorEqualCache = {};
 	        this.setDimensions();
 	        // this.setBackground(backgroundColor);
-	        this.storeSnapshot();			
+	        this.storeSnapshot();
 	        if (!disabled)
-	            this.enableDrawingMode();				
+	            this.enableDrawingMode();
 	    }
 	    CanvasFreeDrawing.prototype.requiredParam = function (object, param) {
 	        if (!object || !object[param]) {
@@ -177,13 +173,12 @@
 	    CanvasFreeDrawing.prototype.touchStart = function (event) {
 	        if (event.targetTouches.length == 1 && event.changedTouches.length == 1) {
 				event.preventDefault();
-				console.log($('.output.present:visible').first()[0].scrollTop);
 	            var _a = event.changedTouches[0], pageX = _a.pageX, pageY = _a.pageY, identifier = _a.identifier;
 	            var x = pageX - this.canvas.offsetLeft;
-				var y = pageY - this.canvas.offsetTop - this.canvasNode.offsetTop + $('.output.present:visible').first()[0].scrollTop;
+				var y = pageY - this.canvas.offsetTop - this.canvasNode.offsetTop + document.getElementById('output').scrollTop;
 	            this.touchIdentifier = identifier;
 	            this.drawPoint(x, y);
-				
+
 	        }
 	    };
 	    CanvasFreeDrawing.prototype.touchMove = function (event) {
@@ -191,7 +186,7 @@
 				event.preventDefault();
 	            var _a = event.changedTouches[0], pageX = _a.pageX, pageY = _a.pageY, identifier = _a.identifier;
 	            var x = pageX - this.canvas.offsetLeft;
-				var y = pageY - this.canvas.offsetTop - this.canvasNode.offsetTop  + $('.output.present:visible').first()[0].scrollTop;				
+				var y = pageY - this.canvas.offsetTop - this.canvasNode.offsetTop  + document.getElementById('output').scrollTop;
 	            // check if is multi touch, if it is do nothing
 	            if (identifier != this.touchIdentifier)
 	                return;
