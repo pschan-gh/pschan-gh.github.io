@@ -28,52 +28,6 @@ function selectElementContents(el) {
 
 var curr = {row: 0, col: 0};
 
-function rref(B) { // from https://github.com/substack/rref
-	let A = B;
-	console.log(A);
-	var rows = A.length;
-    var columns = A[0].length;
-
-	console.log(rows + ' ' + columns);
-    var lead = 0;
-    for (var k = 0; k < rows; k++) {
-        if (columns <= lead) return;
-
-        var i = k;
-		console.log(parseFloat(A[i][lead]));
-		console.log(A);
-
-        while (parseFloat(A[i][lead]) == 0) {
-            i++;
-            if (rows === i) {
-                i = k;
-                lead++;
-                if (columns === lead) {
-					return A;
-				}
-            }
-        }
-        var irow = A[i], krow = A[k];
-        A[i] = krow, A[k] = irow;
-        var val = parseFloat(A[k][lead]);
-		console.log(val);
-        for (var j = 0; j < columns; j++) {
-            A[k][j] = parseFloat(A[k][j]) / val;
-        }
-
-        for (var i = 0; i < rows; i++) {
-            if (i === k) continue;
-            val = parseFloat(A[i][lead]);
-            for (var j = 0; j < columns; j++) {
-                A[i][j] = parseFloat(A[i][j]) - val * parseFloat(A[k][j]);
-            }
-        }
-        lead++;
-    }
-
-    return A;
-}
-
 function matrixEditor(popupdiv, report, input) {
 
     this.input = input;
@@ -379,40 +333,6 @@ function matrixEditor(popupdiv, report, input) {
         console.log(ww_code);
         $(input).val(ww_code);
 
-		const octaveCode = '[' + values.map(function(row, index) {
-            var row_code = row.map(function(val) {
-                return val;
-            }).join(" , ");
-            return row_code;
-        }).join("; ") + ']';
-		document.querySelector('#octave').value = octaveCode;
-
-        var latex_code = "\n$\\begin{pmatrix}\n" + values.map(function(row) {
-            var row_code = row.map(function(val) {
-                return val;
-            }).join(" & ");
-            return row_code;
-        }).join("\\\\\n") + "\n\\end{pmatrix}$";
-
-        var cached_tex = $(report).find('.cached_tex').first().text();
-        console.log(cached_tex);
-        console.log(latex_code);
-        // $('#latex').html('<pre style="color:#f00">' + latex_code + '</pre>');
-        if (latex_code != cached_tex) {
-            var $preview = $(report).find('.jax_preview');
-            $preview.text(latex_code);
-            MathJax.Hub.Queue(["Typeset", MathJax.Hub, $preview[0]]);
-            $(report).find('.cached_tex').text(latex_code);
-        }
-        // });
-		const rrefValues = rref(values);
-		console.log(rrefValues);
-        let tableHTML =  '<table class="table table-bordered">' + rrefValues.map(row => {
-            return '<tr>' + row.map(value => {
-                return '<td>' + value + '</td>';
-            }).join('') + '</tr>';
-        }).join('') + '</table>';
-		document.querySelector('#rref').innerHTML = tableHTML;
     }
 
 }

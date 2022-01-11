@@ -327,17 +327,7 @@ function imagePostprocess(image) {
         let override = false;
         if (image.closest('.image') !== null) {
 
-            // if (image.closest('.image') !== null) {
-            //     image.closest('.image').style.height = '';
-            // }
-            // if (image.closest('.dual-left') !== null) {
-            //     image.closest('.dual-left').style.height = '';
-            // }
-            // if (image.closest('.dual-right') !== null) {
-            //     image.closest('.dual-right').style.height = '';
-            // }
-
-            override =
+			override =
 			image.closest('.image').style.width !== null &&
 			typeof image.closest('.image').style.width !== 'undefined';
 			// && Number.parseInt(image.closest('.image').style.width.replace(/px$/, '') < 600)
@@ -476,7 +466,7 @@ function updateRefs(slide, cranach) {
 		e.setAttribute('lcref', lcref + '&version=' + Math.random());
 	});
 
-	slide.querySelectorAll('a.lcref:not(.updated)').forEach(el => {
+	slide.querySelectorAll('[lcref]:not(.updated)').forEach(el => {
 		el.addEventListener('click', function(evt) {
 			evt.preventDefault();
 			evt.stopPropagation();
@@ -530,10 +520,13 @@ function updateSlideClickEvent() {
 
 			document.querySelectorAll('*[text], button').forEach(e => e.classList.remove('highlighted'));
 
-			if (slideNum != output.dataset.selectedSlide || !('selectedSlide' in output.dataset) ||
-			(output.querySelector(':scope > div.slide.selected') === null && index == 0)) {
+			if (!div.classList.contains('selected')) {
 				output.dataset.selectedSlide = slideNum;
 			}
+			// if (slideNum != output.dataset.selectedSlide || !('selectedSlide' in output.dataset) ||
+			// (output.querySelector(':scope > div.slide.selected') === null && index == 0)) {
+			// 	output.dataset.selectedSlide = slideNum;
+			// }
 		});
 	});
 }
@@ -576,7 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		attributes: true,
 	});
 
-	document.querySelector('#uncollapse_button').addEventListener('click', () => {
-        collapseToggle(document.querySelector('#output').getAttribute('data-selected-slide'));
-    });
+	document.querySelectorAll('#uncollapse_button').forEach(el => el.addEventListener('click', () =>
+        collapseToggle(document.querySelector('#output').getAttribute('data-selected-slide'))
+    ));
 });
