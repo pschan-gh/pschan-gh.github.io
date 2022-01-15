@@ -125,7 +125,9 @@ function renderSlide(slide) {
 		e.classList.remove('hidden_collapse');
 		e.addEventListener('shown.bs.collapse', function() {
 			updateCarouselSlide(slide, e);
-			if (focusOnItem !== null) {
+			if (typeof focusOnItem !== 'undefined' && focusOnItem !== null) {
+				console.log('scrolling to');
+				console.log(focusOnItem);
 				focusOnItem.scrollIntoView( {block: "center", behavior: "smooth"} );
 				focusOnItem = null;
 			}
@@ -176,7 +178,8 @@ function updateSlideContent(slide, carousel = false) {
 		iFrameResize({ log: false, checkOrigin:false }, e);
 	});
 
-	document.querySelector('#uncollapse_button').textContent = slide.classList.contains('collapsed') ? 'Uncollapse' : 'Collapse';
+	document.querySelectorAll('#uncollapse_button').forEach(el => el. textContent =
+		slide.classList.contains('collapsed') ? 'Uncollapse' : 'Collapse');
 
 	slide.querySelectorAll('.loading_icon').forEach(e => e.classList.add('hidden'));
 
@@ -290,11 +293,11 @@ function focusOn(item, text = '') {
 				item.scrollIntoView( {block: "center", behavior: "smooth"} );
 			}
 		}
+		focusOnItem = null;
 	});
 }
 
 function jumpToSlide(output, slide) {
-	console.log(slide)
 	baseRenderer.then(cranach => {
 		// slide.scrollIntoView( {block: "center"} );
 		slide.scrollIntoView();
@@ -549,8 +552,9 @@ function updateScrollEvent() {
 }
 
 function selectSlide(slide) {
-	// slide.classList.add('selected');
-	document.querySelector('.output').dataset.selectedSlide = slide.getAttribute('slide');
+	if (slide !== null) {
+		document.querySelector('.output').dataset.selectedSlide = slide.getAttribute('slide');
+	}
 }
 
 document.addEventListener('DOMContentLoaded', () => {
