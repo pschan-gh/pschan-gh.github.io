@@ -1,11 +1,11 @@
 @course{Welcome to Cranach}
 <ul>
-<li>
-Click on the icon <img style="max-height:1em;width:auto" src="icons/Edit_Notepad_Icon.svg"/> or select <strong>Compose</strong> under <span style="color:#ccc">☰</span>.
-</li>
-<li>You may proceed to compose your slides, or click on the icon <img style="max-height:1em;width:auto" src="icons/File_Open.svg"/> to load <code>.wb</code> or <code>.xml</code> file.
-</li>
-</ul>
+<li> Click on the icon <img style="max-height:1em;width:auto" src="icons/Edit_Notepad_Icon.svg"/>
+or select <strong>Compose</strong> under <span style="color:#ccc">☰</span>. </li>
+<li>You may proceed to compose your slides, or click on the icon <img style="max-height:1em;width:auto" src="icons/File_Open.svg"/>
+to load <code>.wb</code>
+or <code>.xml</code>
+file. </li></ul>
 @lecture{1}
 @section{Creating a Slideshow}
 To create a slideshow, first create a text file with extention .wb on your computer.
@@ -13,47 +13,52 @@ To create a slideshow, first create a text file with extention .wb on your compu
 A new slide would be constructed for any of the following tags in the .wb file:
 @itemize
 @item
-<code>@@slide</code>
+<code>@escaped{slide}</code>
 @item
-<code>@@course</code>
+<code>@escaped{course}</code>
 @item
-<code>@@chapter</code>
+<code>@escaped{chapter}</code>
 @item
-<code>@@section</code>
+<code>@escaped{section}</code>
 @item
-<code>@@subsection</code>
+<code>@escaped{subsection}</code>
 @item
-<code>@@subsubsection</code>
+<code>@escaped{subsubsection}</code>
 @enditemize
 The meaning of each of these tags should be self-explanatory.
 @subsection{Math Formulas}
-To input math formulas or equations, simply enter standard latex code in the .wb file, enclosed by $\$$ or $\backslash[ \; \ldots \backslash]$.  Hence,
-<center><code>\[frac{a}{b} = \sqrt{2}\]</code></center>
-gives:
-<center>
-\[
+To input math formulas or equations, simply enter standard latex code in the .wb file, enclosed by $\$$ or $\backslash[ \; \ldots \backslash]$.  Hence, <center>
+<code>\[frac{a}{b} = \sqrt{2}\]</code></center>
+gives: <center> \[
 \frac{a}{b} = \sqrt{2}
-\]
-</center>
+\] </center>
 @subsection{Collapsible Sequences}
-To create a nested sequence of collapsed elements.  Start with the tag <code>@@newcol</code>.
+To create a nested sequence of collapsed elements.  Start with the tag <code>@escaped{newcol}</code>
+.
 
-For each new collapsed element within the sequence, enter the tag <code>@@col</code>.
-To end the sequence, enter <code>@@endcol</code>.
+For each new collapsed element within the sequence, enter the tag <code>@escaped{col}</code>
+.
+To end the sequence, enter <code>@escaped{endcol}</code>
+.
 
 Hence:
-<textarea readonly style="border:1px solid #bbb;border-radius:10px;padding:10px;width:100%;height:15em;">
+<div style="border:1px solid #bbb;border-radius:10px;padding:10px;width:100%;height:15em;font-family:Courier">
 @@newcol
+
 First collapsed element.
 
+<br/>
 @@col
+
 Second collapsed element.
+
 @@col
+
 Third.
+
 @@endcol
-</textarea>
-gives:
-<div style="border:1px solid #bbb; border-radius:10px; padding:10px;">
+</div>
+gives: <div style="border:1px solid #bbb; border-radius:10px; padding:10px;">
 @newcol
 First collapsed element.
 
@@ -61,36 +66,15 @@ First collapsed element.
 Second collapsed element.
 @col
 Third.
-@endcol
-</div>
-(Notice the effect of a blank line before the <code>@@col</code> tag.)
+@endcol</div>
+(Notice the effect of a blank line before the <code>@escaped{col}</code>
+tag.)
 @subsection{Statement Environments}
-To add a @keyword{statement}, namely: <strong>theorem, proposition, claim, corollary, lemma, definition, example</strong>, or <strong>exercise</strong>, enter <code>@@thm</code>, <code>@@prop</code>, <code>@@claim</code>, <code>@@corollary</code>, <code>@@lemma</code>, <code>@@defn</code>, <code>@@eg</code>, or <code>@@ex</code>, respectively.  At the end of the statement, enter <code>@@end</code>.
-
+To add a @keyword{statement}, namely: <strong>theorem, proposition, claim, corollary, lemma, definition, example</strong>, or <strong>exercise</strong>, enter <code>@escaped{thm}</code>, <code>@escaped{prop}</code>, <code>@escaped{claim}</code>, <code>@escaped{cor}</code>, <code>@escaped{lemma}</code>, <code>@escaped{defn}</code>, <code>@escaped{eg}</code>, or <code>@escaped{ex}</code>, respectively.  At the end of the statement, enter <code>@escaped{end}</code>.
 
 All statements share the same counter, which is reset for each new chapter.
 
-
-<h5 class="notkw">Example:</h5>
-<textarea readonly style="width:100%; height:25em; border: 1px solid #bbb; border-radius:10px; padding:10px;font-family:monospace">
-@@defn
-A function $f : \mathbb{R} \longrightarrow \mathbb{R}$
-is said to be continuous at $c \in \mathbb{R}$ if:
-\[
-\lim_{x \rightarrow c} f(x) = f(c).
-\]
-@@end
-@@thm
-Let $a, b \in \mathbb{R}$.
-If a function $f : [a, b] \longrightarrow \mathbb{R}$
-is continuous everywhere,
-@@col
-then $f$ attains both a maximum value and a minimum value.
-@@end
-</textarea>
-gives:
-@newcol
-<div style="border: 1px solid #bbb;border-radius:10px;padding:10px;">
+<h5 class="notkw">Example:</h5><textarea readonly="readonly" style="width:100%; height:25em; border: 1px solid #bbb; border-radius:10px; padding:10px;font-family:monospace">
 @defn
 A function $f : \mathbb{R} \longrightarrow \mathbb{R}$
 is said to be continuous at $c \in \mathbb{R}$ if:
@@ -102,16 +86,33 @@ is said to be continuous at $c \in \mathbb{R}$ if:
 Let $a, b \in \mathbb{R}$.
 If a function $f : [a, b] \longrightarrow \mathbb{R}$
 is continuous everywhere,
+@col
+then $f$ attains both a maximum value and a minimum value.
+@end
+</textarea> gives:
+@newcol
+<div style="border: 1px solid #bbb;border-radius:10px;padding:10px;">
+@defn
+A function $f : \mathbb{R} \longrightarrow \mathbb{R}$
+is said to be continuous at $c \in \mathbb{R}$ if:
+\[
+\lim_{x \rightarrow c} f(x) = f(c).
+\]
+@end
+@thm
+@label{dadada}
+Let $a, b \in \mathbb{R}$.
+If a function $f : [a, b] \longrightarrow \mathbb{R}$
+is continuous everywhere,
 @newcol
 then $f$ attains both a maximum value and a minimum value.
 @endcol
-@end
-</div>
+@end</div>
 
-
-The collapsible element in the theorem is supposed to be ended by <code>@@endcol</code>.
+The collapsible element in the theorem is supposed to be ended by <code>@escaped{endcol}</code>
+.
 A collapsible sequence is not allowed to "straddle" the end of a statement environment.
 
-
-However, the Cranach engine affords a rudimentary degree of fault tolerance (though perhaps not too much, at this juncture). So, in the previous example, even though the <code>@@endcol</code> tag is ommitted, the collapsible sequence is nonetheless ended automatically, which is presumably what the author <em>has intended</em>.
+However, the Cranach engine affords a rudimentary degree of fault tolerance (though perhaps not too much, at this juncture). So, in the previous example, even though the <code>@escaped{endcol}</code>
+tag is ommitted, the collapsible sequence is nonetheless ended automatically, which is presumably what the author <em>has intended</em>.
 @endcol
