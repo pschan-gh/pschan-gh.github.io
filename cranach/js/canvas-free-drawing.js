@@ -1,4 +1,27 @@
 // https://github.com/federico-moretti/canvas-free-drawing
+//
+// The MIT License (MIT)
+//
+// Copyright (c) 2018-present, Federico Moretti
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -172,28 +195,35 @@
 	        this.drawLine(event.offsetX, event.offsetY, event);
 	    };
 	    CanvasFreeDrawing.prototype.touchStart = function (event) {
-	        if (event.targetTouches.length == 1 && event.changedTouches.length == 1) {
+			if (typeof event.touches[0].touchType != 'undefined' && event.touches[0].touchType == 'direct' ) {
+				return 0; // no finger drawing;
+			} else if (event.targetTouches.length == 1 && event.changedTouches.length == 1 ) { // event.touches[0].altitudeAngle < 1.2
 				event.preventDefault();
-	            var _a = event.changedTouches[0], pageX = _a.pageX, pageY = _a.pageY, identifier = _a.identifier;
-	            var x = pageX - this.canvas.offsetLeft;
+				var _a = event.changedTouches[0], pageX = _a.pageX, pageY = _a.pageY, identifier = _a.identifier;
+				var x = pageX - this.canvas.offsetLeft;
 				var y = pageY - this.canvas.offsetTop - this.canvasNode.offsetTop + document.getElementById('output').scrollTop;
-	            this.touchIdentifier = identifier;
-	            this.drawPoint(x, y);
-
+				this.touchIdentifier = identifier;
+				this.drawPoint(x, y, event);
 	        }
 	    };
 	    CanvasFreeDrawing.prototype.touchMove = function (event) {
-	        if (event.targetTouches.length == 1 && event.changedTouches.length == 1) {
-				event.preventDefault();
-	            var _a = event.changedTouches[0], pageX = _a.pageX, pageY = _a.pageY, identifier = _a.identifier;
-	            var x = pageX - this.canvas.offsetLeft;
-				var y = pageY - this.canvas.offsetTop - this.canvasNode.offsetTop  + document.getElementById('output').scrollTop;
-	            // check if is multi touch, if it is do nothing
-	            if (identifier != this.touchIdentifier)
-	                return;
-	            this.previousX = x;
-	            this.previousY = y;
-	            this.drawLine(x, y, event);
+			if (typeof event.touches[0].touchType != 'undefined' && event.touches[0].touchType == 'direct' ) {
+				return 0; // no finger drawing;
+			} else if (event.targetTouches.length == 1 && event.changedTouches.length == 1 ) {
+				if (event.touches[0].force <  0.15) {
+					this.touchStart(event);
+				} else {
+					event.preventDefault();
+					var _a = event.changedTouches[0], pageX = _a.pageX, pageY = _a.pageY, identifier = _a.identifier;
+					var x = pageX - this.canvas.offsetLeft;
+					var y = pageY - this.canvas.offsetTop - this.canvasNode.offsetTop  + document.getElementById('output').scrollTop;
+					// check if is multi touch, if it is do nothing
+					if (identifier != this.touchIdentifier)
+					return;
+					this.previousX = x;
+					this.previousY = y;
+					this.drawLine(x, y, event);
+				}
 	        }
 	    };
 	    CanvasFreeDrawing.prototype.touchEnd = function () {
@@ -220,7 +250,7 @@
 	        this.isDrawing = false;
 	        this.storeSnapshot();
 	    };
-	    CanvasFreeDrawing.prototype.drawPoint = function (x, y) {
+	    CanvasFreeDrawing.prototype.drawPoint = function (x, y, event) {
 	        if (this.isBucketToolEnabled) {
 	            this.fill(x, y, this.bucketToolColor, {
 	                tolerance: this.bucketToolTolerance,
@@ -230,7 +260,7 @@
 	            this.isDrawing = true;
 	            this.storeDrawing(x, y, false);
 	            this.canvas.dispatchEvent(this.events.mouseDownEvent);
-	            this.handleDrawing();
+	            this.handleDrawing(null, event);
 	        }
 	    };
 	    CanvasFreeDrawing.prototype.drawLine = function (x, y, event) {
@@ -245,16 +275,26 @@
 	        }
 	        if (this.isDrawing) {
 				this.storeDrawing(x, y, true);
-				this.handleDrawing(this.dispatchEventsOnceEvery);
+				this.handleDrawing(this.dispatchEventsOnceEvery, event);
 	        }
 	    };
-	    CanvasFreeDrawing.prototype.handleDrawing = function (dispatchEventsOnceEvery) {
+	    CanvasFreeDrawing.prototype.handleDrawing = function (dispatchEventsOnceEvery, event) {
 	        var _this = this;
 	        var positions = [__spreadArrays(this.positions).pop()];
-	        positions.forEach(function (position) {
+			let force;
+			if (typeof event.touches[0].touchType != 'undefined' && event.touches[0].touchType == 'direct' ) {
+				force = 1;
+			} else {
+				force = event.touches[0].force;
+			}
+			const widthScale = Math.min(1.8, 1 + 0.25*force);
+			let color;
+			positions.forEach(function (position) {
 	            if (position && position[0] && position[0].strokeColor) {
-					_this.context.strokeStyle = _this.rgbaFromArray(position[0].strokeColor);
-					_this.context.lineWidth = position[0].lineWidth;
+					color = position[0].strokeColor.slice();
+					color[3] = 7*force;
+					_this.context.strokeStyle = _this.rgbaFromArray(color);
+					_this.context.lineWidth = widthScale*position[0].lineWidth;
 					_this.draw(position);
 	            }
 	        });

@@ -36,15 +36,9 @@ function unhide() {
 
 function dim() {
 	if (document.querySelector('#right_half').classList.contains('dimmed')) {
-		// document.querySelectorAll(' #right_half, #right_half *, .output *').forEach(e => e.style['background-color'] = '');
-		// document.querySelectorAll(' #right_half, #right_half *, .output *').forEach(e => e.style['color'] = '');
-		// document.querySelector('#right_half').classList.remove('dim');
 		document.querySelector('#right_half').classList.remove('dimmed');
 		document.querySelector('#right_half').classList.add('carousel-dark');
 	} else {
-		// document.querySelectorAll('#right_half, .output').forEach(e => e.style['background-color'] = '#222');
-		// document.querySelectorAll('#right_half, .output').forEach(e => e.style['color'] =  '#bbb');
-		// document.querySelector('#right_half').classList.add('dim');
 		document.querySelector('#right_half').classList.add('dimmed');
 		document.querySelector('#right_half').classList.remove('carousel-dark');
 	}
@@ -108,6 +102,15 @@ function resizeFont(multiplier, element = document.querySelector('#output')) {
 //     document.querySelectorAll('#print_content').find('.hidden_collapse').show();
 // }
 
+// https://stackoverflow.com/a/4819886
+// https://creativecommons.org/licenses/by-sa/4.0/
+function isTouchDevice() {
+	return (('ontouchstart' in window) ||
+	(navigator.maxTouchPoints > 0) ||
+	(navigator.msMaxTouchPoints > 0));
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
 	updateSlideSelector();
 
@@ -125,38 +128,35 @@ document.addEventListener('DOMContentLoaded', () => {
 		attributes: true,
 	});
 
-	let menu_timer = null;
-	// document.querySelectorAll('.controls').off();
-	document.querySelectorAll('.controls').forEach(e => {
-		e.addEventListener('mouseover', function( event ) {
-			// document.querySelectorAll('#right_half').off('mousemove');
-			clearTimeout(menu_timer);
-			e.classList.remove('hidden');
-		});
-		e.addEventListener('mouseout', function( event ) {
-			clearTimeout(menu_timer);
-			// document.querySelectorAll('#right_half').off('mousemove');
-		});
-	});
-
-	document.querySelector('#right_half').addEventListener('mousemove', function() {
-		clearTimeout(menu_timer);
-		// document.querySelectorAll(".present .menu_container .navbar-nav, .present .controls, .present .slide_number:not(.hidden)").fadeIn();
-		document.querySelectorAll(".present .menu_container .navbar-nav, .controls, .present .slide_number").forEach(e => e.classList.remove('hidden'));
-		menu_timer = setTimeout(function () {
-			// document.querySelectorAll(".present .menu_container.fadeout .navbar-nav, .present .slide_number").fadeOut();
-			document.querySelectorAll(".present .menu_container .navbar-nav, .present .slide_number").forEach(e => {
-				e.classList.add('hidden');
+	if ( isTouchDevice() !== true ) {
+		let menu_timer = null;
+		document.querySelectorAll('.controls').forEach(e => {
+			e.addEventListener('mouseover', function( event ) {
+				clearTimeout(menu_timer);
+				e.classList.remove('hidden');
 			});
-			document.querySelectorAll(".controls").forEach(e => e.classList.add('hidden'));
-		}, 1000);
-	})
+			e.addEventListener('mouseout', function( event ) {
+				clearTimeout(menu_timer);
+				});
+		});
+
+		document.querySelector('#right_half').addEventListener('mousemove', function() {
+			clearTimeout(menu_timer);
+			document.querySelectorAll(".present .menu_container .navbar-nav, .controls, .present .slide_number").forEach(e => e.classList.remove('hidden'));
+			menu_timer = setTimeout(function () {
+				document.querySelectorAll(".present .menu_container .navbar-nav, .present .slide_number").forEach(e => {
+					e.classList.add('hidden');
+				});
+				document.querySelectorAll(".controls").forEach(e => e.classList.add('hidden'));
+			}, 1000);
+		})
+	}
 
 	document.querySelector('input.lecture_mode').addEventListener('change', function() {
 		if (this.checked) {
-			document.querySelectorAll('[data-lecture-skip="true"]').forEach(el => el.classList.add('lecture_skip'));
+			document.querySelector('#container').classList.add('lecture_skip');
 		} else {
-			document.querySelectorAll('[data-lecture-skip="true"]').forEach(el => el.classList.remove('lecture_skip'));
+			document.querySelector('#container').classList.remove('lecture_skip');
 		}
 	});
 

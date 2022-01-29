@@ -39,6 +39,7 @@
     <script>
     function report() {}
 	let focusOnItem = null;
+	let focusOnText = '';
     </script>
     <script src="weaver_core.js"></script>
     <script src="weaver.js"></script>
@@ -57,7 +58,8 @@
     var baseRenderer = new Cranach(window.location.href).setup();
     </script>
 
-    <link rel="stylesheet" href="styles.css" media="all">
+    <!-- <link rel="stylesheet" href="styles.css" media="all"> -->
+	<link rel="stylesheet" href="styles_nohover.css" media="all">
 	<link rel="stylesheet" href="portable.css" media="all">
     <link rel="stylesheet" href="LaTeXML.css" media="all">
 </head>
@@ -352,7 +354,6 @@
                             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                                 <li class="nav-item"><a class="nav-link annotate clear" href="#"><span class="material-icons">restart_alt</span></a></li>
                                 <li class="nav-item"><a class="nav-link annotate expand" href="#"><span class="material-icons">expand</span></a></li>
-                                <!-- <li class="nav-item"><a class="nav-link restore">Restore canvas</a></li> -->
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" href="#" id="colorDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"><span class="material-icons">color_lens</span></a>
                                     <ul class="dropdown-menu dropdown-menu-lg-end" aria-labelledby="colorDropdown" style="margin-left:-125px">
@@ -535,9 +536,7 @@
 		document.querySelector('#container').classList.remove('overview', 'present', 'info', 'wide');document.querySelector('#container').classList.add('compose');editor.resize()
 	}
 
-
     document.addEventListener('DOMContentLoaded', () => {
-
         // https://stackoverflow.com/questions/7317273/warn-user-before-leaving-web-page-with-unsaved-changes
         window.addEventListener("beforeunload", function (e) {
             if (warnClose) {
