@@ -4,14 +4,30 @@ indicatorButton.dataset['bsTarget'] = "#right_half";
 indicatorButton.dataset['bsToggle'] = "tooltip";
 indicatorButton.dataset['bsPlacement'] = "bottom";
 
+const resizeObserver = new ResizeObserver(entries => {
+	for (let entry of entries) {
+		const slide = entry.target;
+		if ( !( slide.classList.contains('carousel-item') && slide.classList.contains('active') ) ) {
+			return 1;
+		}
+		const output = document.getElementById('output');
+
+		if ( slide.scrollHeight <= 0.9*output.clientHeight ) {
+			output.classList.remove('long');
+		} else {
+			output.classList.add('long');
+		}
+	}
+});
+
 function updateCarousel(slideNum) {
 	// console.log('updateCarousel');
 
-    let slides = document.querySelectorAll('#output > div.slide');
+	let slides = document.querySelectorAll('#output > div.slide');
 
-    if (slides === null) {
-        return 0;
-    }
+	if (slides === null) {
+		return 0;
+	}
 	bootstrap.Carousel.getOrCreateInstance(document.querySelector('#right_half'), {
 		dispose: true
 	});
@@ -22,53 +38,51 @@ function updateCarousel(slideNum) {
 	document.querySelector('.carousel-indicators').outerHTML = document.querySelector('.carousel-indicators').outerHTML;
 	document.querySelector('.controls_container').outerHTML = document.querySelector('.controls_container').outerHTML;
 
-    if (slides.length > 50) {
+	if (slides.length > 50) {
 		carouselThreeSlides(slideNum, slides);
-    } else {
+	} else {
 		document.querySelectorAll('#output > div.slide').forEach(e => {
-            e.classList.add('carousel-item');
-            e.classList.remove('hidden');
-        });
+			e.classList.add('carousel-item');
+			e.classList.remove('hidden');
+		});
 		let activeIndex = 0;
-        slides.forEach((e, index) => {
-            let button = indicatorButton.cloneNode(true);
-            button.setAttribute('aria-label', `Slide ${e.getAttribute('slide')}`);
-            button.setAttribute('title', `Slide ${e.getAttribute('slide')}`);
-            button.dataset['bsSlideTo'] = `${index}`;
+		slides.forEach((e, index) => {
+			let button = indicatorButton.cloneNode(true);
+			button.setAttribute('aria-label', `Slide ${e.getAttribute('slide')}`);
+			button.setAttribute('title', `Slide ${e.getAttribute('slide')}`);
+			button.dataset['bsSlideTo'] = `${index}`;
 
 			// $(".carousel-indicators").append(`<button type="button" data-bs-target="#right_half" data-bs-slide-to="${index}" aria-label="Slide ${this.getAttribute('slide')}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Slide ${this.getAttribute('slide')}"/>`);
 			if (e.getAttribute('slide') == slideNum) {
 				activeIndex = index;
-                button.classList.add('active');
-                button.setAttribute('aria-current', 'true');
+				button.classList.add('active');
+				button.setAttribute('aria-current', 'true');
 			}
-            document.querySelector(".carousel-indicators").appendChild(button);
+			document.querySelector(".carousel-indicators").appendChild(button);
 		});
 		document.querySelectorAll(".carousel-indicators button").forEach(e => {
-	        bootstrap.Tooltip.getOrCreateInstance(e, {
-	            delay: { "show": 0, "hide": 0 }
-	        });
-	    });
-    }
+			bootstrap.Tooltip.getOrCreateInstance(e, {
+				delay: { "show": 0, "hide": 0 }
+			});
+		});
+	}
 
-    // tooltip({'delay': { show: 0, hide: 0 }});
+	// tooltip({'delay': { show: 0, hide: 0 }});
 
 	document.querySelector('#output > div.slide.carousel-item[slide="' + slideNum + '"]').classList.add('active');
-    document.querySelector('#right_half .slide_number button').textContent = 'Slide ' + slideNum;
-    document.querySelector('#right_half .slide_number button').setAttribute('slide', slideNum);
+	document.querySelector('#right_half .slide_number button').textContent = 'Slide ' + slideNum;
+	document.querySelector('#right_half .slide_number button').setAttribute('slide', slideNum);
 
 	new bootstrap.Carousel(document.querySelector('#right_half'));
 	document.getElementById('right_half').classList.add('carousel', 'slide');
 	document.querySelector('.carousel').removeEventListener('slid.bs.carousel', carouselSlideHandler);
-    document.querySelector('.carousel').addEventListener('slid.bs.carousel', carouselSlideHandler);
+	document.querySelector('.carousel').addEventListener('slid.bs.carousel', carouselSlideHandler);
 }
 
 function carouselThreeSlides(slideNum, slides) {
 
 	let prevNum = ((slideNum - 2 + slides.length) % slides.length) + 1;
-	// let prevNum = slideNum - 1;
-    let nextNum = slideNum == slides.length - 1 ? slides.length : (slideNum + 1) % slides.length;
-	// let nextNum = slideNum + 1;
+	let nextNum = slideNum == slides.length - 1 ? slides.length : (slideNum + 1) % slides.length;
 
 	document.querySelector(".carousel-indicators").innerHTML = '';
 
@@ -82,7 +96,6 @@ function carouselThreeSlides(slideNum, slides) {
 	});
 
 	if (prevNum < slideNum) {
-	// if (prevNum > 0) {
 		let button = indicatorButton.cloneNode(true);
 		button.setAttribute('aria-label', `Slide ${prevNum}`);
 		button.setAttribute('title', `Slide ${prevNum}`);
@@ -93,17 +106,14 @@ function carouselThreeSlides(slideNum, slides) {
 	let button = indicatorButton.cloneNode(true);
 	button.setAttribute('aria-label', `Slide ${slideNum}`);
 	button.setAttribute('title', `Slide ${slideNum}`);
-	// button.dataset['bsSlideTo'] = prevNum < slideNum ? `1` : `0`;
 	button.classList.add('active');
 	button.setAttribute('aria-current', "true");
 	document.querySelector(".carousel-indicators").appendChild(button);
 	if (nextNum > slideNum) {
-	// if (nextNum <= slides.length) {
 		let button = indicatorButton.cloneNode(true);
 		button.setAttribute('aria-label', `Slide ${nextNum}`);
 		button.setAttribute('title', `Slide ${nextNum}`);
 		button.dataset['bsSlideTo'] = prevNum < slideNum ? `2` : `1`;
-		// button.dataset['bsSlideTo'] = prevNum > 0 ? `2` : `1`;
 		document.querySelector(".carousel-indicators").appendChild(button);
 	}
 	document.querySelectorAll(".carousel-indicators button").forEach(e => {
@@ -133,6 +143,14 @@ function carouselSlideHandler() {
 		carouselThreeSlides(slideNum, slides);
 	}
 	document.getElementById('output').dataset.selectedSlide = slideNum;
+
+	if (typeof canvasSnapshots != 'undefined') {
+		canvasSnapshots = [];
+	}
+	if (typeof canvasUndos != 'undefined') {
+		canvasUndos = [];
+	}
+	adjustHeight();
 }
 
 function updateCarouselSlide(slide, content = null) {
@@ -142,8 +160,6 @@ function updateCarouselSlide(slide, content = null) {
 	}
 
 	let outerContent = slide.querySelector(':scope > .slide_container > .slide_content');
-
-	// outerContent.style['padding-bottom'] = '';
 
 	let bufferedWidth = 0;
 	MathJax.startup.promise.then(() => {
@@ -176,33 +192,29 @@ function updateCarouselSlide(slide, content = null) {
 function showSlide(slide, cranach) {
 	console.log('showSlide');
 	if (slide == null) {
-        if (document.querySelector('div.slide.selected, div.slide.active') !== null) {
-            slide = document.querySelector('div.slide.selected, div.slide.active');
-        } else {
-            slide = document.querySelector('#output > div.slide');
+		if (document.querySelector('div.slide.selected, div.slide.active') !== null) {
+			slide = document.querySelector('div.slide.selected, div.slide.active');
+		} else {
+			slide = document.querySelector('#output > div.slide');
 			slide.classList.add('selected');
-        }
-    }
-    document.querySelector('#container').classList.remove('info', 'overview', 'compose');
+		}
+	}
+	document.querySelector('#container').classList.remove('info', 'overview', 'compose');
 	document.querySelector('#container').classList.add('present');
 
-    let slideNum = parseInt(slide.getAttribute('slide'));
+	let slideNum = parseInt(slide.getAttribute('slide'));
 
 	updateCarousel(slideNum);
 	updateCarouselSlide(slide);
-
-    // cranach.then(renderer => {
-    //     updateModal(renderer);
-    // });
 }
 
 function hideCarousel() {
-    if (document.getElementById('right_half').classList.contains('annotate')) {
-        hideAnnotate();
-    }
+	if (document.getElementById('right_half').classList.contains('annotate')) {
+		hideAnnotate();
+	}
 
-    document.getElementById('container').classList.remove('wide');
-    document.getElementById('container').classList.remove('present', 'overview');
+	document.getElementById('container').classList.remove('wide');
+	document.getElementById('container').classList.remove('present', 'overview');
 	document.getElementById('container').classList.add(document.getElementById('left_half').getAttribute('mode'));
 
 	document.querySelectorAll('#output > div.slide').forEach(e => {
@@ -210,7 +222,7 @@ function hideCarousel() {
 		e.classList.add('tex2jax_ignore');
 	});
 
-    if (document.querySelector('#output > div.slide.selected') !== null) {
+	if (document.querySelector('#output > div.slide.selected') !== null) {
 		document.querySelector('#output > div.slide.selected').scrollIntoView( {block: "center", behavior: "smooth"} );
 	}
 
@@ -218,18 +230,24 @@ function hideCarousel() {
 
 function adjustHeight() {
 	// console.log('adjustHeight');
-	let output = document.getElementById('output');
-	if (document.querySelector('.carousel-item') === null) {
-		 return 1;
+	const output = document.querySelector('#output');
+	const slide = document.querySelector(`.output > div.slide.carousel-item.active`);
+
+	if (slide === null) {
+		return 1;
 	}
-	let selectedSlideNum = output.dataset.selectedSlide;
-	let slide = document.querySelector(`#output > div.slide[slide="${selectedSlideNum}"]`);
-	if (slide.scrollHeight >  0.9*output.clientHeight || document.querySelector('#right_half').classList.contains('annotate')) {
-		output.classList.add('long');
-		expandCanvas(slide);
-	} else {
+	if ( slide.scrollHeight <=  0.9*output.clientHeight ) {
 		output.classList.remove('long');
+	} else {
+		output.classList.add('long');
 	}
+
+	document.querySelectorAll('.output > div.slide').forEach(slide => {
+		resizeObserver.unobserve(slide);
+	});
+
+	resizeObserver.unobserve(slide);
+
 }
 
 function hideAnnotate() {
@@ -253,44 +271,10 @@ function annotate() {
 	updateCanvas(document.querySelector('.present #output > div.slide.active'));
 }
 
-function expandCanvas(slide, scale = 1, padding = 0) {
-	if (!document.querySelector('#right_half').classList.contains('annotate')) {
-		return 0;
-	}
-    let output = document.getElementById('output');
-
-    const wasDrawing = slide.cfd.isDrawingModeEnabled;
-    
-	slide.cfd.disableDrawingMode();
-	// https://stackoverflow.com/questions/331052/how-to-resize-html-canvas-element
-	let oldCanvas = slide.cfd.canvas.toDataURL("image/png");
-	let img = new Image();
-	img.src = oldCanvas;
-	img.onload = function (){
-		MathJax.startup.promise.then(() => {
-			// https://stackoverflow.com/questions/442404/retrieve-the-position-x-y-of-an-html-element
-			let bodyRect = document.body.getBoundingClientRect();
-			let slideRect = slide.getBoundingClientRect();
-			slide.cfd.canvas.width = output.scrollWidth;
-			slide.cfd.canvas.height = output.scrollHeight*scale + padding;
-			let voffset = slideRect.top + document.getElementById('output').scrollTop;
-			slide.querySelector('canvas').style.top = -voffset;
-			// slide.cfd.canvas.top = -(voffset);
-			let ctx = slide.cfd.canvas.getContext('2d');
-			ctx.drawImage(img, 0, 0);
-            if (wasDrawing) {
-                slide.cfd.enableDrawingMode();
-                slide.cfd.setDraw();
-            }
-		});
-	}
-}
-
 function updateCanvas(slide) {
 	if (document.querySelector('.carousel-item') === null) {
 		return 0;
 	}
-    console.log('updating canvas');
 	if (document.querySelector('#right_half').classList.contains('annotate')) {
 		if (slide.querySelector('canvas') === null) {
 			addCanvas(slide);
@@ -301,18 +285,32 @@ function updateCanvas(slide) {
 			slide.querySelector('canvas').classList.add('hidden');
 		}
 	}
+	document.querySelector('#colorDropdown').style.color = '';
 	canvasControlsDisableEvent(slide);
 }
 
+function canvasControlsEnableEvent(slide) {
+	slide.cfd.enableDrawingMode();
+	slide.cfd.canvas.classList.remove('hidden');
+	slide.cfd.setDraw();
+	document.querySelectorAll('.canvas-controls .nav-link').forEach(e => e.classList.remove('disabled'));
+	document.querySelector('.annotate.enable .brush').classList.remove('hidden');
+	document.querySelector('.annotate.enable .cursor').classList.add('hidden');
+	slide.cfd.canvas.classList.remove('disabled');
+	document.querySelector('#colorDropdown').style.color = `rgb(${slide.cfd.strokeColor})`;
+}
+
 function canvasControlsDisableEvent(slide) {
-    // console.log('canvasControlDisableEvent');
-    slide.cfd.disableDrawingMode();
-	slide.cfd.canvas.classList.add('disabled');
+	// console.log('canvasControlDisableEvent');
+	if (typeof slide.cfd != 'undefined') {
+		slide.cfd.disableDrawingMode();
+		slide.cfd.canvas.classList.add('disabled');
+	}
 	document.querySelectorAll('.canvas-controls .nav-link:not(.enable)').forEach(e => e.classList.add('disabled'));
 	document.querySelector('.canvas-controls .enable').classList.remove('disabled');
-    document.querySelector('.annotate.enable .brush').classList.remove('hidden');
-    document.querySelector('.annotate.enable .cursor').classList.add('hidden');
-	// $('.carousel').attr('data-bs-touch', "true");
+	document.querySelector('.annotate.enable .brush').classList.add('hidden');
+	document.querySelector('.annotate.enable .cursor').classList.remove('hidden');
+	document.querySelector('#colorDropdown').style.color = '';
 }
 
 function clearAllCanvas() {
@@ -322,43 +320,44 @@ function clearAllCanvas() {
 	}
 }
 
-function addCanvas(slide) {
+function addCanvas(slide, output = document.getElementById('output')) {
 	if (slide.querySelector('canvas') !== null || document.querySelector('.carousel-item') === null) {
 		return 0;
 	}
-	let output = document.getElementById('output');
+
 	let width = output.scrollWidth;
 	let height = output.scrollHeight - 5;
 
-	slide.cfd = new CanvasFreeDrawing.default({
+	slide.cfd = new CanvasFreeDrawing({
 		elementId: slide.id,
 		width: width,
 		height: height,
 		showWarnings: true,
+		container: output,
 	});
 	slide.cfd.setLineWidth(2);
-	slide.redrawCount = slide.querySelector('.annotate.redraw-count');
 	let bodyRect = document.body.getBoundingClientRect();
 	let slideRect = slide.getBoundingClientRect()
-	let voffset = slideRect.top + document.getElementById('output').scrollTop;
-	// slide.cfd.canvas.top = (voffset);
+	let voffset = slideRect.top + output.scrollTop;
 	slide.querySelector('canvas').style.top = -voffset;
-	slide.cfd.on({ event: 'redraw', counter: 0 }, () => {
-		slide.redrawCount.innerText = parseInt(slide.redrawCount.innerText) + 1;
-	});
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-	document.querySelectorAll('.canvas-controls .clear').forEach(el => el.addEventListener('click', function() {
-		let slide = document.querySelector('#output > div.slide.active');
-		if (slide === null) { return 0; }
-		slide.querySelector('canvas').remove();
-		addCanvas(slide);
-	}));
+	document.querySelectorAll('.canvas-controls .clear').forEach(
+		el => el.addEventListener('click', function() {
+			let slide = document.querySelector('#output > div.slide.active');
+			if (slide === null) { return 0; }
+			if (slide.cfd.isDrawingModeEnabled) {
+				slide.cfd.clear();
+			}
+		})
+	);
 	document.querySelectorAll('.canvas-controls .expand').forEach(el => el.addEventListener('click', function() {
 		let slide = document.querySelector('#output > div.slide.active');
 		if (slide === null) { return 0; }
-		expandCanvas(slide, 1, 300);
+		if (typeof slide.cfd != 'undefined') {
+			slide.cfd.expandCanvas(1, 300);
+		}
 	}));
 	document.querySelectorAll('.canvas-controls .disable').forEach(el => el.addEventListener('click', function() {
 		let slide = document.querySelector('#output > div.slide.active');
@@ -371,35 +370,22 @@ document.addEventListener('DOMContentLoaded', () => {
 		slide.cfd.setErase();
 		document.querySelectorAll('.canvas-controls .nav-link').forEach(el => el.classList.remove('disabled'));
 		evt.currentTarget.classList.add('disabled');
+		document.querySelector('.annotate.enable .brush').classList.remove('hidden');
+		document.querySelector('.annotate.enable .cursor').classList.add('hidden');
 	}));
 	// $('.canvas-controls .enable').off();
 	document.querySelectorAll('.canvas-controls .enable').forEach(el => el.addEventListener('click', function(evt) {
 		let slide = document.querySelector('#output > div.slide.active');
 		if (slide === null) { return 0; }
-        
-        slide.cfd.toggleDrawingMode();
-        if (slide.cfd.isDrawingModeEnabled) {
-            slide.cfd.enableDrawingMode();
-    		slide.cfd.canvas.classList.remove('hidden');
-    		slide.cfd.setDraw();
-    		document.querySelectorAll('.canvas-controls .nav-link').forEach(e => e.classList.remove('disabled'));
-    		// evt.currentTarget.classList.add('active');
-            document.querySelector('.annotate.enable .brush').classList.add('hidden');
-            document.querySelector('.annotate.enable .cursor').classList.remove('hidden');
-    		slide.cfd.canvas.classList.remove('disabled');
-        } else {
-            let slide = document.querySelector('#output > div.slide.active');
-    		if (slide === null) { return 0; }
-    		canvasControlsDisableEvent(slide);
-            // evt.currentTarget.classList.remove('active');                		
-        }
-        
-		// slide.cfd.enableDrawingMode();
-		// slide.cfd.canvas.classList.remove('hidden');
-		// slide.cfd.setDraw();
-		// document.querySelectorAll('.canvas-controls .nav-link').forEach(e => e.classList.remove('disabled'));
-		// evt.currentTarget.classList.add('disabled');
-		// slide.cfd.canvas.classList.remove('disabled');
+
+		slide.cfd.toggleDrawingMode();
+		if (slide.cfd.isDrawingModeEnabled) {
+			canvasControlsEnableEvent(slide);
+		} else {
+			let slide = document.querySelector('#output > div.slide.active');
+			if (slide === null) { return 0; }
+			canvasControlsDisableEvent(slide);
+		}
 	}));
 	document.querySelectorAll('.canvas-controls .undo').forEach(el => el.addEventListener('click', () => {
 		let slide = document.querySelector('#output > div.slide.active');
@@ -414,26 +400,36 @@ document.addEventListener('DOMContentLoaded', () => {
 	document.querySelectorAll('.canvas-controls .red').forEach(el => el.addEventListener('click', () => {
 		let slide = document.querySelector('#output > div.slide.active');
 		if (slide === null) { return 0; }
-		slide.cfd.setDrawingColor([255, 0, 0])
+		let color = [180, 80, 80];
+		slide.cfd.setDrawingColor(color)
+		document.querySelector('#colorDropdown').style.color = `rgb(${color.join(',')})`;
 	}));
 	document.querySelectorAll('.canvas-controls .green').forEach(el => el.addEventListener('click', () => {
 		let slide = document.querySelector('#output > div.slide.active');
 		if (slide === null) { return 0; }
-		slide.cfd.setDrawingColor([0, 180, 0])
+		let color = [0, 139, 69];
+		slide.cfd.setDrawingColor(color);
+		document.querySelector('#colorDropdown').style.color = `rgb(${color.join(',')})`;
 	}));
 	document.querySelectorAll('.canvas-controls .blue').forEach(el => el.addEventListener('click', () => {
 		let slide = document.querySelector('#output > div.slide.active');
 		if (slide === null) { return 0; }
-		slide.cfd.setDrawingColor([0, 0, 255])
+		let color = [40, 122, 181];
+		slide.cfd.setDrawingColor(color);
+		document.querySelector('#colorDropdown').style.color = `rgb(${color.join(',')})`;
 	}));
 	document.querySelectorAll('.canvas-controls .orange').forEach(el => el.addEventListener('click', () => {
 		let slide = document.querySelector('#output > div.slide.active');
 		if (slide === null) { return 0; }
-		slide.cfd.setDrawingColor([255, 128, 0])
+		let color = [240, 110, 0];
+		slide.cfd.setDrawingColor(color);
+		document.querySelector('#colorDropdown').style.color = `rgb(${color.join(',')})`;
 	}));
 	document.querySelectorAll('.canvas-controls .black').forEach(el => el.addEventListener('click', () => {
 		let slide = document.querySelector('#output > div.slide.active');
 		if (slide === null) { return 0; }
-		slide.cfd.setDrawingColor([0, 0, 0])
+		let color = [115, 115, 115];
+		slide.cfd.setDrawingColor(color);
+		document.querySelector('#colorDropdown').style.color = `rgb(${color.join(',')})`;
 	}));
 });
