@@ -560,6 +560,9 @@ iframe {
 	border:0;
 	width: 1px;
 	min-width: 100%;
+}
+
+iframe:not(.webwork) {
 	background:transparent url("icons/Loading_icon.gif") center no-repeat;
 }
 
@@ -947,6 +950,10 @@ canvas.disabled {
 	display:none;
 	z-index:1500;
 	font-size:1rem;
+	width:2.5em;
+}
+.canvas-controls.canvas-controls-left {
+	left:10px;
 }
 
 .annotate .canvas-controls, .annotate .canvas-controls .navbar {
@@ -1126,6 +1133,14 @@ a:link, a:visited,  a:active {
 
 .dropdown-submenu {
 	position:relative;
+}
+
+.dropdown-item.color {
+padding: 0.25rem 0.25rem;
+}
+
+.dropdown-item.color > span {
+	border-radius: 50%;
 }
 
 #preamble {

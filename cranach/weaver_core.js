@@ -1,5 +1,9 @@
 const xh_prefix = '';
-const htmlElements = /pre|table|tbody|thead|th|tr|td|i|em|p|a|b|strong|u|h\d|div|img|center|script|iframe|blockquote|ol|ul|li|sup|code|hr|span|iframe|br|hr|textarea/;
+
+// const htmlElements = /pre|table|tbody|thead|th|tr|td|i|em|p|a|b|strong|u|h\d|div|img|center|script|iframe|blockquote|ol|ul|li|sup|code|hr|span|iframe|br|hr|textarea/;
+// deepseek
+const htmlElements = /a|abbr|acronym|address|area|article|aside|audio|b|base|bdi|bdo|big|blockquote|body|br|button|canvas|caption|cite|code|col|colgroup|data|datalist|dd|del|details|dfn|dialog|div|dl|dt|em|embed|fieldset|figcaption|figure|footer|form|h1|h2|h3|h4|h5|h6|head|header|hgroup|hr|html|i|iframe|img|input|ins|kbd|label|legend|li|link|main|map|mark|meta|meter|nav|noscript|object|ol|optgroup|option|output|p|param|picture|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|small|source|span|strong|style|sub|summary|sup|svg|table|tbody|td|template|textarea|tfoot|th|thead|time|title|tr|track|u|ul|var|video|wbr/;
+// /deepseek
 
 const htmlRe = new RegExp('\\<(?:' + htmlElements.source + ')(?:\\s+(?:.|\n)*?|)\\/*\\>', 'i');
 const htmlCloseRe = new RegExp('\\<\\/(?:' + htmlElements.source +')(?:\\s+.*?|)\\>', 'i');
@@ -7,10 +11,44 @@ const htmlCloseRe = new RegExp('\\<\\/(?:' + htmlElements.source +')(?:\\s+.*?|)
 const htmlTagRe = new RegExp('\\<(' + htmlElements.source + ')(\\s+(?:.|\n)*|)\\/*\\>', 'i');
 const htmlTagCloseRe = new RegExp('\\<\\/(' + htmlElements.source +')(\\s+.*?|)\\>', 'i');
 
-const nested = /((?:([^{}]*)|(?:{(?:([^{}]*)|(?:{(?:([^{}]*)|(?:{[^{}]*}))*}))*}))+)/;
+// const nested = /((?:([^{}]*)|(?:{(?:([^{}]*)|(?:{(?:([^{}]*)|(?:{[^{}]*}))*}))*}))+)/;
+// deepseek
+const nested = (() => {
+	// Match any characters except { or }
+	const nonBraces = '[^{}]*';
+  
+	// Match a single level of nested braces: { ... }
+	const singleLevel = `{${nonBraces}}`;
+  
+	// Match two levels of nested braces: { ... { ... } ... }
+	const twoLevels = `{${nonBraces}|${singleLevel}}*`;
+  
+	// Match three levels of nested braces: { ... { ... { ... } ... } ... }
+	const threeLevels = `{${nonBraces}|${twoLevels}}*`;
+  
+	// Combine all levels into a single pattern
+	return new RegExp(`(${nonBraces}|${threeLevels})+`);
+  })();
+// /deepseek
 
-const mainTokensRe = new RegExp('(\\<\\!\\-\\-)|(\\-\\-\\>)|(@@\\w+)|(@(?!md5|name)(?:[a-zA-Z\*]+)(?:{\\n*' + nested.source + '\\n*})?(?:\\[.*?\\])?)|(' + htmlRe.source + ')|(' + htmlCloseRe.source + ')|((?:\\s|\\n)*((?!\\<\\/*(' + htmlElements.source + ')|@(?!md5|name)|\\<\\!\\-\\-|\\-\\-\\>).|\\n)+)', 'g');
 
+// const mainTokensRe = new RegExp('(\\<\\!\\-\\-)|(\\-\\-\\>)|(@@\\w+)|(@(?!md5|name)(?:[a-zA-Z\*]+)(?:{\\n*' + nested.source + '\\n*})?(?:\\[.*?\\])?)|(' + htmlRe.source + ')|(' + htmlCloseRe.source + ')|((?:\\s|\\n)*((?!\\<\\/*(' + htmlElements.source + ')|@(?!md5|name)|\\<\\!\\-\\-|\\-\\-\\>).|\\n)+)', 'g');
+// deepseek
+// Define modular parts of the regex
+const commentStart = '(\\<\\!\\-\\-)';
+const commentEnd = '(\\-\\-\\>)';
+const atAtToken = '(@@\\w+)';
+const atToken = '(@(?!md5|name)(?:[a-zA-Z\\*]+)(?:{\\n*' + nested.source + '\\n*})?(?:\\[.*?\\])?)';
+const htmlTag = '(' + htmlRe.source + ')';
+const htmlCloseTag = '(' + htmlCloseRe.source + ')';
+const textContent = '((?:\\s|\\n)*((?!\\<\\/*(' + htmlElements.source + ')|@(?!md5|name)|\\<\\!\\-\\-|\\-\\-\\>).|\\n)+)';
+
+// Combine all parts into the main regex
+const mainTokensRe = new RegExp(
+  `${commentStart}|${commentEnd}|${atAtToken}|${atToken}|${htmlTag}|${htmlCloseTag}|${textContent}`,
+  'g'
+);
+// /deepseek
 
 const dictionary = {
 	"@thm": "Theorem",
@@ -63,35 +101,80 @@ let secNums = {
 	'slide': 1
 }
 
+// function weaveHtml(child, word, htmlMatches) {
+// 	report('HTML TAG: ' + htmlMatches[1]);
+// 	if (htmlMatches[1].match(/^li$/i)) {
+// 		child = child.closeTo(/ol|ul/i);
+// 	}
+
+// 	let tag = htmlMatches[1];
+// 	let domString;
+// 	let parameters = htmlMatches.length > 2 ? htmlMatches[2] : '';
+
+// 	if (htmlMatches[1].match(/^tr|tbody|thead$/i)) {
+// 		tag = htmlMatches[1].match(/^(tr|tbody|thead)$/i)[1];
+// 		domString = '<table><' + htmlMatches[1]+ parameters + '></' + tag + ' ></table>';
+// 	} else if (htmlMatches[1].match(/^td|th$/i)) {
+// 		tag = htmlMatches[1].match(/^(td|th)$/i)[1];
+// 		domString = '<table><tr><' + htmlMatches[1]+ parameters + '></' + tag + '></tr></table>';
+// 	} else {
+// 		domString = '<' + xh_prefix + htmlMatches[1]+ parameters + '></' + xh_prefix + htmlMatches[1] + '>';
+// 	}
+// 	let htmlDom = new DOMParser().parseFromString(domString, 'text/html');
+// 	let node = htmlDom.getElementsByTagName(xh_prefix + htmlMatches[1])[0];
+
+// 	child = child.addNode(node);
+
+// 	if (word.match(/\/\>$/) || htmlMatches[1].match(/^(img|hr|br)$/i)) {
+// 		child = child.close();
+// 	}
+// 	return child;
+// }
+// deepseek
 function weaveHtml(child, word, htmlMatches) {
-	report('HTML TAG: ' + htmlMatches[1]);
-	if (htmlMatches[1].match(/^li$/i)) {
-		child = child.closeTo(/ol|ul/i);
+	const tagName = htmlMatches[1].toLowerCase(); // Normalize tag name to lowercase
+	const parameters = htmlMatches.length > 2 ? htmlMatches[2] : ''; // Extract parameters if they exist
+  
+	// Log the HTML tag being processed
+	report(`HTML TAG: ${tagName}`);
+  
+	// Handle special cases for <li> tags
+	if (tagName === 'li') {
+	  child = child.closeTo(/ol|ul/i); // Close up to the nearest <ol> or <ul>
 	}
-
-	let tag = htmlMatches[1];
+  
+	// Generate the DOM string based on the tag type
 	let domString;
-	let parameters = htmlMatches.length > 2 ? htmlMatches[2] : '';
-
-	if (htmlMatches[1].match(/^tr|tbody|thead$/i)) {
-		tag = htmlMatches[1].match(/^(tr|tbody|thead)$/i)[1];
-		domString = '<table><' + htmlMatches[1]+ parameters + '></' + tag + ' ></table>';
-	} else if (htmlMatches[1].match(/^td|th$/i)) {
-		tag = htmlMatches[1].match(/^(td|th)$/i)[1];
-		domString = '<table><tr><' + htmlMatches[1]+ parameters + '></' + tag + '></tr></table>';
-	} else {
-		domString = '<' + xh_prefix + htmlMatches[1]+ parameters + '></' + xh_prefix + htmlMatches[1] + '>';
+	switch (tagName) {
+	  case 'tr':
+	  case 'tbody':
+	  case 'thead':
+		domString = `<table><${tagName}${parameters}></${tagName}></table>`;
+		break;
+	  case 'td':
+	  case 'th':
+		domString = `<table><tr><${tagName}${parameters}></${tagName}></tr></table>`;
+		break;
+	  default:
+		domString = `<${xh_prefix}${tagName}${parameters}></${xh_prefix}${tagName}>`;
+		break;
 	}
-	let htmlDom = new DOMParser().parseFromString(domString, 'text/html');
-	let node = htmlDom.getElementsByTagName(xh_prefix + htmlMatches[1])[0];
-
+  
+	// Parse the DOM string into an HTML node
+	const htmlDom = new DOMParser().parseFromString(domString, 'text/html');
+	const node = htmlDom.getElementsByTagName(`${xh_prefix}${tagName}`)[0];
+  
+	// Add the node to the child
 	child = child.addNode(node);
-
-	if (word.match(/\/\>$/) || htmlMatches[1].match(/^(img|hr|br)$/i)) {
-		child = child.close();
+  
+	// Handle self-closing tags (e.g., <img />, <br />) or tags that end with />
+	if (word.endsWith('/>') || ['img', 'hr', 'br'].includes(tagName)) {
+	  child = child.close(); // Close the tag if it's self-closing
 	}
+  
 	return child;
-}
+}	
+// /deepseek
 
 function Stack(node, doc) {
 	this.doc = doc;
@@ -300,7 +383,6 @@ function Stack(node, doc) {
 		}
 
 		// HTML section
-
 		let htmlMatches = word.match(htmlTagRe);
 		if (htmlMatches) {
 			return weaveHtml(child, word, htmlMatches);
@@ -338,8 +420,6 @@ function Stack(node, doc) {
 		}
 		switch(word) {
 			case "@course":
-			// let re = new RegExp(word + '{(.*?)}');
-			// let match = originalWord.trim().match(re)[1];
 			if (argument.trim().toLowerCase() != this.course.trim().toLowerCase()) {
 				secNums['chapter'] = 1;
 				child = addSection('course', argument, child, options);

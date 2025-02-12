@@ -342,7 +342,27 @@ function addCanvas(slide, output = document.getElementById('output')) {
 	slide.querySelector('canvas').style.top = -voffset;
 }
 
+function isScrolledToBottom() {
+	const scrollTop = window.scrollY || document.documentElement.scrollTop;
+	const scrollHeight = document.documentElement.scrollHeight;
+	const clientHeight = document.documentElement.clientHeight;
+
+	return scrollTop + clientHeight >= scrollHeight;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+
+	// Add scroll event listener
+	document.getElementById('output').addEventListener('scroll', () => {
+		if (isScrolledToBottom()) {
+			let slide = document.querySelector('#output > div.slide.active');
+			if (slide === null) { return 0; }
+			if (typeof slide.cfd != 'undefined') {
+				slide.cfd.expandCanvas(1, 10);
+			}
+		}
+	});
+
 	document.querySelectorAll('.canvas-controls .clear').forEach(
 		el => el.addEventListener('click', function() {
 			let slide = document.querySelector('#output > div.slide.active');
@@ -358,7 +378,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (typeof slide.cfd != 'undefined') {
 			slide.cfd.expandCanvas(1, 300);
 		}
-	}));
+	}));	
+
 	document.querySelectorAll('.canvas-controls .disable').forEach(el => el.addEventListener('click', function() {
 		let slide = document.querySelector('#output > div.slide.active');
 		if (slide === null) { return 0; }
@@ -397,39 +418,34 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (slide === null) { return 0; }
 		slide.cfd.redo()
 	}));
-	document.querySelectorAll('.canvas-controls .red').forEach(el => el.addEventListener('click', () => {
-		let slide = document.querySelector('#output > div.slide.active');
-		if (slide === null) { return 0; }
-		let color = [180, 80, 80];
-		slide.cfd.setDrawingColor(color)
-		document.querySelector('#colorDropdown').style.color = `rgb(${color.join(',')})`;
-	}));
-	document.querySelectorAll('.canvas-controls .green').forEach(el => el.addEventListener('click', () => {
-		let slide = document.querySelector('#output > div.slide.active');
-		if (slide === null) { return 0; }
-		let color = [0, 139, 69];
-		slide.cfd.setDrawingColor(color);
-		document.querySelector('#colorDropdown').style.color = `rgb(${color.join(',')})`;
-	}));
-	document.querySelectorAll('.canvas-controls .blue').forEach(el => el.addEventListener('click', () => {
-		let slide = document.querySelector('#output > div.slide.active');
-		if (slide === null) { return 0; }
-		let color = [40, 122, 181];
-		slide.cfd.setDrawingColor(color);
-		document.querySelector('#colorDropdown').style.color = `rgb(${color.join(',')})`;
-	}));
-	document.querySelectorAll('.canvas-controls .orange').forEach(el => el.addEventListener('click', () => {
-		let slide = document.querySelector('#output > div.slide.active');
-		if (slide === null) { return 0; }
-		let color = [240, 110, 0];
-		slide.cfd.setDrawingColor(color);
-		document.querySelector('#colorDropdown').style.color = `rgb(${color.join(',')})`;
-	}));
-	document.querySelectorAll('.canvas-controls .black').forEach(el => el.addEventListener('click', () => {
-		let slide = document.querySelector('#output > div.slide.active');
-		if (slide === null) { return 0; }
-		let color = [115, 115, 115];
-		slide.cfd.setDrawingColor(color);
-		document.querySelector('#colorDropdown').style.color = `rgb(${color.join(',')})`;
-	}));
+	
+	// Define color mappings
+	const colorMap = {
+		red: [180, 80, 80],
+		green: [0, 139, 69],
+		blue: [40, 122, 181],
+		orange: [240, 110, 0],
+		black: [115, 115, 115]
+	};
+
+	// Add event listeners to all color buttons
+	document.querySelectorAll('.canvas-controls a.color').forEach(button => {
+		button.addEventListener('click', () => {
+			const slide = document.querySelector('#output > div.slide.active');
+			if (!slide) return; // Exit if no active slide is found
+
+			// Get the color from the button's class or data attribute
+			const colorName = button.getAttribute('data-color');
+			console.log(colorName);
+			const color = colorMap[colorName];
+
+			if (color) {
+				// Set the drawing color and update the dropdown color
+				slide.cfd.setDrawingColor(color);
+				document.querySelectorAll('.color-dropdown').forEach(a => {
+					a.style.color = `rgb(${color.join(',')})`
+				});
+			}
+		});
+	});
 });
