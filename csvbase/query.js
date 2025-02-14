@@ -32,7 +32,6 @@ class Query extends React.Component {
         super(props);
         this.state = {
             headers:{},
-            // queryItems:[{id:0, field:null, conjunction:'', condition:''}],
             queryItems:[{field:'Show All', conjunction:'&&', condition:''}],
         };
         this.handleSelect = this.handleSelect.bind(this);
@@ -46,22 +45,18 @@ class Query extends React.Component {
     
     handleConjunction(e) {
         let queryItems = [...this.state.queryItems];
-        // console.log(e.target.name);
         let item = {...queryItems[parseInt(e.target.name)]};
         item.conjunction = e.target.value;
         queryItems[parseInt(e.target.name)] = item;
         this.setState({queryItems:queryItems});
-        // console.log(this.state);
     }
         
     handleSelect(e) {
         let queryItems = [...this.state.queryItems];
-        // console.log(e.target.name);
         let item = {...queryItems[parseInt(e.target.name)]};
         item.field = e.target.value;
         queryItems[parseInt(e.target.name)] = item;
         this.setState({queryItems:queryItems});
-        // console.log(this.state);
     }
     
     updateQuery() {
@@ -71,7 +66,6 @@ class Query extends React.Component {
             if (query.field == 'Show All') {
                 filter = 'true';
             } else {
-                // filter += ' ' + query.conjunction +  ' (item["' + query.field + '"] ' + query.condition + ')';
                 filter = '( ' + filter + ' )' + query.conjunction +  ' (item["' + query.field + '"] ' + query.condition + ')';
             }
         });
@@ -80,7 +74,6 @@ class Query extends React.Component {
 
     handleCondition(e) {
         let queryItems = [...this.state.queryItems];
-        // console.log(e.target.name);
         let item = {...queryItems[parseInt(e.target.name)]};
         item.condition = e.target.value;
         queryItems[parseInt(e.target.name)] = item;
@@ -109,7 +102,7 @@ class Query extends React.Component {
                             <h5 style={{display:'inline'}} className="mb-0">Query</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>                        
-                        <form onSubmit={e => this.props.handlequery(e, this.state.queryItems)}>
+                        {/* <form onSubmit={e => this.props.handlequery()}> */}
                             <div className="modal-body">
                                 {this.state.queryItems.map((item, index) => {
                                     console.log(item.field);
@@ -124,14 +117,15 @@ class Query extends React.Component {
                                 </div>                                
                             </div>
                             <div className="modal-footer">
-                                <div className="row mx-3 w-50 ms-auto">                                                         
-                                    <div className="col">
-                                        <button type="submit" className="form-control btn btn-secondary btn-sm">Submit</button>
+                                <div className="row w-100">
+                                    <span className="col-9 query-error" style={{textAlign: 'left'}}></span>
+                                    <div className="col-3   " style={{textAlign: 'right'}}>
+                                        <button type="button" className="btn btn-secondary btn-sm" onClick={e => this.props.handlequery()}>Submit</button>
                                     </div>
                                 </div>
                                 <input className="form-control query-text" type="text" defaultValue="true"/>
                             </div>
-                        </form>
+                        {/* </form> */}
                     </div>
                 </div>
             </div>

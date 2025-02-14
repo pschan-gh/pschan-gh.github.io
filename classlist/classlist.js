@@ -85,7 +85,7 @@ function updateTable(db, table, data, headers, key, isPrimary) {
         sanitizedField = sanitize(field);
         sanitizedField = sanitizedField == '' ? 'BLANK' + j.toString() : sanitizedField;
         if (sanitizedHeaders.indexOf(sanitizedField) <= -1) {
-            console.log('ADDING HEADER ' + sanitizedField);            
+            console.log('ADDING HEADER ' + sanitizedField);
             headerNames.push(sanitizedField);
             sanitizedHeaders.push(sanitizedField);
             columnData[sanitizedField]['name'] = sanitizedField;
@@ -98,10 +98,24 @@ function updateTable(db, table, data, headers, key, isPrimary) {
     groupField = key;
 
     // updateFieldsMenu();
-    
+
     resetTable();
     updateRows(data, db, table, primaryDbKey);
-    
+
+}
+
+function generateSalt() {
+    // Define the pool of alphanumeric characters
+    const alphanumeric = "./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    let result = "";
+    for (let i = 0; i < 2; i++) {
+        // Pick a random character from the pool
+        const randomIndex = Math.floor(Math.random() * alphanumeric.length);
+        result += alphanumeric[randomIndex];
+    }
+
+    return result;
 }
 
 // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
@@ -152,13 +166,14 @@ function updateRows(data, db, table, secondaryDbKey) {
 
         console.log(fieldMask);
 
-        for (let i = 0; i < data.length; i++) {
+        // for (let i = 0; i < data.length; i++) {
+        data.forEach(function(dataRow, i) {
             dataRow = data[i];
             console.log(dataRow);
             var rowObj = {};
 
             if (typeof dataRow[fieldMask['student_id']] === typeof undefined) {
-                continue;
+                return;
             }
 
             if ('fullname' in fieldMask) {
@@ -200,10 +215,10 @@ function updateRows(data, db, table, secondaryDbKey) {
             }
             rowObj['USER_ID'] = dataRow[fieldMask['student_id']];
             if (passwordAutoGen == 'true') {
-                // rowObj['PASSWORD'] = 'FAILSAFE' + Math.floor(Math.random() * 10000).toString();
-                rowObj['PASSWORD'] = passwordGen(8);
+                rowObj['PASSWORD'] = unixCryptTD(passwordGen(8), generateSalt());
             } else {
-                rowObj['PASSWORD'] = dataRow[fieldMask['PASSWORD']];
+                console.log('password: ' + dataRow[fieldMask['password']]);
+                rowObj['PASSWORD'] = unixCryptTD(typeof(dataRow[fieldMask['password']]) === 'undefined' ? dataRow[fieldMask['student_id']] : dataRow[fieldMask['password']].replace(/^"|"$/g, ''), generateSalt());
             }
             rowObj['PERMISSION'] = '0';
 
@@ -214,7 +229,7 @@ function updateRows(data, db, table, secondaryDbKey) {
             // console.log('SECONDDARY KEY: ' + secondaryKeyValue);
             if (secondaryKeyValue == null || typeof secondaryKeyValue == typeof undefined || secondaryKeyValue == '') {
                 console.log('INVALID KEY: ' + secondaryDbKey);
-                continue;
+                return;
             }
             secondaryKeyValue = secondaryKeyValue.toString().trim();
 
@@ -225,7 +240,7 @@ function updateRows(data, db, table, secondaryDbKey) {
 
                 datum[primaryDbKey] = secondaryKeyValue;
                 table.push(datum);
-                
+
                 primaryDbKeyValues.push(secondaryKeyValue.toString());
             } else { // udpate existing database entry
                 for(let i = 0; i < table.length; i++) {
@@ -236,14 +251,15 @@ function updateRows(data, db, table, secondaryDbKey) {
                                 let value = rowObj[dbField];
                                 if (value != null && typeof value != typeof undefined) {
                                     table[i][dbField] = value;
-                                }                            
+                                }
                             }
                         });
                         break;
                     }
                 }
             }
-        }
+        });
+
         for (var key in colWidths) {
             if (colWidths.hasOwnProperty(key)) {
                 colWidths[key] = colWidths[key] + 2;
@@ -279,7 +295,7 @@ function recalculateColumns(db, table, columns) {
             // console.log(sfield);
             rowObj[sfield] = routineFunc(rowObj);
             var datum = rowObj;
-            
+
         });
     });
     queryHWSet(db, table, baseQuery, groupField);
@@ -483,7 +499,7 @@ function updateButtons(db, table) {
         var csv = $table.table2csv('return', {
             "separator": ",",
             "newline": "\n",
-            "quoteFields": true,
+            "quoteFields": false,
             "excludeColumns": ".col_chkbox, .col_count",
             "excludeRows": "",
             "trimContent": true,
@@ -513,31 +529,6 @@ function updateButtons(db, table) {
         $('th div.triangle').html('&#x25ba;');
     });
 
-
-    $('.field_reference').html('');
-    sanitizedHeaders.forEach(function(field) {
-        $('.field_reference').append('<button class="field btn btn-outline-info btn-sm">' + field + '</button>');
-    });
-
-    $('.field_reference button.field').off();
-    $('.field_reference button.field').click(function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        // console.log(e);
-        insertAtCursor(document.getElementById('column_routine'), '+(@' + $(this).text() + ')');
-    });
-    $('#calculated_column').off();
-    $('#calculated_column').click(function() {
-        $('#column_bin').find('.column_name').val('COL' + sanitizedHeaders.length);
-    });
-
-    $('#query_submit').off();
-    $('#query_submit').on('click', function() {
-        baseQuery = $('#query').val();
-        queryHWSet(db, table, baseQuery, primaryKey);
-        $('.dropdown-toggle.query').dropdown('toggle');
-    })
-
     $('#column_submit').off();
     $('#column_submit').on('click', function() {
         let sfield = $('#column_bin').find('.column_name').val();
@@ -551,32 +542,6 @@ function updateButtons(db, table) {
         }, 0);
 
     });
-
-    $('.secondary-input').off();
-    $('#secondary-file-input').on('change', function(event) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var results = Papa.parse(e.target.result, {
-                header: true,
-                dynamicTyping: false,
-            });
-            console.log(results);
-            data = results.data;
-            if (data.length < 1) {
-                return;
-            }
-            // headers = results.meta['fields'];
-            headers = webworkFields;
-            console.log(headers);
-            // var contents = e.target.result;
-            updateTable(db, table, data, headers, primaryKey, false);
-            $('#second_key_li').show();
-            $('a.pastebin').addClass('disabled');
-            $('a.query').addClass('disabled');
-        }
-        reader.readAsText(event.target.files[0]);
-    });
-    
 
     $('#fields_submit').off();
     $('#fields_submit').on('click', function() {
@@ -731,11 +696,11 @@ function statistics(values, field) {
 //     $(a).attr('href', "#");
 //     $(a).html("<input class='field_checkbox' checked type='checkbox' field='count' id='count_checkbox'>&nbsp;<label class='form-check-label' for='count_checkbox'>Count</label>");
 //     $("#columns_menu").append(a);
-// 
+//
 //     sanitizedHeaders.map(function(field) {
 //         addFieldToMenu(field);
 //     });
-// 
+//
 // }
 
 function updateKeys() {
@@ -820,7 +785,7 @@ function updateKeys() {
 
 function loadPrimary(data, headers) {
     colWidths = {};
-    
+
     var field;
     var sanitizedField;
 
@@ -836,11 +801,11 @@ function loadPrimary(data, headers) {
         sanitizedHeaders.push(sanitizedField);
         headerTypes[sanitizedField] = 'STRING';
         columnData[sanitizedField] = {};
-        columnData[sanitizedField]['routine'] = '';        
+        columnData[sanitizedField]['routine'] = '';
     }
 
     updateKeys();
-    
+
     for (key in data[0]) {
         // $('#headers').append('<button type="button" class="btn btn-sm btn-outline-info">' + key + '</button>');
         $('select.re').append('<option value="^' + key + '$">' + key + '</option>');
@@ -904,7 +869,7 @@ function postInitialization(db, table) {
     $('a.pastebin').removeClass('disabled');
     $('a.query').removeClass('disabled');
 
-    $('#import').hide();    
+    $('#import').hide();
     $('#primary-file-input').closest('li').hide();
     $('#query').closest('li').show();
     $('#messages').html('<strong>Database Loaded.</strong>');
@@ -970,10 +935,11 @@ $(function () {
             let sheetName = workbook.SheetNames[0];
             var XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
             console.log(XL_row_object);
-            var json_object = JSON.stringify(XL_row_object);
-            let headers = Object.keys(XL_row_object[0]);
-            console.log(headers);
-            loadPrimary(XL_row_object, headers);
+            // var json_object = JSON.stringify(XL_row_object);
+            // let headers = Object.keys(XL_row_object[0]);
+			let headers = webworkFields;
+            // console.log(json_object);
+			loadPrimary(XL_row_object, headers);
         };
 
         reader.onerror = function(ex) {

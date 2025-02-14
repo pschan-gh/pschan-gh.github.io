@@ -56,7 +56,6 @@ class Container extends React.Component {
                 sanitizedHeaders.push('"BLANK' + blankIndex++ + '"');
             }
         });
-        // let delimiter = plaintextDB.split('\n')[0].match(/\t/g) ? "\t" : ",";
         let sanitizedDB = sanitizedHeaders.join(delimiter) + "\n"
             + plaintextDB.split('\n').slice(1).join("\n");
 
@@ -68,20 +67,6 @@ class Container extends React.Component {
     }
 
     ReorderHeaders() {
-        // let $boxes = $('#columns_menu input');
-        // let oldHeaders = {...this.state.headers};
-        // let headers = {};
-        // let freezeColIndex = $(".sortable a").index($('#freezeCol')[0]) - 1;
-        // $boxes.each(function() {
-        //     headers[$(this).attr('data-field')] = oldHeaders[$(this).attr('data-field')];
-        // });
-        // this.setState({
-        //     headers: headers,
-        //     freezeColIndex:freezeColIndex
-        // }, function(){
-        //     this.table.current.setState({headers:headers});
-        // });
-
         let boxes = document.querySelectorAll('#columns_menu input');
         let oldHeaders = {...this.state.headers};
         let headers = {};
@@ -408,46 +393,51 @@ class Container extends React.Component {
 
     }
 
-    handleQuery(e, queryItems) {
-        e.preventDefault();
-        // console.log(e);
-        // console.log(queryItems);
-        // let filter = 'true';
-        // queryItems.map(query => {
-        //     if (query.field == 'Show All') {
-        //         filter = 'true';
-        //     } else {
-        //         // filter += ' ' + query.conjunction +  ' (item["' + query.field + '"] ' + query.condition + ')';
-        //         filter = '( ' + filter + ' )' + query.conjunction +  ' (item["' + query.field + '"] ' + query.condition + ')';
-        //     }
-        //     console.log(filter);
-        // });
+    handleQuery() {
         const filter = document.querySelector('.query-text').value;
         const queryModal = document.querySelector('#query_modal');
-        queryModal.classList.toggle('show');
+        const isSyntaxValid = function(code) {
+            try {
+                new Function('item', 'return ' + code);
+                return true; // No syntax error
+            } catch (e) {
+                if (e instanceof SyntaxError) {
+                    return false; // Syntax error
+                } else {
+                    throw e; // Other errors
+                }
+            }
+        };
+        // queryModal.classList.toggle('show');
         console.log(filter);
-        this.setState({
-            filter:filter,
-        }, function(){
-            queryModal.classList.toggle('show');
-            this.table.current.resetGroups(this.state.database, this.state.headers, this.state.primarykey);
-        });
+        if (isSyntaxValid(filter)) {
+            document.querySelector('.query-error').innerHTML = "";
+            this.setState({
+                filter:filter,
+            }, function(){
+                queryModal.classList.toggle('show');
+                this.table.current.resetGroups(this.state.database, this.state.headers, this.state.primarykey);
+            });
+        } else {
+            document.querySelector('.query-error').innerHTML = "The query is invalid.";
+        }
+
     }
 
-    handleScroll() {
-        const height = this.offsetHeight;
-        const scrollTop = this.scrollTop;
-        // console.log(height);
-        // console.log(scrollTop);
-        if (scrollTop / height > 0.75) {
-            // console.log(scrollTop);
-        }
-    }
+    // handleScroll() {
+    //     const height = this.offsetHeight;
+    //     const scrollTop = this.scrollTop;
+    //     // console.log(height);
+    //     // console.log(scrollTop);
+    //     if (scrollTop / height > 0.75) {
+    //         // console.log(scrollTop);
+    //     }
+    // }
 
     componentDidUpdate() {
         // $('#table-container').scroll(this.handleScroll);
-        const tableContainer = document.querySelector('#table-container');
-        tableContainer.addEventListener('scroll', this.handleScroll);
+        // const tableContainer = document.querySelector('#table-container');
+        // tableContainer.addEventListener('scroll', this.handleScroll);
     }
 
     render() {
