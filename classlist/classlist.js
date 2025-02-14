@@ -12,14 +12,13 @@ var primaryDbKey = '';
 var primaryKey = '';
 var primaryFile = null;
 var columnData = new Object();
-var webworkFields = ['student_id', 'lname', 'fname', 'status', 'comment', 'section', 'recitation', 'email', 'user_id', 'password', 'permission'];
+const webworkFields = ['student_id', 'lname', 'fname', 'status', 'comment', 'section', 'recitation', 'email', 'user_id', 'password', 'permission'];
 var mainArray = new Array();
 
-var emailSuffix;
-var passwordAutoGen;
-var url = new URL(window.location.href);
-emailSuffix = url.searchParams.get("email_suffix") ? url.searchParams.get("email_suffix") : '';
-passwordAutoGen = url.searchParams.get("password_auto") ? url.searchParams.get("password_auto") : 'false';
+const url = new URL(window.location.href);
+const emailSuffix = url.searchParams.get("email_suffix") ? url.searchParams.get("email_suffix") : '';
+const passwordAutoGen = url.searchParams.get("password_auto") ? url.searchParams.get("password_auto") : 'true';
+const passwordIsId = url.searchParams.get("password_is_id") ? url.searchParams.get("password_is_id") : 'false';
 
 function report () {
 };
@@ -30,19 +29,19 @@ function initializeDB(data, headers, key) {
     var row;
     var rows = [];
     var field;
-    var dbKey = key;
-    var dbName = 'csvDB' + JSON.stringify(data).hashCode();
+    const dbKey = key;
+    // var dbName = 'csvDB' + JSON.stringify(data).hashCode();
 
-    console.log('DB NAME: ' + dbName);
-    console.log(dbName + ' DELETED');
+    // console.log('DB NAME: ' + dbName);
+    // console.log(dbName + ' DELETED');
 
     sortField = key;
     groupField = key;
     primaryKey = key;
     primaryDbKey = dbKey;
 
-    var row;
-    var rows = [];
+    // var row;
+    // var rows = [];
 
     postInitialization(null, mainArray);
     updateTable(null, mainArray, data, headers, primaryKey, true);
@@ -217,8 +216,12 @@ function updateRows(data, db, table, secondaryDbKey) {
             if (passwordAutoGen == 'true') {
                 rowObj['PASSWORD'] = unixCryptTD(passwordGen(8), generateSalt());
             } else {
-                console.log('password: ' + dataRow[fieldMask['password']]);
-                rowObj['PASSWORD'] = unixCryptTD(typeof(dataRow[fieldMask['password']]) === 'undefined' ? dataRow[fieldMask['student_id']] : dataRow[fieldMask['password']].replace(/^"|"$/g, ''), generateSalt());
+                if (passwordIsId == 'true') {
+                    rowObj['PASSWORD'] = unixCryptTD(dataRow[fieldMask['student_id']].replace(/^"|"$/g, ''), generateSalt());
+                } else {
+                    console.log('password: ' + dataRow[fieldMask['password']]);
+                    rowObj['PASSWORD'] = unixCryptTD(typeof(dataRow[fieldMask['password']]) === 'undefined' ? passwordGen(8) : dataRow[fieldMask['password']].replace(/^"|"$/g, ''), generateSalt());
+                }
             }
             rowObj['PERMISSION'] = '0';
 
