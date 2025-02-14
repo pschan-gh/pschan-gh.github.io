@@ -12,7 +12,7 @@
         <ul xmlns="http://www.w3.org/1999/xhtml" environment="">
           <li environment="">
             <paragraphs xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="" chapter_type="" section="" subsection="" subsubsection="" environment="" wbtag="paragraphs"> Click on the icon </paragraphs>
-            <img style="max-height:1em;width:auto" src="icons/Edit_Notepad_Icon.svg" environment=""/>
+            <img class="exempt" style="max-height:1em;width:auto" src="icons/Edit_Notepad_Icon.svg" environment=""/>
             <paragraphs xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="" chapter_type="" section="" subsection="" subsubsection="" environment="" wbtag="paragraphs"> or select </paragraphs>
             <strong environment="">
               <paragraphs xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="" chapter_type="" section="" subsection="" subsubsection="" environment="" wbtag="paragraphs">Compose</paragraphs>
@@ -43,7 +43,7 @@
       <keywords slide="all" environ="chapter" chapter="1" course="Welcome to Cranach">
         <keyword chapter="1" slide="all">statement</keyword>
       </keywords>
-      <title environment="title" chapter_type="Lecture" wbtag="lecture" scope="chapter" course="Welcome to Cranach" chapter="1" section="" subsection="" subsubsection="" serial="1" slide=""/>
+      <title environment="title" chapter_type="Lecture" wbtag="lecture" scope="chapter" course="Welcome to Cranach" chapter="1" section="" subsection="" subsubsection="" serial="" slide=""/>
       <slides environment="" chapter_type="">
         <slide environment="" chapter_type="Lecture" canon_num="2" scope="lecture" id="s2" slide="2" course="Welcome to Cranach" chapter="1" section="" subsection="" subsubsection="" chapter_title="" section_title="">
           <title environment="title" chapter_type="Lecture" wbtag="lecture" scope="chapter" course="" chapter="" section="" subsection="" subsubsection="" serial="" slide="2"/>
@@ -51,7 +51,7 @@
         </slide>
       </slides>
       <section environment="" chapter_type="" type="Section" wbtag="section" title="Creating a Slideshow" course="Welcome to Cranach" chapter="1" num="1" serial="1.1">
-        <title environment="title" chapter_type="Lecture" wbtag="title" scope="section" course="Welcome to Cranach" chapter="1" section="1" subsection="" subsubsection="" serial="1.1" slide="">
+        <title environment="title" chapter_type="Lecture" wbtag="title" scope="section" course="Welcome to Cranach" chapter="1" section="1" subsection="" subsubsection="" serial="" slide="">
           <paragraphs course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="" subsubsection="" environment="title" wbtag="paragraphs">Creating a Slideshow</paragraphs>
         </title>
         <slides environment="" chapter_type="">
@@ -149,30 +149,36 @@
               <code xmlns="http://www.w3.org/1999/xhtml" environment="">
                 <escaped xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="escaped" argument="newcol"/>
               </code>
-              <paragraphs course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="paragraphs">.</paragraphs>
+              <paragraphs course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="paragraphs"> .</paragraphs>
               <newline course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment=""/>
               <paragraphs course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="paragraphs">For each new collapsed element within the sequence, enter the tag </paragraphs>
               <code xmlns="http://www.w3.org/1999/xhtml" environment="">
                 <escaped xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="escaped" argument="col"/>
               </code>
-              <paragraphs course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="paragraphs">.
+              <paragraphs course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="paragraphs"> .
 To end the sequence, enter </paragraphs>
               <code xmlns="http://www.w3.org/1999/xhtml" environment="">
                 <escaped xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="escaped" argument="endcol"/>
               </code>
-              <paragraphs course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="paragraphs">.</paragraphs>
+              <paragraphs course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="paragraphs"> .</paragraphs>
               <newline course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment=""/>
               <paragraphs course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="paragraphs">Hence: </paragraphs>
-              <textarea xmlns="http://www.w3.org/1999/xhtml" readonly="readonly" style="border:1px solid #bbb;border-radius:10px;padding:10px;width:100%;height:15em;" environment="">
-@newcol
-First collapsed element.
-
-@col
-Second collapsed element.
-@col
-Third.
-@endcol
-</textarea>
+              <div xmlns="http://www.w3.org/1999/xhtml" style="border:1px solid #bbb;border-radius:10px;padding:10px;width:100%;height:15em;font-family:Courier" environment="">
+                <escaped xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="escaped" argument="newcol"/>
+                <newline xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment=""/>
+                <paragraphs xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="paragraphs">First collapsed element.</paragraphs>
+                <newline xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment=""/>
+                <br environment=""/>
+                <escaped xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="escaped" argument="col"/>
+                <newline xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment=""/>
+                <paragraphs xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="paragraphs">Second collapsed element.</paragraphs>
+                <newline xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment=""/>
+                <escaped xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="escaped" argument="col"/>
+                <newline xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment=""/>
+                <paragraphs xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="paragraphs">Third.</paragraphs>
+                <newline xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment=""/>
+                <escaped xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="escaped" argument="endcol"/>
+              </div>
               <paragraphs course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="" wbtag="paragraphs"> gives: </paragraphs>
               <div xmlns="http://www.w3.org/1999/xhtml" style="border:1px solid #bbb; border-radius:10px; padding:10px;" environment="">
                 <newcol xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="3" subsubsection="" environment="newcol" wbtag="newcol">
@@ -278,14 +284,15 @@ then $f$ attains both a maximum value and a minimum value.
               <paragraphs course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="4" subsubsection="" environment="" wbtag="paragraphs"> gives: </paragraphs>
               <newcol course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="4" subsubsection="" environment="newcol" wbtag="newcol">
                 <div xmlns="http://www.w3.org/1999/xhtml" style="border: 1px solid #bbb;border-radius:10px;padding:10px;" environment="newcol">
-                  <statement xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" environment="statement" chapter_type="" type="Definition" wbtag="defn" num="1" md5="f23f4f88dbb0788c596ef4b591b91383" course="Welcome to Cranach" chapter="1" slide="7" item="1.1">
+                  <statement xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" environment="statement" chapter_type="Lecture" type="Definition" wbtag="defn" num="1" md5="f23f4f88dbb0788c596ef4b591b91383" course="Welcome to Cranach" chapter="1" slide="7" item="1.1">
                     <paragraphs course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="4" subsubsection="" environment="statement" wbtag="paragraphs"> A function $f : \mathbb{R} \longrightarrow \mathbb{R}$
 is said to be continuous at $c \in \mathbb{R}$ if:
 \[
 \lim_{x \rightarrow c} f(x) = f(c).
 \] </paragraphs>
                   </statement>
-                  <statement xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" environment="statement" chapter_type="" type="Theorem" wbtag="thm" num="2" md5="7ed018c239df7cb7c7f3297e58eeb406" course="Welcome to Cranach" chapter="1" slide="7" item="1.2">
+                  <statement xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" environment="statement" chapter_type="Lecture" type="Theorem" wbtag="thm" num="2" md5="7ed018c239df7cb7c7f3297e58eeb406" course="Welcome to Cranach" chapter="1" slide="7" item="1.2">
+                    <label wbtag="label" name="dadada" type="Theorem"/>
                     <paragraphs course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="4" subsubsection="" environment="statement" wbtag="paragraphs"> Let $a, b \in \mathbb{R}$.
 If a function $f : [a, b] \longrightarrow \mathbb{R}$
 is continuous everywhere, </paragraphs>
@@ -299,7 +306,7 @@ is continuous everywhere, </paragraphs>
                 <code xmlns="http://www.w3.org/1999/xhtml" environment="newcol">
                   <escaped xmlns="http://www.math.cuhk.edu.hk/~pschan/cranach" course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="4" subsubsection="" environment="newcol" wbtag="escaped" argument="endcol"/>
                 </code>
-                <paragraphs course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="4" subsubsection="" environment="newcol" wbtag="paragraphs">.
+                <paragraphs course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="4" subsubsection="" environment="newcol" wbtag="paragraphs"> .
 A collapsible sequence is not allowed to "straddle" the end of a statement environment.</paragraphs>
                 <newline course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="4" subsubsection="" environment="newcol"/>
                 <paragraphs course="Welcome to Cranach" chapter="1" chapter_type="" section="1" subsection="4" subsubsection="" environment="newcol" wbtag="paragraphs">However, the Cranach engine affords a rudimentary degree of fault tolerance (though perhaps not too much, at this juncture). So, in the previous example, even though the </paragraphs>

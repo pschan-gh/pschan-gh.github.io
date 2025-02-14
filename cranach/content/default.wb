@@ -1,6 +1,6 @@
 @course{Welcome to Cranach}
 <ul>
-<li> Click on the icon <img style="max-height:1em;width:auto" src="icons/Edit_Notepad_Icon.svg"/>
+<li> Click on the icon <img class="exempt" style="max-height:1em;width:auto" src="icons/Edit_Notepad_Icon.svg"/>
 or select <strong>Compose</strong> under <span style="color:#ccc">☰</span>. </li>
 <li>You may proceed to compose your slides, or click on the icon <img style="max-height:1em;width:auto" src="icons/File_Open.svg"/>
 to load <code>.wb</code>
