@@ -29,8 +29,6 @@
     <script src="unix-crypt-td.js" type='text/javascript'></script>
     <script src="classlist.js" type='text/javascript'></script>
 
-    <script>if (window.module) module = window.module;</script>
-
     <style>
         .triangle {
             color: #aaa;
@@ -111,7 +109,7 @@
                             </label>
                             <input class="form-control-file form-control-sm dropdown-item" style="display:none"
                                 type="file" id="primary-file-input" accept=".csv, .txt, .lst" />
-                            <a class="pastebin dropdown-item" data-toggle="modal" data-target="#pastebin">Paste CSV</a>
+                            <a class="pastebin dropdown-item" data-bs-toggle="modal" data-bs-target="#pastebin">Paste CSV</a>
                             <!-- <label id="import" for="importJSON" class="dropdown-item">Open JSON</label>
 						<input class="form-control-file form-control-sm dropdown-item" type="file" style="display:none" id="importJSON" accept=".json"/>
 					    -->
@@ -120,9 +118,29 @@
                                 style="display:none" id="importXLSX" accept=".xlsx, .xls" />
                         </div>
                     </li>
-
-                </ul>
-                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown password-option d-none">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdown-password" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Advanced Options
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="dropdown-password">
+                            <li>
+                                <label class="dropdown-item password">
+                                    <input type="checkbox" name="option" value="passwordauto"> Autogen Password
+                                </label>
+                            </li>
+                            <li>
+                                <label class="dropdown-item password">
+                                    <input type="checkbox" name="option" value="passwordcustom"> Use Password from File
+                                </label>
+                            </li>
+                            <li>
+                                <label class="dropdown-item password">
+                                    <input type="checkbox" name="option" value="passwordisid"> <span style="color:red">Use ID as Password &#9888;</span>
+                                </label>
+                            </li>
+                        </ul>
+                    </li>
                     <li class="nav-item dropdown" id="export" style="display:none">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
@@ -134,6 +152,8 @@
                             </a>
                         </div>
                     </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">                    
                     <li class="nav-item">
                         <a class="nav-link">
                             <strong id="messages"></strong>
@@ -168,7 +188,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="plaintext_source">Paste</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>

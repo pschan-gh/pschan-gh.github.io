@@ -1,18 +1,12 @@
-var sortField = 'undefined';
-var groupField = 'undefined';
 var headerNames = [];
 var sanitizedHeaders = [];
-var headerTypes = {};
-var baseQuery;
 var clickedArray = {};
 var wscale = 1;
 var colWidths = {};
 var primaryDbKeyValues = [];
-var primaryDbKey = '';
-var primaryKey = '';
-var primaryFile = null;
 const webworkFields = ['student_id', 'lname', 'fname', 'status', 'comment', 'section', 'recitation', 'email', 'user_id', 'password', 'permission'];
-var mainArray = new Array();
+let mainArray = new Array();
+
 
 const url = new URL(window.location.href);
 const emailSuffix = url.searchParams.get("email_suffix") ? url.searchParams.get("email_suffix") : '';
@@ -23,17 +17,10 @@ function report() {
 };
 
 function initializeDB(data, headers, key) {
-    const dbKey = key;
-
     document.querySelector('#mainTable tbody').innerHTML = '';
     
-    sortField = key;
-    groupField = key;
-    primaryKey = key;
-    primaryDbKey = dbKey;
-
     postInitialization();
-    updateTable(null, mainArray, data, headers, primaryKey, true);
+    updateTable(data, headers, key);
 
 }
 
@@ -41,24 +28,14 @@ function resetTable() {
     document.querySelectorAll('#mainTable > tbody > tr').forEach(tr => tr.remove());
     document.querySelector('#header_row').innerHTML = '<th id="th_count" clicked="0" field="count" class="col_count header"><a href="#">#</a></th>';
 
-    let hfield;
-
     sanitizedHeaders.map(function (sfield) {
-        hfield = sfield;
         let th = document.createElement('th');
-        th.id = 'th_' + hfield;
+        th.id = 'th_' + sfield;
         th.setAttribute('clicked', '0');
-        th.setAttribute('field', hfield);
-        th.className = 'col_' + hfield;
+        th.setAttribute('field', sfield);
+        th.className = 'col_' + sfield;
 
-        // let html = `<a id="a_${hfield}" href="#" class="header" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">${hfield.replace(/_/, ' ')}</a>
-        //     <div class="dropdown-menu" aria-labelledby="a_${hfield}">
-        //         <a class="dropdown-item group_by" field="${hfield}" href="#">Group by</a>
-        //         <a class="dropdown-item fields statistics" field="${hfield}" href="#">Statistics</a>
-        //         <a class="dropdown-item recalculate fields" data-toggle="modal" data-target="#column_bin" field="${hfield}" href="#">Recalculate</a>
-        //     </div>`;
-
-        th.innerHTML = `${hfield}`;
+        th.innerHTML = `${sfield}`;
 
         document.querySelector('#header_row').appendChild(th);
 
@@ -76,7 +53,7 @@ function sanitize(str) {
                 .replace(/([a-zA-Z])_(\d+)/g, "$1$2");
 }
 
-function updateTable(db, table, data, headers, key, isPrimary) {
+function updateTable(data, headers, key) {
     // console.log(data);
     headers.forEach((field, j) => {
         let sanitizedField = sanitize(field);
@@ -88,15 +65,8 @@ function updateTable(db, table, data, headers, key, isPrimary) {
         }
     });
 
-    primaryDbKey = key;
-    primaryKey = key;
-    sortField = key;
-    groupField = key;
-
-    // updateFieldsMenu();
-
     resetTable();
-    updateRows(data, db, table, primaryDbKey);
+    updateRows(data, key);
 
 }
 
@@ -125,7 +95,24 @@ function passwordGen(length) {
     return result;
 }
 
-function updateRows(data, db, table, secondaryDbKey) {
+function generatePasswords(choice) {
+    console.log(choice);
+    mainArray.forEach(rowObj => {
+        if (choice == 'passwordauto') {
+            rowObj['PASSWORD'] = unixCryptTD(passwordGen(8), generateSalt());
+        } else {
+            if (choice == 'passwordisid') {
+                rowObj['PASSWORD'] = unixCryptTD(rowObj['STUDENT_ID'], generateSalt());
+            } else if (choice == 'passwordcustom') {
+                rowObj['PASSWORD'] = unixCryptTD(rowObj['PASSWORD_PLAINTEXT'], generateSalt());
+            }
+        }
+    });
+    queryDataSet();
+}
+
+function updateRows(data, secondaryDbKey) {
+    const primaryDbKey = secondaryDbKey; //only for classlist
     const regexFields = ['student_id', 'fullname', 'firstname', 'lastname', 'comment', 'section', 'email', 'password'];
     let field;
     let fieldMask = {};
@@ -205,6 +192,9 @@ function updateRows(data, db, table, secondaryDbKey) {
                 rowObj['EMAIL'] = dataRow[fieldMask['email']];
             }
             rowObj['USER_ID'] = dataRow[fieldMask['student_id']];
+
+            rowObj['PASSWORD_PLAINTEXT'] = typeof (dataRow[fieldMask['password']]) === 'undefined' ? passwordGen(8) : dataRow[fieldMask['password']].replace(/^"|"$/g, '');
+
             if (passwordAutoGen == 'true') {
                 rowObj['PASSWORD'] = unixCryptTD(passwordGen(8), generateSalt());
             } else {
@@ -212,7 +202,7 @@ function updateRows(data, db, table, secondaryDbKey) {
                     rowObj['PASSWORD'] = unixCryptTD(dataRow[fieldMask['student_id']].replace(/^"|"$/g, ''), generateSalt());
                 } else {
                     console.log('password: ' + dataRow[fieldMask['password']]);
-                    rowObj['PASSWORD'] = unixCryptTD(typeof (dataRow[fieldMask['password']]) === 'undefined' ? passwordGen(8) : dataRow[fieldMask['password']].replace(/^"|"$/g, ''), generateSalt());
+                    rowObj['PASSWORD'] = unixCryptTD(rowObj['PASSWORD_PLAINTEXT'], generateSalt());
                 }
             }
             rowObj['PERMISSION'] = '0';
@@ -230,21 +220,21 @@ function updateRows(data, db, table, secondaryDbKey) {
             // insert new database entry
             if (primaryDbKeyValues.indexOf(secondaryKeyValue) <= -1 && secondaryKeyValue != '') {
                 // console.log('NEW ENTRY');
-                var datum = rowObj;
+                let datum = rowObj;
 
                 datum[primaryDbKey] = secondaryKeyValue;
-                table.push(datum);
+                mainArray.push(datum);
 
                 primaryDbKeyValues.push(secondaryKeyValue.toString());
             } else { // udpate existing database entry
-                for (let i = 0; i < table.length; i++) {
-                    if (table[i][primaryDbKey] == rowObj[secondaryDbKey]) {
+                for (let i = 0; i < mainArray.length; i++) {
+                    if (mainArray[i][primaryDbKey] == rowObj[secondaryDbKey]) {
                         sanitizedHeaders.map(function (sfield) {
                             let dbField = sfield;
                             if (dbField != primaryDbKey) {
                                 let value = rowObj[dbField];
                                 if (value != null && typeof value != typeof undefined) {
-                                    table[i][dbField] = value;
+                                    mainArray[i][dbField] = value;
                                 }
                             }
                         });
@@ -261,27 +251,11 @@ function updateRows(data, db, table, secondaryDbKey) {
         }
         console.log('INSERT INTO TABLE');
         let columnsWithRoutines = [];
-        recalculateColumns(db, table, columnsWithRoutines);
+        queryDataSet();
     }, 0);
 }
 
-function recalculateColumns(db, table, columns) {
-    
-    table.forEach(function (rowObj) {
-        columns.forEach(col => {
-            let sfield = col.name;
-            let routine = col.routine;
-            
-            let routineStr = routine.replace(/\(@([^\)]+)\)/g, 'row[sanitize("$1")]');
-            let routineFunc = new Function('row', routineStr);
-            rowObj[sfield] = routineFunc(rowObj);
-
-        });
-    });
-    queryDataSet(db, table);
-}
-
-function queryDataSet(db, table) {
+function queryDataSet() {
     document.querySelectorAll('th').forEach(th => {
         th.style.backgroundColor = '';
         th.style.color = '';
@@ -300,7 +274,7 @@ function queryDataSet(db, table) {
     document.getElementById('messages').innerHTML = 'Running Query<img class="loading" src="./Loading_icon.gif"/>';
 
     window.setTimeout(function () {
-        table.forEach((row, index) => {
+        mainArray.forEach((row, index) => {
             let tableRow = document.getElementById('mainTable').getElementsByTagName('tbody')[0].insertRow(-1);
         
             let cell = tableRow.insertCell(0);
@@ -319,22 +293,21 @@ function queryDataSet(db, table) {
             prev_row = row;
             prev_tableRow = tableRow;
         });
-
+        document.getElementById('messages').textContent = 'Query Completed';
+        document.querySelector('.password-option').classList.remove('d-none');
         refreshTable();
     }, 0);
 }
 
 function refreshTable() {
     console.log('REFRESHTABLE');
-
-    document.getElementById('messages').textContent = 'Query Completed';
     
-    document.querySelectorAll('td.root').forEach(td => {
-        let count = parseInt(td.innerHTML, 10);
-        if (count > 1) {
-            td.innerHTML = `${count}<strong style='color:SteelBlue;float:right'>+</strong>`;
-        }
-    });
+    // document.querySelectorAll('td.root').forEach(td => {
+    //     let count = parseInt(td.innerHTML, 10);
+    //     if (count > 1) {
+    //         td.innerHTML = `${count}<strong style='color:SteelBlue;float:right'>+</strong>`;
+    //     }
+    // });
 
     // let colClass = 'col_' + field;
 
@@ -374,8 +347,8 @@ function refreshTable() {
     // Adjust tbody margin
     document.querySelector('tbody').style.marginTop = document.querySelector('th').offsetHeight + 'px';
 
-    document.querySelectorAll('.nav-item.calculated_column').forEach(el => el.style.display = '');
-    document.querySelectorAll('tr.branch').forEach(tr => tr.style.display = 'none');
+    // document.querySelectorAll('.nav-item.calculated_column').forEach(el => el.style.display = '');
+    // document.querySelectorAll('tr.branch').forEach(tr => tr.style.display = 'none');    
 
 }
 
@@ -404,11 +377,15 @@ function handleFieldsSubmitClick() {
         return;
     }
     let headers = webworkFields;
-    console.log(headers);
-    updateTable(db, table, data, headers, primaryKey, false);
-    document.getElementById('second_key_li').style.display = '';
-    document.querySelectorAll('a.pastebin, a.query').forEach(a => a.classList.add('disabled'));
-    document.getElementById('pastebin').classList.add('hide');
+    // console.log(headers);
+    // updateTable(data, headers, sanitize('student_id'));
+    // document.getElementById('second_key_li').style.display = '';
+    // document.querySelectorAll('a.pastebin').forEach(a => a.classList.add('disabled'));
+    loadPrimary(data, headers);
+    const pastebinModal = bootstrap.Modal.getInstance(document.getElementById('pastebin'));
+
+    // Close the modal
+    pastebinModal.hide();
 }
 
 function loadPrimary(data, headers = WeBWorKFields) {
@@ -514,4 +491,24 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }));
 
+    // document.querySelectorAll('.dropdown-item.password').forEach(item => {
+    //     item.addEventListener('click', function(event) {
+    //         const choice = this.getAttribute('data-choice');
+    //         generatePasswords(choice);
+    //     });
+    // });
+    
+    document.querySelectorAll('.dropdown-item.password input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          if (this.checked) {
+            // Uncheck all other checkboxes
+            document.querySelectorAll('.dropdown-item.password input[type="checkbox"]').forEach(otherCheckbox => {
+              if (otherCheckbox !== this) {
+                otherCheckbox.checked = false;
+              }
+            });
+            generatePasswords(this.value);
+          }
+        });
+      });
 })
