@@ -11,7 +11,6 @@ var primaryDbKeyValues = [];
 var primaryDbKey = '';
 var primaryKey = '';
 var primaryFile = null;
-var columnData = new Object();
 const webworkFields = ['student_id', 'lname', 'fname', 'status', 'comment', 'section', 'recitation', 'email', 'user_id', 'password', 'permission'];
 var mainArray = new Array();
 
@@ -20,76 +19,74 @@ const emailSuffix = url.searchParams.get("email_suffix") ? url.searchParams.get(
 const passwordAutoGen = url.searchParams.get("password_auto") ? url.searchParams.get("password_auto") : 'true';
 const passwordIsId = url.searchParams.get("password_is_id") ? url.searchParams.get("password_is_id") : 'false';
 
-function report () {
+function report() {
 };
 
 function initializeDB(data, headers, key) {
-    $('#mainTable').find('tbody').html('');
-
-    var row;
-    var rows = [];
-    var field;
     const dbKey = key;
-    // var dbName = 'csvDB' + JSON.stringify(data).hashCode();
 
-    // console.log('DB NAME: ' + dbName);
-    // console.log(dbName + ' DELETED');
-
+    document.querySelector('#mainTable tbody').innerHTML = '';
+    
     sortField = key;
     groupField = key;
     primaryKey = key;
     primaryDbKey = dbKey;
 
-    // var row;
-    // var rows = [];
-
-    postInitialization(null, mainArray);
+    postInitialization();
     updateTable(null, mainArray, data, headers, primaryKey, true);
 
 }
 
 function resetTable() {
-    $('#mainTable > tbody > tr').remove();
-    $('#header_row').html('<th id="th_count" clicked="0" field="count" class="col_count header"><a href="#">#</a><div class="triangle">&#x25BA;</div></th>');
+    document.querySelectorAll('#mainTable > tbody > tr').forEach(tr => tr.remove());
+    document.querySelector('#header_row').innerHTML = '<th id="th_count" clicked="0" field="count" class="col_count header"><a href="#">#</a></th>';
 
-    var hfield;
+    let hfield;
 
-    sanitizedHeaders.map(function(sfield) {
+    sanitizedHeaders.map(function (sfield) {
         hfield = sfield;
-        var $th = $("<th>", {"id" : 'th_' + hfield, 'clicked': '0', 'field': hfield, "class":'col_' + hfield});
-        var html = '<a id="a_' + hfield + '" href="#" class="header" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' + hfield.replace(/_/, ' ') + '</a>';
-        html += '<div class="dropdown-menu" aria-labelledby="a_' + hfield + '"><a class="dropdown-item group_by" field="' + hfield + '" href="#">Group by</a><a class="dropdown-item fields statistics" field="' + hfield + '" href="#" >Statistics</a><a class="dropdown-item recalculate fields" data-toggle="modal" data-target="#column_bin" field="' + hfield + '" href="#">Recalculate</a></div>';
+        let th = document.createElement('th');
+        th.id = 'th_' + hfield;
+        th.setAttribute('clicked', '0');
+        th.setAttribute('field', hfield);
+        th.className = 'col_' + hfield;
 
-        html += "<div class='triangle'>&#x25BA;</div>";
-        $th.html(html);
-        $th.appendTo($('#header_row'));
+        // let html = `<a id="a_${hfield}" href="#" class="header" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">${hfield.replace(/_/, ' ')}</a>
+        //     <div class="dropdown-menu" aria-labelledby="a_${hfield}">
+        //         <a class="dropdown-item group_by" field="${hfield}" href="#">Group by</a>
+        //         <a class="dropdown-item fields statistics" field="${hfield}" href="#">Statistics</a>
+        //         <a class="dropdown-item recalculate fields" data-toggle="modal" data-target="#column_bin" field="${hfield}" href="#">Recalculate</a>
+        //     </div>`;
+
+        th.innerHTML = `${hfield}`;
+
+        document.querySelector('#header_row').appendChild(th);
+
     });
 
-    $('th').attr('clicked', 0);
+    document.querySelectorAll('th').forEach(th => th.setAttribute('clicked', '0'));
 
 }
 
 function sanitize(str) {
-    var str = str.replace(/^\s+|\s+$/g, "").replace(/\s/g, "_").replace(/[^a-z0-9_]/ig, "").toUpperCase();
-    str = str.replace(/([a-zA-Z])_(\d+)/g,"$1$2");
-    return str;
+    return str.replace(/^\s+|\s+$/g, "")
+                .replace(/\s/g, "_")
+                .replace(/[^a-z0-9_]/ig, "")
+                .toUpperCase()
+                .replace(/([a-zA-Z])_(\d+)/g, "$1$2");
 }
 
 function updateTable(db, table, data, headers, key, isPrimary) {
-    console.log(data);
-    var sanitizedField;
-    console.log(sanitizedHeaders);
-    for (var j = 0; j < headers.length; j++) {
-        var field = headers[j];
-        sanitizedField = sanitize(field);
-        sanitizedField = sanitizedField == '' ? 'BLANK' + j.toString() : sanitizedField;
-        if (sanitizedHeaders.indexOf(sanitizedField) <= -1) {
+    // console.log(data);
+    headers.forEach((field, j) => {
+        let sanitizedField = sanitize(field);
+        sanitizedField = sanitizedField === '' ? 'BLANK' + j.toString() : sanitizedField;
+        if (sanitizedHeaders.indexOf(sanitizedField) === -1) {
             console.log('ADDING HEADER ' + sanitizedField);
             headerNames.push(sanitizedField);
             sanitizedHeaders.push(sanitizedField);
-            columnData[sanitizedField]['name'] = sanitizedField;
         }
-    }
+    });
 
     primaryDbKey = key;
     primaryKey = key;
@@ -119,54 +116,49 @@ function generateSalt() {
 
 // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
 function passwordGen(length) {
-   var result           = '';
-   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-   var charactersLength = characters.length;
-   for ( var i = 0; i < length; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-   }
-   return result;
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
 }
 
 function updateRows(data, db, table, secondaryDbKey) {
-    var str, row;
-    var newRows = [];
-    var sanitizedField;
-    var sfield, field;
-    var fieldMask = {};
+    const regexFields = ['student_id', 'fullname', 'firstname', 'lastname', 'comment', 'section', 'email', 'password'];
+    let field;
+    let fieldMask = {};
 
-    $('#messages').html('Updating Database<img class="loading" src="./Loading_icon.gif"/>');
+    document.getElementById('messages').innerHTML = 'Updating Database<img class="loading" src="./Loading_icon.gif"/>';
     console.log(data);
     console.log(sanitizedHeaders);
-    window.setTimeout(function(){
-        let sanitizedField;
+    window.setTimeout(function () {
         let dataRow = data[0];
         console.log(dataRow);
-
+    
         let re = {};
-        re['student_id'] = new RegExp($('#idRe').val(), 'i');
-        re['fullname'] = new RegExp($('#fullnameRe').val(), 'i');
-        re['firstname'] = new RegExp($('#firstnameRe').val(), 'i');
-        re['lastname'] = new RegExp($('#lastnameRe').val(), 'i');
-        re['comment'] = new RegExp($('#commentRe').val(), 'i');
-        re['section'] = new RegExp($('#sectionRe').val(), 'i');
-        re['email'] = new RegExp($('#emailRe').val(), 'i');
-        re['password'] = new RegExp($('#passwordRe').val(), 'i');
+        regexFields.forEach(rfield => {
+            try {
+                re[rfield] = new RegExp(document.getElementById(`${rfield}Re`).value, 'i');
+            } catch(e) {
+                alert(rfield);
+            }
+        });
 
         for (key in dataRow) {
             for (field in re) {
-                if (key.match(re[field]) && key.match(re[field])!='' && typeof key.match(re[field]) != 'undefined' && key.match(re[field])!=null) {
+                if (key.match(re[field]) && key.match(re[field]) != '' && typeof key.match(re[field]) != 'undefined' && key.match(re[field]) != null) {
                     fieldMask[field] = key;
                     break;
                 }
             }
         }
 
-
         console.log(fieldMask);
 
         // for (let i = 0; i < data.length; i++) {
-        data.forEach(function(dataRow, i) {
+        data.forEach(function (dataRow, i) {
             dataRow = data[i];
             console.log(dataRow);
             var rowObj = {};
@@ -179,7 +171,7 @@ function updateRows(data, db, table, secondaryDbKey) {
                 if (typeof dataRow[fieldMask['fullname']] === typeof undefined) {
                     dataRow[fieldMask['fullname']] = ',';
                 } else {
-                    if(!dataRow[fieldMask['fullname']].match(',')) {
+                    if (!dataRow[fieldMask['fullname']].match(',')) {
                         dataRow[fieldMask['fullname']] += ',';
                     }
                 }
@@ -220,11 +212,10 @@ function updateRows(data, db, table, secondaryDbKey) {
                     rowObj['PASSWORD'] = unixCryptTD(dataRow[fieldMask['student_id']].replace(/^"|"$/g, ''), generateSalt());
                 } else {
                     console.log('password: ' + dataRow[fieldMask['password']]);
-                    rowObj['PASSWORD'] = unixCryptTD(typeof(dataRow[fieldMask['password']]) === 'undefined' ? passwordGen(8) : dataRow[fieldMask['password']].replace(/^"|"$/g, ''), generateSalt());
+                    rowObj['PASSWORD'] = unixCryptTD(typeof (dataRow[fieldMask['password']]) === 'undefined' ? passwordGen(8) : dataRow[fieldMask['password']].replace(/^"|"$/g, ''), generateSalt());
                 }
             }
             rowObj['PERMISSION'] = '0';
-
 
             console.log(rowObj);
 
@@ -246,9 +237,9 @@ function updateRows(data, db, table, secondaryDbKey) {
 
                 primaryDbKeyValues.push(secondaryKeyValue.toString());
             } else { // udpate existing database entry
-                for(let i = 0; i < table.length; i++) {
+                for (let i = 0; i < table.length; i++) {
                     if (table[i][primaryDbKey] == rowObj[secondaryDbKey]) {
-                        sanitizedHeaders.map(function(sfield) {
+                        sanitizedHeaders.map(function (sfield) {
                             let dbField = sfield;
                             if (dbField != primaryDbKey) {
                                 let value = rowObj[dbField];
@@ -263,7 +254,7 @@ function updateRows(data, db, table, secondaryDbKey) {
             }
         });
 
-        for (var key in colWidths) {
+        for (let key in colWidths) {
             if (colWidths.hasOwnProperty(key)) {
                 colWidths[key] = colWidths[key] + 2;
             }
@@ -275,636 +266,199 @@ function updateRows(data, db, table, secondaryDbKey) {
 }
 
 function recalculateColumns(db, table, columns) {
-
-    var newRows = [];
-    let functionStr = 'return db.select().from(table).exec()';
-    console.log(functionStr);
-    console.log(columnData);
-    let queryFunc = new Function('db', 'table',  functionStr);
-    let sanitizedField;
-    let dbField;
-
-    table.forEach(function(rowObj) {
+    
+    table.forEach(function (rowObj) {
         columns.forEach(col => {
             let sfield = col.name;
             let routine = col.routine;
-            columnData[sfield].routine = routine;
-
-
+            
             let routineStr = routine.replace(/\(@([^\)]+)\)/g, 'row[sanitize("$1")]');
-            // console.log(routineStr);
-            let routineFunc = new Function('row',  routineStr);
-            // console.log(sfield);
-            // console.log(sfield);
+            let routineFunc = new Function('row', routineStr);
             rowObj[sfield] = routineFunc(rowObj);
-            var datum = rowObj;
 
         });
     });
-    queryHWSet(db, table, baseQuery, groupField);
+    queryDataSet(db, table);
 }
 
-//https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript
-String.prototype.hashCode = function() {
-    var hash = 0, i, chr;
-    if (this.length === 0) return hash;
-    for (i = 0; i < this.length; i++) {
-        chr   = this.charCodeAt(i);
-        hash  = ((hash << 5) - hash) + chr;
-        hash |= 0; // Convert to 32bit integer
-    }
-    return hash;
-};
+function queryDataSet(db, table) {
+    document.querySelectorAll('th').forEach(th => {
+        th.style.backgroundColor = '';
+        th.style.color = '';
+        th.querySelectorAll('a').forEach(a => a.style.color = '');
+        th.querySelectorAll('div').forEach(div => div.style.color = '');
+    });
 
-function queryHWSet(db, table, query, field) {
-
-    $('th').css('background-color', '');
-    $('th').css('color', '');
-    $('th').find('a').css('color', '');
-    $('th').find('div').css('color', '');
-    $('td').css('border-left', '');
-    $('td').css('border-right', '');
-    $('td').css('color', '#eee');
-
-    var dbGroup = field;
+    document.querySelectorAll('td').forEach(td => {
+        td.style.borderLeft = '';
+        td.style.borderRight = '';
+        td.style.color = '#eee';
+    });
 
     resetTable();
 
-    var prev_row = null;
-    var prev_tableRow = null;
-    var white = 'rgb(255, 255, 255)';
-    var grey = 'rgb(245, 245, 245)';
-    var bgcolor;
-    // var order = lf.Order.DESC;
-    var order = 'DESC';
-    var index = 0;
-    var count = 0;
+    document.getElementById('messages').innerHTML = 'Running Query<img class="loading" src="./Loading_icon.gif"/>';
 
-    var queryFunc = new Function('db', 'table',  'return db.' + query + '.exec()');
-
-    $('#messages').html('Running Query<img class="loading" src="./Loading_icon.gif"/>');
-    window.setTimeout(function(){
-        // return queryFunc(db, table).then(function(rows) {
-        // rows.forEach(function(row, rowIndex) {
-        table.forEach(function(row) {
-            // console.log(row);
-            var tableRow = document.getElementById('mainTable').getElementsByTagName('tbody')[0].insertRow(-1);
-
-            var cell;
-            cell = tableRow.insertCell(0);
-            $(cell).addClass('col_count');
-            $(cell).attr('field', 'count');
-
-            if ((prev_row == null) || (prev_row[dbGroup] != row[dbGroup])) {
-                $(".col_count[index='" + index + "']:not(:first)").html(count + '<strong style="float:right">&ndash;</strong>');
-                $("td.root[index='" + index + "']").html(count);
-                index++;
-                count = 1;
-                $(cell).addClass('root');
-                $(tableRow).addClass('root');
-            } else {
-                count++;
-                $(cell).addClass('branch');
-                $(tableRow).addClass('branch');
-            }
-            $(".col_count[index='" + index + "']:not(:first)").html(count + '<strong style="float:right">&ndash;</strong>');
-            $("td.root[index='" + index + "']").html(count);
-
-            $(tableRow).attr('index', index);
-            $(cell).attr('index', index);
-            $(cell).attr('clicked', 0);
-            cell.textContent = count ;
-
-            sanitizedHeaders.map(function(hfield) {
-                var $td = $("<td>", {
-                    'field': hfield,
-                    'class':'col_' + hfield
-                });
-                $td.text(row[hfield]);
-                $td.appendTo($(tableRow));
+    window.setTimeout(function () {
+        table.forEach((row, index) => {
+            let tableRow = document.getElementById('mainTable').getElementsByTagName('tbody')[0].insertRow(-1);
+        
+            let cell = tableRow.insertCell(0);
+            cell.classList.add('col_count');
+            cell.setAttribute('field', 'count');
+            cell.textContent = index + 1;
+        
+            sanitizedHeaders.forEach(hfield => {
+                let td = document.createElement('td');
+                td.setAttribute('field', hfield);
+                td.classList.add('col_' + hfield);
+                td.textContent = row[hfield];
+                tableRow.appendChild(td);
             });
-
+        
             prev_row = row;
             prev_tableRow = tableRow;
-
         });
 
-        refreshTable(db, table, field);
+        refreshTable();
     }, 0);
 }
 
-function refreshTable(db, table, field) {
+function refreshTable() {
     console.log('REFRESHTABLE');
-    updateKeys();
 
-    $('#messages').text('Query Completed');
-    $('#query_msg').hide();
-
-    $('td.root').each(function() {
-        var count = $(this).html();
+    document.getElementById('messages').textContent = 'Query Completed';
+    
+    document.querySelectorAll('td.root').forEach(td => {
+        let count = parseInt(td.innerHTML, 10);
         if (count > 1) {
-            $(this).html(count + "<strong style='color:SteelBlue;float:right'>+</strong>");
+            td.innerHTML = `${count}<strong style='color:SteelBlue;float:right'>+</strong>`;
         }
     });
 
+    // let colClass = 'col_' + field;
 
-    var colClass = 'col_' + field;
+    // document.querySelectorAll(`td.${colClass}`).forEach(td => {
+    //     td.style.borderLeft = '2px solid SteelBlue';
+    //     td.style.borderRight = '2px solid SteelBlue';
+    // });
 
-    $('td.' + colClass).css('border-left', '2px solid SteelBlue');
-    $('td.' + colClass).css('border-right', '2px solid SteelBlue');
 
-    if (field != 'unixtime') {
-        // $('td').css('color', '#ccc');
-        $('td.' + colClass).css('color', '');
-        $('td.col_count').css('color', '');
-    } else {
-        $('td').css('color', '');
-    }
-
-    $('td').off();
-    $('td.col_count').click(function() {
-        console.log('COL_COUNT CLICKED');
-        var index = $(this).closest('tr').attr('index');
-        var clicked = 1 - parseInt($(this).closest('tr').find('td.col_count').attr('clicked'));
-        $(".col_count[index='" + index + "']").attr('clicked', clicked);
-        $(".col_count[index='" + index + "']").closest('tr').attr('clicked', clicked);
-
-        $("td").css('color', '');
-        $("td." + colClass).css('color', '');
-        $("td.col_count").css('color', '');
-        $("tbody tr[clicked=1] td").css('color', '');
-        $("tbody tr[clicked!=1] td").css('background-color', '');
-
-        $("tbody tr[clicked=1]").show();
-        $("tbody tr[clicked=1] td.col_chkbox input[type='checkbox']").prop('checked', true);
-        $("tbody tr[clicked!=1]").hide();
-        $("tbody tr[clicked!=1] td.col_chkbox input[type='checkbox']").prop('checked', false);
-        $("tbody tr.root").show();
-
-        $("td.col_count[clicked=1]").each(function() {
-            $(this).html($(this).html().replace(/\+/, '-'));
-        });
-        $("td.col_count[clicked!=1]").each(function() {
-            $(this).html($(this).html().replace(/\-/, '+'));
-        });
+    sanitizedHeaders.forEach(sfield => {
+        colWidths[sfield] = Math.max(
+            ...Array.from(document.querySelectorAll(`td[field='${sfield}']`)).map(td => td.offsetWidth),
+            ...Array.from(document.querySelectorAll(`th[field='${sfield}']`)).map(th => th.offsetWidth)
+        );
     });
-
-
-
-    var sfield;
-    for (var j = 0; j < sanitizedHeaders.length; j++) {
-        sfield = sanitizedHeaders[j];
-        colWidths[sfield] = Math.max($("td[field='" + sfield + "']").width(), $("th[field='" + sfield + "']").width());
-    }
     colWidths['count'] = 25;
 
-    for (var key in colWidths) {
+    for (let key in colWidths) {
         if (colWidths.hasOwnProperty(key)) {
-            colWidths[key] = colWidths[key] + 25;
+            colWidths[key] += 25;
         }
     }
 
-    var tableWidth = 0;
-    $('th:visible').each(function() {
-        tableWidth += colWidths[$(this).attr('field')];
-    });
+    // Calculate table width
+    const tableWidth = Array.from(document.querySelectorAll('th')).reduce((sum, th) => sum + colWidths[th.getAttribute('field')], 0);
 
-    // $('#mainTable').css('width', 'auto');
-    $('#mainTable').css('width', tableWidth);
-    $('#table-container').css('width', tableWidth + 15);
-    $('tbody tr').css('width', tableWidth);
-    $('thead tr').css('width', tableWidth);
-    $('th, td').each(function() {
-        $(this).css('width', colWidths[$(this).attr('field')]);
-    });
-    $('tbody').css('margin-top', parseInt($('th').first().css('height')));
+    // Apply table and container widths
+    const mainTable = document.getElementById('mainTable');
+    mainTable.style.width = `${tableWidth}px`;
+    document.getElementById('table-container').style.width = `${tableWidth + 15}px`;
 
-    $('.nav-item.calculated_column').show();
-    $('tr.branch').hide();
+    // Apply widths to rows and cells
+    const applyWidth = (el) => el.style.width = `${colWidths[el.getAttribute('field')]}px`;
+    document.querySelectorAll('tbody tr, thead tr').forEach(tr => tr.style.width = `${tableWidth}px`);
+    document.querySelectorAll('th, td').forEach(applyWidth);
 
-    updateButtons(db, table);
-}
+    // Adjust tbody margin
+    document.querySelector('tbody').style.marginTop = document.querySelector('th').offsetHeight + 'px';
 
-function updateButtons(db, table) {
-    var fieldToLf = {};
-    sanitizedHeaders.map(function(field) {
-        fieldToLf[field] = 'table.' + field;
-        if (!(clickedArray.hasOwnProperty(field))) {
-            clickedArray[field] = 0;
-        }
-    });
-
-    $("#exportCSV").off();
-    $("#exportCSV").click(function () {
-        $('th div.triangle').html('');
-
-        var $table = $('#mainTable');
-        var csv = $table.table2csv('return', {
-            "separator": ",",
-            "newline": "\n",
-            "quoteFields": false,
-            "excludeColumns": ".col_chkbox, .col_count",
-            "excludeRows": "",
-            "trimContent": true,
-            "filename": "table.csv"
-        });
-
-        csv = csv.replace(/Group byStatisticsRecalculate/g, '');
-
-        let lines = csv.split('\n');
-        lines.splice(0,1);
-        csv = lines.join('\n');
-
-        // https://stackoverflow.com/questions/42462764/javascript-export-csv-encoding-utf-8-issue/42466254
-        // var universalBOM = "\uFEFF";
-        // var a = document.createElement('a');
-        // a.setAttribute('href', 'data:text/csv;charset=ISO-8859-1,'
-        // + encodeURIComponent(universalBOM + csv));
-        // a.setAttribute('download', 'classlist.lst');
-
-        var a = document.createElement('a');
-        a.setAttribute('href', 'data:text/csv;charset=ISO-8859-1,'
-        + encodeURIComponent(csv));
-        a.setAttribute('download', 'classlist.lst');
-
-        a.click()
-        // window.location.href = 'data:text/csv;charset=UTF-8,' + encodeURIComponent(universalBOM + csv);
-        $('th div.triangle').html('&#x25ba;');
-    });
-
-    $('#column_submit').off();
-    $('#column_submit').on('click', function() {
-        let sfield = $('#column_bin').find('.column_name').val();
-        let routine = $('#column_routine').val();
-        // columnData[sanitizedField]['name'] = sanitizedField;
-        // $('.dropdown-toggle.query').dropdown('toggle');
-        $('#messages').html('Adding Column<img class="loading" src="./Loading_icon.gif"/>');
-        window.setTimeout(function(){
-            recalculateColumns(db, table, [{name: sfield, routine: routine}]);
-            $('#column_bin').modal('hide');
-        }, 0);
-
-    });
-
-    $('#fields_submit').off();
-    $('#fields_submit').on('click', function() {
-        var results = Papa.parse($('#fields').val(), {
-            header: true,
-            dynamicTyping: false,
-        });
-        console.log(results);
-        data = results.data;
-        if (data.length < 1) {
-            return;
-        }
-        // headers = results.meta['fields'];
-        let headers = webworkFields;
-        console.log(headers);
-        updateTable(db, table, data, headers, primaryKey, false);
-        $('#second_key_li').show();
-        $('a.pastebin').addClass('disabled');
-        $('a.query').addClass('disabled');
-        $('#pastebin').modal('hide')
-    });
-
-    $("th a").off();
-
-    $('th').find('.fields.statistics').off();
-    $('th').find('.fields.statistics').click(function() {
-        var array = [];
-        var field = $(this).attr('field');
-        $("td[field='" + field + "']").each(function() {
-            if ($(this).text() != '' && $(this).text() != null && typeof $(this).text() != typeof undefined) {
-                array.push(+($(this).text()));
-            }
-        });
-
-        statistics(array, field);
-    });
-
-    $('.fields.recalculate').off();
-    $('.fields.recalculate').click(function() {
-        let sfield = $(this).attr('field');
-        $('#column_bin').find('.column_name').val(sfield);
-        $('#column_routine').val('');
-        $('#column_routine').val(columnData[sfield]['routine']);
-    });
-
-    $("th div.triangle").off();
-    $("th div.triangle").on('click', function() {
-        $('th div.triangle').html('&#x25ba;');
-        sortField = $(this).closest('th').attr('field');
-
-        var clicked = clickedArray[sortField];
-        clicked = clicked == 0 ? -1 : -1*clicked;
-        clickedArray[sortField] = clicked;
-
-        $(this).closest('th').attr('clicked', clicked);
-
-        var aContent, bContent;
-        var tbody = $('#mainTable').find('tbody');
-
-        console.log(groupField);
-        if (sortField != groupField && sortField != 'count' && groupField != primaryKey) {
-            tbody.find('tr').sort(function(a, b) {
-                aContent = $('td[field="' + sortField + '"]', a).html();
-                bContent = $('td[field="' + sortField + '"]', b).html();
-
-                aContent = typeof aContent !== typeof undefined ? aContent : '';
-                bContent = typeof bContent !== typeof undefined ? bContent : '';
-
-                if (isNaN(aContent) || isNaN(bContent)) {
-                    return ($('td[field="' + groupField + '"]', a).html().localeCompare($('td[field="' + groupField + '"]', b).html())) || clicked*(aContent.localeCompare(bContent));
-                } else {
-                    return ($('td[field="' + groupField + '"]', a).html().localeCompare($('td[field="' + groupField + '"]', b).html())) || clicked*(+aContent - +bContent);
-                }
-            }).appendTo(tbody);
-        } else {
-            tbody.find('tr').sort(function(a, b) {
-                aContent = $('td[field="' + sortField + '"]', a).html();
-                bContent = $('td[field="' + sortField + '"]', b).html();
-                if ((isNaN(aContent) || isNaN(bContent)) && sortField != 'count') {
-                    return clicked*(aContent.localeCompare(bContent));
-                } else {
-                    return clicked*(+aContent - +bContent);
-                }
-            }).appendTo(tbody);
-        }
-        tbody.find('tr').each(function(rowIndex) {
-            $(this).find('td[field=' + sortField+ ']')
-                .attr('data-toggle', 'tooltip')
-                .attr('data-placement', 'bottom')
-                .attr('title', 'rank ' + (rowIndex + 1).toString());
-        });
-
-        tbody.find('tr.branch').each(function() {
-            var index = $(this).closest('th').attr('index');
-            $(this).closest('th').detach().insertAfter($("tr.root[index='" + index + "']"));
-        });
-        if ($(this).closest('th').attr('clicked') == 1) {
-            $(this).html('&#x25B2;');
-        } else if ($(this).closest('th').attr('clicked') == -1){
-            $(this).html('&#x25BC;');
-        }
-        $('tbody').css('margin-top', parseInt($('th').first().css('height')) + 'px');
-    });
-
-    var field;
-    $("th").each(function() {
-        field = $(this).attr('field');
-        if (field != groupField) {
-            $(this).find('a.triangle').html('&#x25BA;');
-            $(this).css('background-color', '');
-            $(this).find('a').css('color', '');
-            $(this).find('div').css('color', '');
-        } else {
-            $(this).css('background-color', 'SteelBlue');
-            $(this).find('a.header').css('color', 'white');
-            $(this).find('div.triangle').css('color', 'white');
-
-            if (clickedArray[field] == 1) {
-                $(this).find('.triangle').html('&#x25B2;');
-                $(this).find('.triangle').show();
-            } else if (clickedArray[field] == -1) {
-                $(this).find('.triangle').html('&#x25BC;');
-                $(this).find('.triangle').show();
-            }
-        }
-    });
-
-    $('tr').off();
-    $('tr').on('click', function() {
-        $('td').css('color', '');
-        $(this).find('td').css('color', 'red');
-    });
+    document.querySelectorAll('.nav-item.calculated_column').forEach(el => el.style.display = '');
+    document.querySelectorAll('tr.branch').forEach(tr => tr.style.display = 'none');
 
 }
 
-function statistics(values, field) {
-    $('#statistics').modal('toggle');
-    $('.modal-title.field').text(field);
-
-    let array = values.map(value => {return isNaN(value) ? 0 : value;});
-
-    $('#statistics').find('.modal-body').find('.stats').html('COUNT: ' + array.length + '<br/>MEDIAN: ' + math.median(array) + '<br/>' + 'MEAN: ' + Math.round(100*math.mean(array))/100 +  '<br/>' + 'Standard Deviation: ' + Math.round(100*math.std(array))/100);
-
-    $('#max').val(math.max(array));
-
+function handleExportCSVClick() {
+    // document.querySelectorAll('th div.triangle').forEach(div => div.innerHTML = '');
+    let csv = table2csv('return', {
+        "separator": ",",
+        "newline": "\n",
+        "quoteFields": false,
+        "excludeColumns": ".col_count, .col_rank",
+        "excludeRows": "",
+        "trimContent": true,
+        "filename": "untitled.lst"
+    }, document.querySelector('#mainTable'));
+    download('untitled.lst', csv);
 }
 
-// function updateFieldsMenu() {
-//     $('#columns_menu').html('');
-//     var a = document.createElement("a");
-//     $(a).addClass("dropdown-item");
-//     $(a).attr('href', "#");
-//     $(a).html("<input class='field_checkbox' checked type='checkbox' field='count' id='count_checkbox'>&nbsp;<label class='form-check-label' for='count_checkbox'>Count</label>");
-//     $("#columns_menu").append(a);
-//
-//     sanitizedHeaders.map(function(field) {
-//         addFieldToMenu(field);
-//     });
-//
-// }
-
-function updateKeys() {
-    var o = new Option("option text", "value");
-    $(o).html('Select Primary Key...');
-    $(o).attr('selected');
-    $("#key_sel").append(o);
-
-    sanitizedHeaders.map(function(field) {
-        var o = new Option("option text", "value");
-        $(o).html(field);
-        $(o).val(field);
-        $("#key_sel").append(o);
+function handleFieldsSubmitClick() {
+    let results = Papa.parse(document.getElementById('fields').value, {
+        header: true,
+        dynamicTyping: false,
     });
-
-    $('.field_checkbox').off();
-    $('.field_checkbox').on('change', function() {
-        var field = $(this).attr('field');
-        if ($(this).is(':checked')) {
-            $('th[field="' + field + '"], td[field="' + field + '"]').show();
-        } else {
-            $('th[field="' + field + '"], td[field="' + field + '"]').hide();
-        }
-
-        var tableWidth = 0;
-        $('th:visible').each(function() {
-            tableWidth += colWidths[$(this).attr('field')];
-        });
-
-        $('#table-container').css('width', tableWidth + 15);
-        $('#mainTable').css('width', tableWidth);
-        $('#mainTable > thead > tr').css('width', tableWidth);
-    });
-
-    // https://stackoverflow.com/questions/659508/how-can-i-shift-select-multiple-checkboxes-like-gmail
-    var $chkboxes = $('.field_checkbox');
-    var lastChecked = null;
-    $chkboxes.click(function(e) {
-        if (!lastChecked) {
-            lastChecked = this;
-            return;
-        }
-
-        if (e.shiftKey) {
-            var start = $chkboxes.index(this);
-            var end = $chkboxes.index(lastChecked);
-
-            $chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
-
-            $chkboxes.each(function() {
-                var field = $(this).attr('field');
-                if ($(this).is(':checked')) {
-                    $('th[field="' + field + '"], td[field="' + field + '"]').show();
-                } else {
-                    $('th[field="' + field + '"], td[field="' + field + '"]').hide();
-                }
-
-                var tableWidth = 0;
-                $('th:visible').each(function() {
-                    tableWidth += colWidths[$(this).attr('field')];
-                });
-
-                $('#table-container').css('width', tableWidth + 15);
-                $('#mainTable').css('width', tableWidth);
-                $('#mainTable > thead > tr').css('width', tableWidth);
-            });
-        }
-
-        lastChecked = this;
-    });
-
-    $('#columns_menu').find('.fields.statistics').click(function() {
-        var array = [];
-        var field = $(this).attr('field');
-        $("td[field='" + field + "']").each(function() {
-            array.push($(this).text());
-        });
-        statistics(array, field);
-    });
-
+    console.log(results);
+    let data = results.data;
+    if (data.length < 1) {
+        return;
+    }
+    let headers = webworkFields;
+    console.log(headers);
+    updateTable(db, table, data, headers, primaryKey, false);
+    document.getElementById('second_key_li').style.display = '';
+    document.querySelectorAll('a.pastebin, a.query').forEach(a => a.classList.add('disabled'));
+    document.getElementById('pastebin').classList.add('hide');
 }
 
-function loadPrimary(data, headers) {
+function loadPrimary(data, headers = WeBWorKFields) {
     colWidths = {};
-
-    var field;
-    var sanitizedField;
-
     headerNames = [];
     sanitizedHeaders = [];
     colWidths = {};
 
-    for (j = 0; j < headers.length; j++) {
-        field = headers[j].replace(/^\s+|\s+$/g, "");
-        field = field == '' ? 'BLANK' + (j + 1) : field;
-        headerNames.push(field);
-        sanitizedField = sanitize(field);
-        sanitizedHeaders.push(sanitizedField);
-        headerTypes[sanitizedField] = 'STRING';
-        columnData[sanitizedField] = {};
-        columnData[sanitizedField]['routine'] = '';
+    for (let key in data[0]) {
+        document.querySelectorAll('select.re').forEach(el => el.insertAdjacentHTML('beforeend', `<option value="^${key}$">${key}</option>`));
     }
-
-    updateKeys();
-
-    for (key in data[0]) {
-        // $('#headers').append('<button type="button" class="btn btn-sm btn-outline-info">' + key + '</button>');
-        $('select.re').append('<option value="^' + key + '$">' + key + '</option>');
-    };
-    $('#regex_bin').modal('show');
-
-    $('#regex_submit').off();
-    $('#regex_submit').click(function(){
+    document.getElementById('regex_bin').classList.add('show');
+    document.getElementById('regex_bin').style.display = "block";
+    
+    document.getElementById('regex_submit').replaceWith(document.getElementById('regex_submit').cloneNode(true));
+    document.getElementById('regex_submit').addEventListener('click', function () {
         initializeDB(data, headers, sanitize('student_id'));
-        $('#regex_bin').modal('hide');
-        $('#reload_button').show();
+        document.getElementById('regex_bin').classList.remove('show');
+        document.getElementById('regex_bin').style.display = "none";
     });
-    $('#reload_button').off();
-    $('#reload_button').click(function(){
-        headerNames = [];
-        sanitizedHeaders = [];
-        headerTypes = {};
-        baseQuery = '';
-        clickedArray = {};
-        colWidths = {};
-        primaryDbKeyValues = [];
-        primaryDbKey = '';
-        primaryKey = '';
-        primaryFile = null;
-        mainArray = new Array();
-        $('#regex_bin').modal('show');
-    });
-    // $('#key_sel').on('change', function() {
-    //     initializeDB(data, headers, sanitize($(this).val()));
-    //     $("#key_sel").tooltip('hide');
-    // });
+    
 }
 
-
-// https://stackoverflow.com/questions/11076975/insert-text-into-textarea-at-cursor-position-javascript
-function insertAtCursor(myField, myValue) {
-    //IE support
-    if (document.selection) {
-        myField.focus();
-        sel = document.selection.createRange();
-        sel.text = myValue;
-    }
-    if (myField.selectionStart || myField.selectionStart == '0') {
-        var startPos = myField.selectionStart;
-        var endPos = myField.selectionEnd;
-        myField.value = myField.value.substring(0, startPos)
-            + myValue
-            + myField.value.substring(endPos, myField.value.length);
-    } else {
-        myField.value += myValue;
-    }
-    myField.focus();
-}
-
-function postInitialization(db, table) {
+function postInitialization() {
     console.log('POSTINIT');
 
-    // $('.nav-item.dropdown.update').show();
-    $('#key_sel').closest('li').find('a').addClass("disabled").attr('aria-disabled', 'true');
-    $('#export').show();
-    $('a.pastebin').removeClass('disabled');
-    $('a.query').removeClass('disabled');
+    document.getElementById('export').style.display = '';
+    document.querySelectorAll('a.pastebin, a.query').forEach(a => a.classList.remove('disabled'));
 
-    $('#import').hide();
-    $('#primary-file-input').closest('li').hide();
-    $('#query').closest('li').show();
-    $('#messages').html('<strong>Database Loaded.</strong>');
-    $('#hover_msg').hide();
-
-    baseQuery = "select().from(table)";
-    $('#query').val(baseQuery);
-
-    var fieldToLf = {};
-    sanitizedHeaders.map(function(field) {
-        fieldToLf[field] = 'table.' + field;
-        if (!(clickedArray.hasOwnProperty(field))) {
-            clickedArray[field] = 0;
-        }
-    });
-    clickedArray['count'] = 0;
-
-    updateButtons(db, table);
-
+    document.getElementById('import').style.display = 'none';
+    document.querySelector('#primary-file-input').closest('li').style.display = 'none';
+    document.getElementById('messages').innerHTML = '<strong>Database Loaded.</strong>';
+    document.getElementById('hover_msg').style.display = 'none';
 }
 
-$(function () {
-
-    $('input[type=file]').click(function () {
-        this.value = null;
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('input[type=file]').forEach(input => {
+        input.addEventListener('click', function () {
+            this.value = null;
+        });
     });
 
-    var $table = $('#mainTable');
+    document.getElementById('exportCSV')
+    .addEventListener('click', handleExportCSVClick);
+    document.getElementById('fields_submit')
+    .addEventListener('click', handleFieldsSubmitClick);
 
-    $('#primary-file-input').change(function(e) {
+    document.getElementById('primary-file-input').addEventListener('change', function (e) {
         var reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             let plaintextDB = e.target.result;
             let results = Papa.parse(plaintextDB, {
                 header: true,
@@ -912,120 +466,52 @@ $(function () {
             });
             console.log(results);
             data = results.data;
-                if (data.length < 1) {
-                    return;
-                }
-                // let headers = results.meta['fields'];
-                let headers = webworkFields;
-                console.log(headers);
+            if (data.length < 1) {
+                return;
+            }
+            // let headers = results.meta['fields'];
+            let headers = webworkFields;
+            console.log(headers);
             loadPrimary(data, headers);
         }
         reader.readAsText(e.target.files[0]);
-        $('a.pastebin').addClass('disabled');
-        $('a.query').addClass('disabled');
     });
 
-    $('#importXLSX').change(function(e) {
-        // https://stackoverflow.com/questions/8238407/how-to-parse-excel-file-in-javascript-html5
+    document.getElementById('importXLSX').addEventListener('change', function (e) {
         var reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             var data = e.target.result;
             var workbook = XLSX.read(data, {
                 type: 'binary'
             });
-
-            // console.log(workbook.SheetNames);
+    
             let sheetName = workbook.SheetNames[0];
             var XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
             console.log(XL_row_object);
-            // var json_object = JSON.stringify(XL_row_object);
-            // let headers = Object.keys(XL_row_object[0]);
-			let headers = webworkFields;
-            // console.log(json_object);
-			loadPrimary(XL_row_object, headers);
+            let headers = webworkFields;
+            loadPrimary(XL_row_object, headers);
         };
-
-        reader.onerror = function(ex) {
+    
+        reader.onerror = function (ex) {
             console.log(ex);
         };
         reader.readAsBinaryString(e.target.files[0]);
     });
-
-    $('#fields_submit').on('click', function() {
-        let results = Papa.parse($('#fields').val(), {
-            header: true,
-            dynamicTyping: false,
-        });
-        console.log(results);
-        data = results.data;
-            if (data.length < 1) {
-                return;
-            }
-        // let headers = results.meta['fields'];
-        let headers = webworkFields;
-        loadPrimary(data, headers);
-        $('a.pastebin').addClass('disabled');
-        $('a.query').addClass('disabled');
-        $('#pastebin').modal('hide');
-    });
-
-    $('#query').keydown(function(event) {
-        if (event.keyCode === 13) {
-            event.preventDefault();
-            $('#query_submit').click();
-        }
-    });
-
-    $('#paste_file').on('change', function(e) {
+    
+    document.getElementById('paste_file').addEventListener('change', function (e) {
         var reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             var contents = e.target.result;
-            $('#fields').val(contents);
-        }
+            document.getElementById('fields').value = contents;
+        };
         reader.readAsText(e.target.files[0]);
     });
 
-     $('[data-toggle="tooltip"]').tooltip();
 
-     $('select.re').change(function() {
-         if (!$(this).val().match(/Select/)) {
-             $(this).closest('div.row').find('input[type="text"]').val($(this).val());
-         }
-     });
+    document.querySelectorAll('select.re').forEach(el => el.addEventListener('change', function () {
+        if (!this.value.match(/Default/)) {
+            this.closest('div.row').querySelector('input[type="text"]').value = this.value;
+        }
+    }));
 
-     $('#reset').click(function() {
-         $('.nav-item.dropdown.update').hide();
-         $('#key_sel').closest('li').find('a').removeClass("disabled").attr('aria-disabled', 'false');
-         $('#export').hide();
-         $('a.pastebin').addClass('disabled');
-         $('a.query').add('disabled');
-
-         $('#import').show();
-         $('#exportJSON').hide();
-         $('#columns_toggle').hide();
-         $('#fields').closest('li').show();
-         $('#primary-file-input').closest('li').show();
-         $('#query').closest('li').hide();
-         $('#messages').html('');
-         $('#hover_msg').html('No Database Loaded Yet').show();
-
-         $('#table-container').css('width', '100%');
-         $('#mainTable').css('width', '100%');
-         $('#mainTable thead tr').html('');
-         $('#mainTable tbody').html('').css('margin-top', '');
-         sortField = 'undefined';
-         groupField = 'undefined';
-         headerNames = [];
-         sanitizedHeaders = [];
-         headerTypes = {};
-         baseQuery = '';
-         clickedArray = {};
-         colWidths = {};
-         primaryDbKeyValues = [];
-         primaryDbKey = '';
-         primaryKey = '';
-         primaryFile = null;
-         columnData = new Object();
-         mainArray = new Array();
-     });
 })
