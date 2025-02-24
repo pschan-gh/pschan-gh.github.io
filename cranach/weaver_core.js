@@ -11,26 +11,7 @@ const htmlCloseRe = new RegExp('\\<\\/(?:' + htmlElements.source + ')(?:\\s+.*?|
 const htmlTagRe = new RegExp('\\<(' + htmlElements.source + ')(\\s+(?:.|\n)*|)\\/*\\>', 'i');
 const htmlTagCloseRe = new RegExp('\\<\\/(' + htmlElements.source + ')(\\s+.*?|)\\>', 'i');
 
-// const nested = /((?:([^{}]*)|(?:{(?:([^{}]*)|(?:{(?:([^{}]*)|(?:{[^{}]*}))*}))*}))+)/;
-// deepseek
-const nested = (() => {
-	// Match any characters except { or }
-	const nonBraces = '[^{}]*';
-
-	// Match a single level of nested braces: { ... }
-	const singleLevel = `{${nonBraces}}`;
-
-	// Match two levels of nested braces: { ... { ... } ... }
-	const twoLevels = `{${nonBraces}|${singleLevel}}*`;
-
-	// Match three levels of nested braces: { ... { ... { ... } ... } ... }
-	const threeLevels = `{${nonBraces}|${twoLevels}}*`;
-
-	// Combine all levels into a single pattern
-	return new RegExp(`(${nonBraces}|${threeLevels})+`);
-})();
-// /deepseek
-
+const nested = /((?:([^{}]*)|(?:{(?:([^{}]*)|(?:{(?:([^{}]*)|(?:{[^{}]*}))*}))*}))+)/;
 
 // const mainTokensRe = new RegExp('(\\<\\!\\-\\-)|(\\-\\-\\>)|(@@\\w+)|(@(?!md5|name)(?:[a-zA-Z\*]+)(?:{\\n*' + nested.source + '\\n*})?(?:\\[.*?\\])?)|(' + htmlRe.source + ')|(' + htmlCloseRe.source + ')|((?:\\s|\\n)*((?!\\<\\/*(' + htmlElements.source + ')|@(?!md5|name)|\\<\\!\\-\\-|\\-\\-\\>).|\\n)+)', 'g');
 // deepseek
