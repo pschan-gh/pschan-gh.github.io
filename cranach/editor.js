@@ -20,19 +20,20 @@ editor.commands.addCommand({
 	}
 });
 
-function updateEditor(cranach) {
-	const renderSel = document.getElementById('render_sel');
+function updateEditor(cranach) {	
 
-	renderSel.addEventListener('mouseover', () => {
-		if (!editor.getValue().match(/@slide|@sep|course|week|lecture|chapter|section|subsection|subsubsection/g)) {
+	document.getElementById('render_sel').addEventListener('mouseover', () => {
+		if (!editor.getValue().match(/@(slide|sep|course|week|lecture|chapter|section|subsection|subsubsection)/g)) {
 			return;
 		}
-		document.getElementById("render_sel").innerHTML = '<option value="Render">Render</option><option value="all">All</option>';
+		const renderSel = document.getElementById('render_sel');
+		renderSel.innerHTML = '<option value="Render">Render</option><option value="all">All</option>';
 
 		const buffer = editor.getValue()
 		.replace(/@sep/g, '@slide')
 		.replace(/\<!--(.|\n)*?--\>/g, '');
-		const numOfSlides = buffer.match(/@slide|@course|@chapter|@week|@lecture|@section|@subsection|@subsubsection/g).length;
+		const numOfSlides = buffer.match(/(?:^|\n)\s*(?:@slide|@course|@chapter|@week|@lecture|@section|@subsection|@subsubsection)/g).length;
+		console.log(numOfSlides);
 		const pastBuffer = editor.getValue().substring(0, editor.session.doc.positionToIndex(editor.selection.getCursor()))
 		.replace(/@sep/g, '@slide')
 		.replace(/\<!--(.|\n)*?--\>/g, '');
@@ -49,7 +50,8 @@ function updateEditor(cranach) {
 		}
 	});
 
-	renderSel.addEventListener('change', function(event) {
+	document.getElementById('render_sel').addEventListener('change', function(event) {
+		const renderSel = document.getElementById('render_sel');
 		const query = event.target.value == 'all' ? '' : `//lv:slide[@slide="${event.target.value}"]`;
 		const selectedSlideNum = document.querySelector('.output > div.slide.selected') !== null ?
 		document.querySelector('.output > div.slide.selected').getAttribute('slide') : 1;
