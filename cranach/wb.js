@@ -7,6 +7,7 @@ function commitWb(editor) {
 		let domparser = new DOMParser();
 		xsltProcessor.importStylesheet(domparser.parseFromString(xsl, 'text/xml'));
 		let preCranachDoc = xsltProcessor.transformToDocument(body,document);
+		console.log(prettyPrintXML(preCranachDoc));
 		fetch('xsl/cranach.xsl')
 		.then(response => response.text())
 		.then(xsl => {
@@ -23,7 +24,22 @@ function commitWb(editor) {
 	});
 }
 
-function convertCranachDocToWb(cranachDoc, editor) {
+function convertCranachDocToWb(cranachDoc, editor = null) {
+	if (typeof(editor) == 'undefined') {
+		return;
+	}
+
+	const removeWhitespace = (str) =>
+		str.replace(/\n\s*/g, "\n")
+			.replace(/(\s*@newline\s*)+/g, "\n\n")
+			.replace(/{\n+/g, '{')
+			.replace(/\n+}/g, '}')
+			.replace(/^\n/, '')
+			.replace(/ *\n/g, "\n");
+
+	const processNStep = (str) =>
+		str.replace(/\\class{steps}{\\cssId{step\d+}{((?:([^{}]*)|(?:{(?:([^{}]*)|(?:{(?:([^{}]*)|(?:{[^{}]*}))*}))*}))+)}}/g, '@nstep{$1}');
+
 	console.log('convertCranachDocToWb');
 	// let nested = /((?:([^{}]*)|(?:{(?:([^{}]*)|(?:{(?:([^{}]*)|(?:{[^{}]*}))*}))*}))+)/;
 	fetch('xsl/cranach2wb.xsl')
@@ -32,24 +48,17 @@ function convertCranachDocToWb(cranachDoc, editor) {
         let xsltProcessor = new XSLTProcessor();
 		let domparser = new DOMParser();
 		xsltProcessor.importStylesheet(domparser.parseFromString(xsl, 'text/xml'));
-		console.log(cranachDoc);
 		fragment = xsltProcessor.transformToFragment(cranachDoc, document);
-		fragmentStr = new XMLSerializer().serializeToString(fragment);
+		fragmentStr = unescapeHtml(
+			new XMLSerializer().serializeToString(fragment)
+		);
 		// console.log(fragmentStr);
-		editor.setValue(fragmentStr
-			.replace(/@slide(?:\s|\n)*@((course|lecture|week|chapter|section|subsection|subsubsection|topic){(?:.|\n)*?})/g, "@$1")
-			.replace(/&lt;/g, '<')
-			.replace(/&gt;/g, '>')
-			.replace(/&amp;/g, '&')
-			.replace(/&apos;/g, "'")
-			.replace(/\\class{steps}{\\cssId{step\d+}{((?:([^{}]*)|(?:{(?:([^{}]*)|(?:{(?:([^{}]*)|(?:{[^{}]*}))*}))*}))+)}}/g, '@nstep{$1}')
-			.replace(/\n\s*/g, "\n")
-			.replace(/(\s*@newline\s*)+/g, "\n\n")
-			.replace(/{\n+/g, '{')
-			.replace(/\n+}/g, '}')
-			.replace(/^\n/, '')
-			.replace(/ *\n/g, "\n")
-			, 1);
+			// .replace(/&lt;/g, '<')
+			// .replace(/&gt;/g, '>')
+			// .replace(/&amp;/g, '&')
+			// .replace(/&apos;/g, "'")
+			// .replace(/@slide(?:\s|\n)*@((course|lecture|week|chapter|section|subsection|subsubsection|topic){(?:.|\n)*?})/g, "@$1")
+		editor.setValue(removeWhitespace(processNStep(fragmentStr)), 1);
 		document.querySelectorAll('#output > div.slide').forEach(e => e.classList.add('tex2jax_ignore'));
 		inlineEdit(false, editor);
 	});

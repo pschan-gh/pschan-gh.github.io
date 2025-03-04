@@ -142,12 +142,6 @@
 		</xsl:apply-templates>
 	</xsl:template>
 
-	<xsl:template match="lv:course">
-		<xsl:apply-templates select="lv:*[not(self::lv:title)]">
-			<xsl:with-param name="course" select="@title"/>
-		</xsl:apply-templates>
-	</xsl:template>
-
 	<xsl:template match="lv:topic">
 		<h2>
 			<xsl:attribute name="metadata"/>
@@ -161,6 +155,13 @@
 		</h2>
 	</xsl:template>
 
+	<xsl:template match="lv:course">
+		<xsl:apply-templates select="lv:*[not(self::lv:title)]">
+			<xsl:with-param name="course" select="@title"/>
+			<!-- <xsl:with-param name="wbtag" select="'transparent'"/> -->
+		</xsl:apply-templates>
+	</xsl:template>
+
 	<xsl:template match="lv:chapter">
 		<xsl:param name="course" select="@course"/>
 		<xsl:apply-templates select="lv:section|lv:subsection|lv:subsubsection|lv:slides|lv:keywords">
@@ -168,6 +169,7 @@
 			<xsl:with-param name="chapter" select="@num"/>
 			<xsl:with-param name="chapter_type" select="@chapter_type"/>
 			<xsl:with-param name="chapter_title" select="@title"/>
+			<!-- <xsl:with-param name="wbtag" select="'transparent'"/> -->
 		</xsl:apply-templates>
 	</xsl:template>
 
@@ -183,6 +185,7 @@
 			<xsl:with-param name="chapter_title" select="$chapter_title"/>
 			<xsl:with-param name="section" select="@num"/>
 			<xsl:with-param name="section_title" select="@title"/>
+			<!-- <xsl:with-param name="wbtag" select="'transparent'"/> -->
 		</xsl:apply-templates>
 	</xsl:template>
 
@@ -205,6 +208,7 @@
 			<xsl:with-param name="section_title" select="$section_title"/>
 			<xsl:with-param name="subsection" select="@num"/>
 			<xsl:with-param name="subsection_title" select="@title"/>
+			<!-- <xsl:with-param name="wbtag" select="'transparent'"/> -->
 		</xsl:apply-templates>
 	</xsl:template>
 
@@ -231,6 +235,7 @@
 			<xsl:with-param name="subsection_title" select="$subsection_title"/>
 			<xsl:with-param name="subsubsection" select="@num"/>
 			<xsl:with-param name="subsubsection_title" select="@title"/>
+			<!-- <xsl:with-param name="wbtag" select="'transparent'"/> -->
 		</xsl:apply-templates>
 	</xsl:template>
 
@@ -245,6 +250,7 @@
 		<xsl:param name="subsection" select="@subsection"/>
 		<xsl:param name="subsection_title" select="@subsection_title" />
 		<xsl:param name="subsubsection" select="@subsubsection"/>
+		<xsl:param name="wbtag" select="@wbtag"/>
 		<xsl:apply-templates select="lv:slide">
 			<xsl:with-param name="course" select="$course"/>
 			<xsl:with-param name="chapter" select="$chapter"/>
@@ -256,7 +262,21 @@
 			<xsl:with-param name="subsection_title" select="@title"/>
 			<xsl:with-param name="subsubsection" select="$subsubsection"/>
 			<xsl:with-param name="subsubsection_title" select="@title"/>
+			<!-- <xsl:with-param name="wbtag" select="$wbtag"/> -->
 		</xsl:apply-templates>
+		<!-- <xsl:apply-templates select="lv:slide[position() > 1]">
+			<xsl:with-param name="course" select="$course"/>
+			<xsl:with-param name="chapter" select="$chapter"/>
+			<xsl:with-param name="chapter_type" select="$chapter_type"/>
+			<xsl:with-param name="chapter_title" select="$chapter_title"/>
+			<xsl:with-param name="section" select="$section"/>
+			<xsl:with-param name="section_title" select="$section_title"/>
+			<xsl:with-param name="subsection" select="$subsection"/>
+			<xsl:with-param name="subsection_title" select="@title"/>
+			<xsl:with-param name="subsubsection" select="$subsubsection"/>
+			<xsl:with-param name="subsubsection_title" select="@title"/>
+			<xsl:with-param name="wbtag" select="$wbtag"/>
+		</xsl:apply-templates> -->
 	</xsl:template>
 
 	<xsl:template match="lv:slide">
@@ -270,6 +290,7 @@
 		<xsl:param name="subsection_title" select="@subsection_title"/>
 		<xsl:param name="subsubsection" select="@subsubsection"/>
 		<xsl:param name="subsubsection_title" select="@subsubsection_title"/>
+		<!-- <xsl:param name="wbtag" select="@wbtag"/> -->
 		<xsl:variable name="slide">
 			<xsl:number format="1" level="any" count="lv:slide"/>
 		</xsl:variable>
@@ -334,7 +355,15 @@
 				<xsl:value-of select="$subsubsection"/>
 			</xsl:attribute>
 			<xsl:attribute name="wbtag">
-				<xsl:value-of select="@wbtag"/>
+				<xsl:choose>
+        			<xsl:when test="contains('subsubsection|subsection|section|chapter|course', local-name(parent::*/parent::*)) and position() = 1">					
+          				<xsl:text>transparent</xsl:text>
+        			</xsl:when>
+        			<xsl:otherwise>
+          			<xsl:text>slide</xsl:text>
+        			</xsl:otherwise>
+      			</xsl:choose>
+				<!-- <xsl:value-of select="$wbtag"/> -->
 			</xsl:attribute>
 			<div class="slide_container" wbtag="ignore">
 				<div class="separator" wbtag="ignore">
@@ -1180,7 +1209,7 @@
 		<!-- <small class="light"> (powered by </small>
 		<small><a target="_blank" href="https://libretexts.org/">LibreTexts</a></small>
 		<small class="light">)</small> -->
-		<div class="ww" style="overflow:auto">
+		<div class="ww" style="overflow:auto;padding-bottom:1.2em">
 			<xsl:attribute name="id">
 				<xsl:value-of select="concat('ww_inner_', @ww_id)" />
 			</xsl:attribute>
@@ -1202,7 +1231,6 @@
 			</iframe>
 		</div>
 	</div>
-	<br/>
 </xsl:template>
 
 <xsl:template match="lv:image">

@@ -1,3 +1,55 @@
+function unescapeHtml(str) {
+	const htmlEntities = {
+		'&lt;': '<',
+		'&gt;': '>',
+		'&amp;': '&',
+		'&apos;': "'",
+		'&quot;': '"',
+		'&nbsp;': ' ',
+		'&copy;': '©',
+		'&reg;': '®',
+		'&euro;': '€',
+		'&pound;': '£',
+		'&yen;': '¥',
+		'&cent;': '¢'
+	};
+
+	return str.replace(/&(?:lt|gt|amp|apos|quot|nbsp|copy|reg|euro|pound|yen|cent);/g,
+		match => htmlEntities[match] || match);
+}
+
+function prettyPrintXML(xmlDoc, indent = '  ') {
+	// Serialize the XML document to a string
+	const serializer = new XMLSerializer();
+	let xmlString = serializer.serializeToString(xmlDoc);
+
+	// Format the XML string with proper indentation
+	let formatted = '';
+	let level = 0;
+	const tokens = xmlString.split(/(<[^>]+>)/g);
+
+	tokens.forEach(token => {
+		if (token.startsWith('</')) {
+			// Decrease indentation level for closing tags
+			level--;
+			formatted += '\n' + indent.repeat(level) + token;
+		} else if (token.startsWith('<') && !token.startsWith('<?') && !token.endsWith('/>')) {
+			// Increase indentation level for opening tags
+			formatted += '\n' + indent.repeat(level) + token;
+			level++;
+		} else if (token.startsWith('<?') || token.endsWith('/>')) {
+			// Handle XML declaration and self-closing tags without changing indentation
+			formatted += token;
+		} else {
+			// Add text content without adding a newline
+			formatted += token;
+		}
+	});
+
+	// Remove the first newline and return the formatted XML string
+	return formatted.replace(/(\n|\r)(\n|\r)<\//g, '</');
+}
+
 function saveText(text, renderer, ext) {
 	let dummyLink = document.createElement('a');
 	uriContent = "data:application/octet-stream," + encodeURIComponent(text);
@@ -46,46 +98,51 @@ function showLatex(el, mode = 'report') {
 	const contentURLDir = el.attr['contentURLDir'];
 	const contentURL = el.attr['contentURL'];
 
-	const xslFile = mode == 'report' ?  'xsl/cranach2latex.xsl' : 'xsl/cranach2beamer.xsl';
+	const xslFile = mode == 'report' ? 'xsl/cranach2latex.xsl' : 'xsl/cranach2beamer.xsl';
 
 	fetch(xslFile + '?version=' + Math.random())
-    .then(response => response.text())
-    .then(xsl => {
-        let xml = new XMLSerializer().serializeToString(docCranach);
-		xml = xml.replace(/&lt;(div|table|thead|tr|td|th|a)\s*.*?&gt;/g, '<$1>');
-		xml = xml.replace(/&lt;\/(div|table|thead|tr|td|th|a)\s*&gt;/g, '</$1>');
-		xml = xml.replace(/#/g, '\#');
+		.then(response => response.text())
+		.then(xsl => {
+			let xml = new XMLSerializer().serializeToString(docCranach);
+			// xml = xml.replace(/&lt;(div|table|thead|tr|td|th|a)\s*.*?&gt;/g, '<$1>');
+			// xml = xml.replace(/&lt;\/(div|table|thead|tr|td|th|a)\s*&gt;/g, '</$1>');
+			// const tags = "div|table|thead|tr|td|th|a";
+			xml = xml.replace(new RegExp(`&lt;(${htmlElements})\\s*.*?&gt;`, 'g'), "<$1>")
+				.replace(new RegExp(`&lt;\\/(${htmlElements})\\s*&gt;`, 'g'), "</$1>")
+				.replace(/#/g, '\#');
 
-		let xmlDOM = domparser.parseFromString(xml, "application/xml");
-        let xsltProcessor = new XSLTProcessor();
-		xsltProcessor.importStylesheet(domparser.parseFromString(xsl, "text/xml"));
-		xsltProcessor.setParameter('', 'contenturldir', contentURLDir);
-		xsltProcessor.setParameter('', 'contenturl', contentURL);
+			let xmlDOM = domparser.parseFromString(xml, "application/xml");
+			let xsltProcessor = new XSLTProcessor();
+			xsltProcessor.importStylesheet(domparser.parseFromString(xsl, "text/xml"));
+			xsltProcessor.setParameter('', 'contenturldir', contentURLDir);
+			xsltProcessor.setParameter('', 'contenturl', contentURL);
 
-		let fragment = xsltProcessor.transformToFragment(xmlDOM, document);
-		report(fragment);
-		fragmentStr = new XMLSerializer().serializeToString(fragment);
+			let fragment = xsltProcessor.transformToFragment(xmlDOM, document);
+			report(fragment);
+			fragmentStr = new XMLSerializer().serializeToString(fragment);
 
-		let latex = fragmentStr.replace(/\n\n\n*/g, "\n\n")
-		.replace(/\n(\ )*/g, "\n")
-		.replace(/\<!--.*?--\>/g, '')
-		.replace(/&amp;/g, "&")
-		.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-		.replace(/\\class{.*?}/g, '')
-		.replace(/\\cssId{.*?}/g, '')
-		.replace(/&ocirc/g, '\\^o')
-		.replace(/\\href{([^}]+)}{([^}]+)}/g, (match) => {
-			return match.replace(/_/g, '\\_');
+			// .replace(/&amp;/g, "&")
+			// .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+			// .replace(/&ocirc/g, '\\^o')
+			let latex = unescapeHtml(fragmentStr
+				.replace(/\n\n\n*/g, "\n\n")
+				.replace(/\n(\ )*/g, "\n")
+				.replace(/\<!--.*?--\>/g, '')				
+				.replace(/\\class{.*?}/g, '')
+				.replace(/\\cssId{.*?}/g, '')				
+				.replace(/\\href{([^}]+)}{([^}]+)}/g, (match) => {
+					return match.replace(/_/g, '\\_');
+				})
+			);
+
+			let tmp = el.macrosString + "\n" + latex;
+
+			latex = collectNewcommands(tmp) + latex.replace(
+				/(\\newcommand{.*?}(?:\[\d+\])*{(?:([^{}]*)|(?:{(?:([^{}]*)|(?:{(?:([^{}]*)|(?:{[^{}]*}))*}))*}))+})/g, '')
+				.replace(/section{\s*(.*?)\s*}/g, "section{$1}");
+
+			document.getElementById('source_text').value = latex;
 		});
-
-		let tmp = el.macrosString + "\n" +  latex;
-
-		latex = collectNewcommands(tmp) + latex.replace(
-			/(\\newcommand{.*?}(?:\[\d+\])*{(?:([^{}]*)|(?:{(?:([^{}]*)|(?:{(?:([^{}]*)|(?:{[^{}]*}))*}))*}))+})/g, '')
-		.replace(/section{\s*(.*?)\s*}/g, "section{$1}");
-
-		document.getElementById('source_text').value = latex;
-	});
 }
 
 function showXML(el) {
@@ -97,7 +154,8 @@ function showXML(el) {
 	textModal.querySelector('.modal-title').textContent = 'Cranach XML';
 
 	document.getElementById('source_text').value =
-	new XMLSerializer().serializeToString(el.cranachDoc);
+		// new XMLSerializer().serializeToString(el.cranachDoc);
+		prettyPrintXML(el.cranachDoc);
 }
 
 function initGhDialog(editor) {
@@ -110,7 +168,7 @@ function initGhDialog(editor) {
 
 	const urlParams = new URLSearchParams(params[1]);
 	const pathname =
-	urlParams.has('wb') ? urlParams.get('wb') : urlParams.get('xml');
+		urlParams.has('wb') ? urlParams.get('wb') : urlParams.get('xml');
 	const localFilenameRoot = pathname.match(/(local|([^\/]+))\.(?:wb|xml)$/)[1];
 
 	let ghRepoUsername;
@@ -129,7 +187,7 @@ function initGhDialog(editor) {
 	document.getElementById('ghRepo').value = ghRepo;
 	document.getElementById('ghRepoUsername').value = ghRepoUsername;
 	document.getElementById('localFilenameRoot').textContent =
-	localFilenameRoot;
+		localFilenameRoot;
 
 	ghModal.querySelector('button.commit').classList.add('hidden');
 
@@ -148,7 +206,7 @@ function initGhDialog(editor) {
 	message += "<br/>Updating .xml";
 	ghModal.querySelector('.feedback .message code').innerHTML = message;
 
-	let baseRenderer = new Cranach(window.location.href).setup({'query':''}).then(cranach => {
+	let baseRenderer = new Cranach(window.location.href).setup({ 'query': '' }).then(cranach => {
 		console.log(cranach);
 		MathJax.typesetClear();
 		return cranach.setOutput(document.getElementById('output')).renderWb(editor.getValue());
@@ -156,9 +214,9 @@ function initGhDialog(editor) {
 		postprocess(cranach);
 
 		const cranach_text =
-		new XMLSerializer().serializeToString(cranach.cranachDoc);
+			new XMLSerializer().serializeToString(cranach.cranachDoc);
 		const index_text =
-		new XMLSerializer().serializeToString(cranach.indexDoc);
+			new XMLSerializer().serializeToString(cranach.indexDoc);
 
 		document.getElementById('cranach_text').value = cranach_text;
 		document.getElementById('index_text').value = index_text;
@@ -172,8 +230,8 @@ function initGhDialog(editor) {
 
 function openWb(filePath) {
 
-	let file    = filePath.files[0];
-	let reader  = new FileReader();
+	let file = filePath.files[0];
+	let reader = new FileReader();
 
 	console.log('READER');
 	console.log(file);
@@ -204,7 +262,7 @@ function openXML(renderer, filePath) {
 	let filename = '';
 	let dir = '';
 
-	let reader  = new FileReader();
+	let reader = new FileReader();
 
 	const progressBar = document.querySelector('.progress-bar');
 	progressBar.style.width = '20%';
@@ -238,6 +296,7 @@ function openXML(renderer, filePath) {
 			progressBar.style.width = '75%';
 			progressBar.setAttribute('aria-valuenow', '75');
 
+			cranach.attr['wbPath'] = null;
 			cranach.attr['localName'] = filename;
 			cranach.attr['dir'] = dir;
 			cranach.cranachDoc = cranachDoc;
@@ -249,7 +308,11 @@ function openXML(renderer, filePath) {
 			return cranach.displayCranachDocToHtml();
 		}).then(cranach => {
 			postprocess(cranach);
-            document.getElementById('loading_icon').classList.add('hidden');
+			document.getElementById('loading_icon').classList.add('hidden');
+
+			const editorElement = document.querySelector('.editor.ace_editor');
+			convertCranachDocToWb(cranach.cranachDoc, editor);
+
 			return cranach;
 		});
 	}, false);
@@ -261,7 +324,7 @@ function openXML(renderer, filePath) {
 document.addEventListener('DOMContentLoaded', () => {
 	baseRenderer.then(cranach => {
 		document.querySelectorAll('.modal .btn.save').forEach(el =>
-			el.addEventListener('click', function(event) {
+			el.addEventListener('click', function (event) {
 				saveText(document.getElementById('source_text').value, cranach, event.target.getAttribute('ext'));
 			})
 		);

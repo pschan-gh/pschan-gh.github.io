@@ -4,8 +4,8 @@ MathJax = {
 		ready() {
 			typeset = function (doms) {
 				MathJax.startup.promise = MathJax.startup.promise
-				.then(() => {return MathJax.typesetPromise(doms)})
-				.catch((err) => console.log('Typeset failed: ' + err.message));
+					.then(() => { return MathJax.typesetPromise(doms) })
+					.catch((err) => console.log('Typeset failed: ' + err.message));
 				return MathJax.startup.promise;
 			};
 			MathJax.getAllJax = function (name) {
@@ -41,16 +41,16 @@ MathJax = {
 				}
 			});
 			//
-            //  Create the package for the overridden macros
-            //
-            Configuration.create('knowl', {
-                handler: {macro: ['knowl']}
-            });
+			//  Create the package for the overridden macros
+			//
+			Configuration.create('knowl', {
+				handler: { macro: ['knowl'] }
+			});
 
 			document.querySelectorAll('.icon.latex, .icon.xml').forEach(el => el.classList.add('hidden'));
 			const body = document.querySelector('body');
 			baseRenderer.then(cranach => {
-				let output = cranach.bare ?  body : document.getElementById('output');
+				let output = cranach.bare ? body : document.getElementById('output');
 				return cranach.render(output);
 			}).then(renderer => {
 				if (renderer.bare) {
@@ -61,10 +61,6 @@ MathJax = {
 				if (renderer.bare) {
 					return renderer;
 				} else {
-					const editorElement = document.querySelector('.editor.ace_editor');
-					if (editorElement !== null) {
-						convertCranachDocToWb(renderer.cranachDoc, editor);
-					}
 					document.querySelectorAll('#render_sel').forEach(el => el.disabled = false);
 					document.querySelectorAll('#wb_button').forEach(el => el.disabled = false);
 					return renderer;
@@ -77,16 +73,17 @@ MathJax = {
 					return MathJax.tex2chtmlPromise(renderer.macrosString);
 				}).then(() => {
 					postprocess(renderer);
+					convertCranachDocToWb(renderer.cranachDoc, ace.edit("input"));
 				});
 			});
 		}
 	},
 	loader: {
 		load: ['output/svg', '[tex]/ams', '[tex]/newcommand', '[tex]/html', '[tex]/extpfeil', '[tex]/color', '[tex]/mathtools']
-		 // 'ui/lazy'
+		// 'ui/lazy'
 	},
 	tex: {
-		inlineMath: [['$','$'], ['\\(','\\)']],
+		inlineMath: [['$', '$'], ['\\(', '\\)']],
 		processEnvironments: true,
 		processEscapes: true,
 		processRefs: true,

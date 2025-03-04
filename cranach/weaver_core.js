@@ -1,54 +1,39 @@
 const xh_prefix = '';
+const xhtmlns = 'http://www.w3.org/1999/xhtml';
 
-// const htmlElements = /pre|table|tbody|thead|th|tr|td|i|em|p|a|b|strong|u|h\d|div|img|center|script|iframe|blockquote|ol|ul|li|sup|code|hr|span|iframe|br|hr|textarea/;
-// deepseek
-const htmlElements = /a|abbr|acronym|address|area|article|aside|audio|b|base|bdi|bdo|big|blockquote|body|br|button|canvas|caption|cite|code|col|colgroup|data|datalist|dd|del|details|dfn|dialog|div|dl|dt|em|embed|fieldset|figcaption|figure|footer|form|h1|h2|h3|h4|h5|h6|head|header|hgroup|hr|html|i|iframe|img|input|ins|kbd|label|legend|li|link|main|map|mark|meta|meter|nav|noscript|object|ol|optgroup|option|output|p|param|picture|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|small|source|span|strong|style|sub|summary|sup|svg|table|tbody|td|template|textarea|tfoot|th|thead|time|title|tr|track|u|ul|var|video|wbr|center/;
-// /deepseek
+let chapterType = "Chapter";
+let course = '';
+let topic = '';
+// let step = 0;
 
-const htmlRe = new RegExp('\\<(?:' + htmlElements.source + ')(?:\\s+(?:.|\n)*?|)\\/*\\>', 'i');
-const htmlCloseRe = new RegExp('\\<\\/(?:' + htmlElements.source + ')(?:\\s+.*?|)\\>', 'i');
-
-const htmlTagRe = new RegExp('\\<(' + htmlElements.source + ')(\\s+(?:.|\n)*|)\\/*\\>', 'i');
-const htmlTagCloseRe = new RegExp('\\<\\/(' + htmlElements.source + ')(\\s+.*?|)\\>', 'i');
-
-const nested = /((?:([^{}]*)|(?:{(?:([^{}]*)|(?:{(?:([^{}]*)|(?:{[^{}]*}))*}))*}))+)/;
-
-// const mainTokensRe = new RegExp('(\\<\\!\\-\\-)|(\\-\\-\\>)|(@@\\w+)|(@(?!md5|name)(?:[a-zA-Z\*]+)(?:{\\n*' + nested.source + '\\n*})?(?:\\[.*?\\])?)|(' + htmlRe.source + ')|(' + htmlCloseRe.source + ')|((?:\\s|\\n)*((?!\\<\\/*(' + htmlElements.source + ')|@(?!md5|name)|\\<\\!\\-\\-|\\-\\-\\>).|\\n)+)', 'g');
-// deepseek
-// Define modular parts of the regex
-const commentStart = '(\\<\\!\\-\\-)';
-const commentEnd = '(\\-\\-\\>)';
-const atAtToken = '(@@\\w+)';
-const atToken = '(@(?!md5|name)(?:[a-zA-Z\\*]+)(?:{\\n*' + nested.source + '\\n*})?(?:\\[.*?\\])?)';
-const htmlTag = '(' + htmlRe.source + ')';
-const htmlCloseTag = '(' + htmlCloseRe.source + ')';
-const textContent = '((?:\\s|\\n)*((?!\\<\\/*(' + htmlElements.source + ')|@(?!md5|name)|\\<\\!\\-\\-|\\-\\-\\>).|\\n)+)';
-
-// Combine all parts into the main regex
-const mainTokensRe = new RegExp(
-	`${commentStart}|${commentEnd}|${atAtToken}|${atToken}|${htmlTag}|${htmlCloseTag}|${textContent}`,
-	'g'
-);
-// /deepseek
+let secNums = {
+	'chapter': 1,
+	'section': 1,
+	'subsection': 1,
+	'subsubsection': 1,
+	'statement': 1,
+	'figure': 1,
+	'slide': 1
+}
 
 const dictionary = {
-	"@thm": "Theorem",
-	"@prop": "Proposition",
-	"@lemma": "Lemma",
-	"@cor": "Corollary",
-	"@defn": "Definition",
-	"@claim": "Claim",
-	"@fact": "Fact",
-	"@remark": "Remark",
-	"@eg": "Example",
-	"@ex": "Exercise",
-	"@proof": "Proof",
-	"@ans": "Answer",
-	"@sol": "Solution",
-	"@notation": "Notation",
-	"@paragraphs": "Paragraphs",
-	"@col": "col",
-	"@newcol": "newcol"
+	"thm": "Theorem",
+	"prop": "Proposition",
+	"lemma": "Lemma",
+	"cor": "Corollary",
+	"defn": "Definition",
+	"claim": "Claim",
+	"fact": "Fact",
+	"remark": "Remark",
+	"eg": "Example",
+	"ex": "Exercise",
+	"proof": "Proof",
+	"ans": "Answer",
+	"sol": "Solution",
+	"notation": "Notation",
+	"paragraphs": "Paragraphs",
+	"col": "col",
+	"newcol": "newcol"
 };
 
 const environs = [
@@ -64,68 +49,721 @@ const environs = [
 	"left",
 	"right",
 	"title",
-	"figure"
+	"figure",
+	"steps",
+	"nstep"
 ];
 
-let chapterType = "Chapter";
-let course = '';
-let topic = '';
-let step = 0;
+const htmlElements = /a|abbr|acronym|address|area|article|aside|audio|b|base|bdi|bdo|big|blockquote|body|br|button|canvas|caption|cite|code|col|colgroup|data|datalist|dd|del|details|dfn|dialog|div|dl|dt|em|embed|fieldset|figcaption|figure|footer|form|h1|h2|h3|h4|h5|h6|head|header|hgroup|hr|html|i|iframe|img|input|ins|kbd|label|legend|li|link|main|map|mark|meta|meter|nav|noscript|object|ol|optgroup|option|output|p|param|picture|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|small|source|span|strong|style|sub|summary|sup|svg|table|tbody|td|template|textarea|tfoot|th|thead|time|title|tr|track|u|ul|var|video|wbr|center/;
 
-let secNums = {
-	'chapter': 1,
-	'section': 1,
-	'subsection': 1,
-	'subsubsection': 1,
-	'statement': 1,
-	'figure': 1,
-	'slide': 1
+const htmlOpenRe = /<([a-zA-Z][a-zA-Z0-9]*)(?:\s+([^>]*))?\s*(\/)?>\n*/i;
+const htmlCloseRe = /<\/([a-zA-Z][a-zA-Z0-9]*)>/i;
+const nested = /((?:(?:[^{}]*)|(?:{(?:(?:[^{}]*)|(?:{(?:(?:[^{}]*)|(?:{[^{}]*}))*}))*}))+)/;
+
+const mainTokensRe = new RegExp(
+	'(' + '<\\!\\-\\-' + ')' +           // Group 1: Comment open
+	'|' +
+	'(' + '\\-\\-\\>' + ')' +           // Group 2: Comment close
+	'|' +
+	'(' + '@@(\\w+)(?:{([^}]*)})?(\\[[^\\]]*\\])?' + ')' + // Group 3: atWord, 4: name, 5: nested, 6: bracket
+	'|' +
+	'(' + '@(?!md5|name)([a-zA-Z\\*]+)(?:{\\n*' + nested.source + '\\n*})?(\\[.*?\\])?' + ')' + // Group 7: Directive, 8: word, 9: nested, 10: bracket
+	'|' +
+	'(' + htmlOpenRe.source + ')' +     // Group 11: HTML open (12: tag, 13: attrs, 14: self-closing)
+	'|' +
+	'(' + htmlCloseRe.source + ')' +    // Group 15: HTML close (16: tag)
+	'|' +
+	'(' + '[ \\t]*(?:\\r*\\s*\\n\\s*){2,}[ \\t]*' + ')' + // Group 17: Newline (with optional spaces/tabs around it)
+	'|' +
+	'(' + '[ \\t]*((?!<\\/*(' + htmlElements.source + ')|@@\\w+|@(?!md5|name)|<\\!\\-\\-|\\-\\-\\>|(\\r*\\s*\\n\\s*){2,}).)+[ \\t]*' + ')' // Group 18: Text (19: content, no newlines)
+	, 'gs'
+);
+
+const COUNTERED_TAGS = ["thm", "prop", "lemma", "cor", "defn", "claim", "fact", "remark", "eg", "ex", 'figure'];
+const SUBSTATEMENT_TAGS = ['proof', 'sol', 'ans', 'notation', 'remark'];
+const verbatimTags = /^(script|textarea)$/i;
+const createClosingTagRegex = tag => new RegExp(`</${tag}>`, 'i');
+const sectionTypes = ['section', 'subsection', 'subsubsection'];
+const chapterTypes = ['week', 'lecture', 'chapter'];
+const STATEMENTLIKE_TAGS = ["thm", "prop", "lemma", "cor", "defn", "claim", "fact", "remark", "eg", "ex", 'proof', 'sol', 'ans', 'notation', 'remark', 'figure'];
+
+const environmentTypes = {
+	col: ['newcol', 'collapse', 'col'],
+	html_list: ['ul', 'ol'],
+	latex_list: ['enumerate', 'itemize', 'item'],
 }
 
-function weaveHtml(child, word, htmlMatches) {
-	const tagName = htmlMatches[1].toLowerCase(); // Normalize tag name to lowercase
-	const parameters = htmlMatches.length > 2 ? htmlMatches[2] : ''; // Extract parameters if they exist
-
-	// Log the HTML tag being processed
-	report(`HTML TAG: ${tagName}`);
-
-	// Handle special cases for <li> tags
-	if (tagName === 'li') {
-		child = child.closeTo(/ol|ul/i); // Close up to the nearest <ol> or <ul>
+const environmentSelfClosing = {
+	caption: {},
+	image: {
+		action: (_child, argument, options) => {
+			let child = _child;
+			child = child.addChild('image');
+			child.node.setAttribute("data-src", argument);
+			return child;
+		}
+	},
+	webwork: {
+		action: (_child, argument, options) => {
+			let child = _child;
+			child = child.addChild('webwork');
+			child.node.setAttribute("pg_file", argument);
+			return child;
+		}
+	},
+	wiki: {
+		action: (_child, argument, options) => {
+			let child = _child;
+			child = child.addChild('wiki');
+			child.node.textContent += argument;
+			return child;
+		}
+	},
+	newline: {
+		action: (_child, argument, options) => {
+			let child = closeChildIfParagraph(_child);
+			child = child.addChild('newline');
+			return child;
+		}
+	},
+	caption: {
+		action: (_child, argument, options) => {
+			let child = closeChildIfParagraph(_child);
+			child = child.addChild('caption');
+			child.node.textContent += argument;
+			return child;
+		}
+	},
+	qed: {
+		action: (_child, argument, options) => {
+			return _child.addChild('qed');
+		}
+	},
+	endproof: {
+		action: (_child, argument, options) => {
+			return child = _child.addChild('qed');
+		}
+	},
+	ref: {
+		action: (_child, argument, options = null) => {
+			let child = closeChildIfParagraph(_child);
+			child = child.addChild('ref');
+			child.node.setAttribute('label', argument);
+			child.loadOptions(options);
+			return child;
+		}
+	},
+	href: {
+		action: (_child, argument = null, options = null) => {
+			let child = _child;
+			child = child.addChild('href');
+			child.node.setAttribute('src', argument);
+			child.node.setAttribute('name', options.name ? options.name : argument);
+			child.node.setAttribute('argument', argument);
+			return child;
+		}
+	},
+	keyword: {
+		action: (_child, argument, options = null) => {
+			let child = closeChildIfParagraph(_child);
+			child = child.addChild('inline_keyword');
+			child.node.textContent += argument;
+			return child;
+		}
+	},
+	paragraphs: {
+		action: (_child, argument, options = null) => {
+			let child = closeChildIfParagraph(_child);
+			if (child.node.nodeName.match(/col_ul|col_ol/i)) {
+				return child;
+			}
+			if (!child.node.nodeName.match(/PARAGRAPHS/i)) {
+				if (child.node.nodeName.match(/root|course|chapter|section/i)) {
+					child = child.addChild('slides').addChild('slide');
+					child.node.setAttribute("canon_num", secNums['slide']);
+					secNums['slide']++;
+				}
+				if (!child.node.nodeName.match(/nstep|step/i)) {
+					// console.log(argument);
+					child = child.addChild("paragraphs");
+					child.node.setAttribute("wbtag", "paragraphs");
+				}
+			}
+			// if (!child.node.nodeName.match(/nstep|step/i)) {
+			// 	console.log(argument);
+			// 	child = child.addChild("paragraphs");
+			// 	child.node.setAttribute("wbtag", "paragraphs");
+			// 	child.node.textContent += argument;
+			// 	return child;
+			// }
+			// console.log('commiting to textnode');
+			// console.log(argument);
+			child.node.textContent += argument;
+			return child;
+		}
 	}
 
-	// Generate the DOM string based on the tag type
-	let domString;
-	switch (tagName) {
-		case 'tr':
-		case 'tbody':
-		case 'thead':
-			domString = `<table><${tagName}${parameters}></${tagName}></table>`;
-			break;
-		case 'td':
-		case 'th':
-			domString = `<table><tr><${tagName}${parameters}></${tagName}></tr></table>`;
-			break;
-		default:
-			domString = `<${xh_prefix}${tagName}${parameters}></${xh_prefix}${tagName}>`;
-			break;
+};
+
+const procedural = {
+	topic: {
+		action: (_child, argument, options) => {
+			let child = _child;
+			child = child.addChild('topic');
+			child.node.setAttribute("wbtag", 'topic');
+			let ancestorNode = child.getParent(/lecture|week|chapter|course/i);
+			if (!ancestorNode.node.nodeName.match(/lecture|week|chapter|course/i)) {
+				return;
+			}
+			let topics = ancestorNode.node.getAttribute('topic');
+			if (typeof topics != typeof undefined && topics != null && topics != '') {
+				ancestorNode.node.setAttribute('topic', topics + ', ' + argument);
+			} else {
+				ancestorNode.node.setAttribute('topic', argument);
+			}
+			let aux = ancestorNode.addChild("topic");
+			aux.node.setAttribute('scope', 'chapter');
+			aux.node.textContent += argument;
+			aux = aux.close();
+		}
+	},
+	nstep: {
+		action: (_child, argument, options) => {
+			let child = _child;
+			let insert = '\\class{steps}{\\cssId{step' + child.step + '}{' + argument + '}}';
+			child.step++;
+			child.node.textContent += insert;
+		}
+	},
+	of: {
+		action: (_child, argument, options) => {
+			let child = _child;
+			let parent = child.closeTo(/substatement/i);
+			parent.node.setAttribute("of", argument);
+		}
+	},
+	label: {
+		action: (_child, argument, options) => {
+			let child = _child;
+			let parent = child.closeTo(/statement|course|chapter|section|subsection|subsubsection|figure/i);
+			let label = parent.addChild("label");
+			label.node.setAttribute('wbtag', 'label');
+			label.node.setAttribute('name', argument);
+			label.node.setAttribute('type', parent.node.getAttribute('type'));
+			label.close();
+		}
+	},
+	'keyword*': {
+		action: (_child, argument, options = null) => {
+			let slide = _child.getParent(/slide/i);
+			let kw = slide.addChild("hc_keyword");
+			kw.node.setAttribute("wbtag", "hc_keyword");
+			kw.node.setAttribute("class", "hidden");
+			kw.node.textContent += argument;
+			kw.close();
+		}
+	},
+	skip: {
+		action: (_child, argument = null, options = null) => {
+			_child.node.setAttribute("data-lecture-skip", "true");
+		}
+	},
+	chapter_type: {
+		action: (_child, argument = null, options = null) => {
+			let parent = _child.closeTo(/chapter/i);
+			parent.node.setAttribute("chapter_type", argument);
+			chapterType = argument;
+		}
+	},
+}
+
+const environmentOpenings = {
+	slide: {
+		action: (_child, tagname) => {
+			let child = _child.closeTo(/SLIDES|section|chapter|course|root/i);
+			if (!child.node.nodeName.match(/SLIDES/i)) {
+				child = child.addChild('slides');
+			}
+			// child = child.addChild('slide');
+			// child.node.setAttribute("wbtag", tagname);						
+			return { node: child, name: tagname };
+		},
+		post: (_child) => {
+			let child = _child
+			child.node.setAttribute("canon_num", secNums['slide']++);
+			return child;
+		},
+	},
+	latex_list: {
+		action: (_child, tagname) => {
+			let child = closeChildIfParagraph(_child);
+			return { node: child, name: tagname };
+		}
+	},
+	col: {
+		action: (_child, tagname) => {
+			let tname = tagname;
+			let child = closeChildIfParagraph(_child);
+			if ((tagname == 'newcol') || (child.getEnvironment() != 'newcol')) {
+				tname = 'newcol';
+			} else {
+				tname = 'collapse';
+			}
+			return { node: child, name: tname };
+		}
+	},
+	html_list: {
+		action: (child, tagname) => {
+			let tname = `col_${tagname}`;
+			// console.log(tname);
+			return { node: child, name: tname };
+		}
+	},
+	li: {
+		action: (_child, tagname) => {
+			let child = _child.closeTo(/col_ul|col_ol/i);
+			let tname = `col_${tagname}`;
+			return { node: child, name: tname };
+		}
+	},
+	framebox: { action: null },
+	center: { action: null },
+	left: { action: null },
+	right: {
+		action: (_child, tagname) => {
+			let child = _child;
+			if (child.getEnvironment().match(/left/i)) {
+				child = child.closeTo(/left/i).close();
+			}
+			return { node: child, name: tagname };
+		}
+	},
+	steps: {
+		action: (_child, tagname) => {
+			let child = _child;
+			child.stepsID++;
+			step = 0;
+			child = closeChildIfParagraph(child);
+			return { node: child, name: tagname };
+		},
+		post: (_child) => {
+			let child = _child;
+			// console.log(child.stepsID);
+			child.node.setAttribute("stepsid", 'steps' + child.stepsID);
+			return child;
+		},
+	},
+};
+
+const environmentClosures = {
+	endtitle: {
+		targets: /title|slide/i,
+		action: (child) => {
+			if (!environs.includes(child.getEnvironment())) {
+				return;
+			}
+			const parent = child.getParent(/statement|substatement|chapter|section|subsection|subsubsection/i);
+			parent.node.setAttribute("title", child.node.textContent.replace(/[^a-zÀ-ÿ0-9\s\-\']/ig, '').trim());
+
+			// const title = parent.addChild('title');
+			// title.node.textContent = child.node.textContent;
+			// title.close();
+		}
+	},
+	endcol: { targets: /newcol|slide/i },
+	endul: { targets: /col_ul|col_ol|slide/i },
+	endol: { targets: /col_ol|col_ul|slide/i },
+	endenumerate: { targets: /enumerate|slide/i },
+	enditemize: { targets: /itemize|slide/i },
+	endcenter: { targets: /center|slide/i },
+	endfigure: { targets: /figure/i },
+	endright: { targets: /right|slide/i },
+	endleft: { targets: /left|slide/i },
+	end: { targets: /statement|substatement|enumerate|itemize|center|left|right|slide|framebox|figure/i },
+	endsteps: { targets: /steps/i },
+};
+
+const closeChildIfParagraph = (child) => {
+	while (child.node.nodeName.match(/PARAGRAPHS/i)) { // changed if to while
+		// console.log(child.node.nodeName);
+		child = child.close();
+	}
+	return child;
+};
+
+const handleVerbatimNode = function (child, token) {
+	const tokenValue = token.type == 'newline' ? "\n\n" :
+		token.value || ''; // Ensure value exists
+	// console.log(tokenValue);
+	// console.log(child.node.nodeName);
+	// Check for closing tag to exit verbatim mode
+	if (createClosingTagRegex(child.node.nodeName).test(tokenValue)) {
+		return child.close(); // Signal to handle closing tag normally
 	}
 
-	// Parse the DOM string into an HTML node
-	const htmlDom = new DOMParser().parseFromString(domString, 'text/html');
-	const node = htmlDom.getElementsByTagName(`${xh_prefix}${tagName}`)[0];
+	if (token.type == 'at_word') {
+		child.node.textContent += '@' + token.tagname;
+	} else {
+		child.node.textContent += tokenValue;
+	}
+	return child; // Signal that token was handled
+};
 
-	// Add the node to the child
-	child = child.addNode(node);
+const handleHtmlToken = (child, token) => {
+	if (token.type === 'html_open' || token.type === 'html_self_closing') {
+		return weaveHtml(child, token);
+	}
 
-	// Handle self-closing tags (e.g., <img />, <br />) or tags that end with />
-	if (word.endsWith('/>') || ['img', 'hr', 'br'].includes(tagName)) {
-		child = child.close(); // Close the tag if it's self-closing
+	if (token.type === 'html_close') {
+		const tagName = token.tag.toLowerCase();
+		const prefixedTagRe = new RegExp(`${xh_prefix || ''}${tagName}`, 'i');
+		child = child.closeTo(prefixedTagRe);
+		// console.log(`TAG CLOSED: ${tagName}`);
+		child = child.close();
+		return child;
+	}
+
+	// If not an HTML token, return unchanged (could be handled elsewhere)
+	return child;
+};
+
+const processDirectiveToken = (token) => {
+	let tagname = token.name || '';
+	let argument = '';
+	let options = null;
+
+	if (token.type === 'directive') {
+		if (token.nested.length > 0) {
+			// Take the first nested content as argument (adjust if multiple needed)
+			argument = token.nested[0].value.trim();
+		}
+		if (token.bracket) {
+			const bracketContent = token.bracket.slice(1, -1).trim(); // Remove [ and ]
+			try {
+				// Attempt to parse as JSON, converting single quotes to double quotes
+				options = JSON.parse('{' + bracketContent.replace(/'/g, '"') + '}');
+			} catch (e) {
+				// Fallback to a simple name object if JSON parsing fails
+				options = { name: bracketContent };
+			}
+		}
+	} else if (token.type === 'html_open') {
+		options = token.attributes;
+	}
+	// console.log(tagname);
+	tagname = tagname == 'sep' ? 'slide'
+		: tagname == 'example' ? 'eg'
+		: (tagname == 'definition') || (tagname == 'def') ? 'defn'
+		: tagname == 'theorem' ? 'thm'
+		: tagname == 'proprosition' ? 'prop'
+		: tagname == 'corollary' ? 'cor'
+		: tagname == 'solution' ? 'sol'
+		: tagname;
+
+	return { tagname, argument, options }; // Return structured result
+};
+
+const isSubstatement = (tagname) => SUBSTATEMENT_TAGS.some(tag =>
+	typeof (tagname) === 'undefined' ? null :
+		tagname.match(new RegExp(tag, 'i'))
+);
+const isStatement = (tagname) => COUNTERED_TAGS.some(tag =>
+	typeof (tagname) === 'undefined' ? null :
+		tagname.match(new RegExp(tag, 'i'))
+);
+const counteredTokenType = (tagname) => isSubstatement(tagname) ? 'substatement' :
+	isStatement(tagname) ? 'statement' :
+		tagname === 'figure' ? 'figure' : undefined;
+
+const statementHandler = (child, token, tagname) => {
+	const statementType = counteredTokenType(tagname);
+
+	if (typeof (statementType) === undefined) { return; }
+	// console.log(token);
+	child = closeChildIfParagraph(child);
+	parent = child;
+	child = parent.addChild(statementType);
+
+	child.node.setAttribute('type', dictionary[tagname.toLowerCase().trim()]);
+	child.node.setAttribute('wbtag', tagname);
+
+	if (!isSubstatement(tagname)) {
+		child.node.setAttribute('num', secNums[counteredTokenType(tagname)]++);
+	}
+	return child;
+}
+
+function tokenizeAndProcess(input) {
+	const tokens = [];
+	let match;
+	while ((match = mainTokensRe.exec(input)) !== null) {
+		const [
+			fullMatch,
+			commentOpen,       // 1
+			commentClose,      // 2
+			atWord,           // 3
+			atWordName,
+			atWordNested,
+			atWordBracket,
+			directiveFull,     // 4
+			directiveWord,     // 5
+			nestedContent,     // 6
+			directiveBracket,    // 7
+			htmlOpenFull,      // 8
+			tagNameOpen,       // 9
+			attributes,        // 10
+			selfClosing,       // 11
+			htmlCloseFull,     // 12
+			tagNameClose,      // 13
+			newline,
+			plainTextFull,     // 14
+			plainText          // 15
+		] = match;
+		// console.log(match);
+
+		if (commentOpen) {
+			tokens.push({ type: 'comment_open', value: commentOpen });
+		}
+		else if (commentClose) {
+			tokens.push({ type: 'comment_close', value: commentClose });
+		}
+		else if (atWord) {
+			tokens.push({
+				type: 'at_word',
+				name: 'escaped',           // Captured word after @@				
+				tagname: atWordName,
+				value: atWord,	           // Full match for reference
+			});
+		}
+		else if (directiveFull) {
+			const parsedNested = nestedContent ? parseNestedBraces(nestedContent) : [];
+			tokens.push({
+				type: 'directive',
+				name: directiveWord,
+				nested: parsedNested,
+				bracket: directiveBracket || null,
+				value: directiveFull
+			});
+		}
+		else if (htmlOpenFull) {
+			tokens.push({
+				type: selfClosing ? 'html_self_closing' : 'html_open',
+				tag: tagNameOpen,
+				attributes: attributes ? parseAttributes(attributes) : {},
+				value: htmlOpenFull,
+				// attributes: attributes
+			});
+		}
+		else if (htmlCloseFull) {
+			tokens.push({
+				type: 'html_close',
+				tag: tagNameClose,
+				value: htmlCloseFull
+			});
+		}
+		else if (newline) {
+			tokens.push({ type: 'newline', value: '@newline' });
+		}
+		else if (plainTextFull) {
+			tokens.push({ type: 'text', value: plainTextFull });
+		}
+	}
+
+	return tokens;
+}
+
+function parseNestedBraces(content) {
+	let stack = [];
+	let current = '';
+	let results = [{ type: 'nested', value: content }];
+
+	for (let i = 0; i < content.length; i++) {
+		const char = content[i];
+		if (char === '{') {
+			stack.push(i);
+			current += char;
+		}
+		else if (char === '}') {
+			if (stack.length === 0) {
+				results.push({ type: 'error', value: 'Unmatched closing brace' });
+				return results;
+			}
+			stack.pop();
+			current += char;
+			if (stack.length === 0) {
+				results.push({ type: 'nested', value: current });
+				current = '';
+			}
+		}
+		else if (stack.length > 0 || char) {
+			current += char;
+		}
+	}
+
+	if (stack.length > 0) {
+		results.push({ type: 'error', value: 'Unmatched opening brace' });
+	}
+	else if (current.trim()) {
+		results.push({ type: 'text', value: current });
+	}
+
+	return results;
+}
+
+function parseAttributes(attributeString) {
+	const attributes = {};
+
+	// Return empty object if string is empty or not provided
+	if (!attributeString || typeof attributeString !== 'string') {
+		return attributes;
+	}
+
+	// Split the string into individual attribute assignments
+	// This regex handles spaces and maintains quoted values
+	const attrArray = attributeString.match(/([^\s=]+)=(?:"([^"]*)"|'([^']*)'|([^>\s]*))/g) || [];
+
+	attrArray.forEach(attr => {
+		// Split each attribute into name and value
+		const [name, ...valueParts] = attr.split('=');
+		let value = valueParts.join('=').replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+
+		// Handle boolean attributes (if value is empty, set to true)
+		if (value === '' && attributeString.includes(`${name} `) || attributeString.trim() === name) {
+			value = true;
+		}
+
+		attributes[name] = value;
+	});
+
+	return attributes;
+}
+
+function weaveHtml(child, token) {
+	const tagName = token.tag;
+	const parameters = typeof (token.attributes) === 'undefined' ? '' : token.attributes;
+	const isSelfClosing = token.value.endsWith('/>') ||
+		['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']
+			.includes(tagName);
+
+	const wrappingTags = {
+		li: [/ol|ul/i, `<ul><li ${parameters}></li></ul>`],
+		tr: [/tbody|table/i, `<table><tr ${parameters}></tr></table>`],
+		td: [/tr/i, `<table><tr><td ${parameters}></td></tr></table>`],
+		th: [/tr/i, `<table><tr><th ${parameters}></th></tr></table>`],
+		tbody: [/table/i, `<table><tbody ${parameters}></tbody></table>`],
+		thead: [/table/i, `<table><thead ${parameters}></thead></table>`],
+	};
+
+	let node;
+	if (wrappingTags[tagName]) {
+		const [closeToPattern, domTemplate] = wrappingTags[tagName];
+		child = child.closeTo(closeToPattern); // Close up to matching parent
+	}
+
+	child = child.addChild(tagName, nsResolver('xh'));
+	if (parameters) {
+		Object.entries(parameters).forEach(([name, value]) => {
+			// Convert boolean true to empty string (HTML convention for boolean attributes)
+			if (value === true) {
+				child.node.setAttribute(name, '');
+			} else {
+				child.node.setAttribute(name, value);
+			}
+		});
+	}
+
+	// Close self-closing tags immediately
+	if (isSelfClosing) {
+		child = child.close();
 	}
 
 	return child;
 }
-// /deepseek
+
+function addSection(sectionType, title, child, options) {
+	let stackName = ['lecture', 'week'].includes(sectionType) ? 'chapter' : sectionType;
+	chapterType = sectionType == 'week' ? 'Week' : sectionType == 'Lecture' ? 'Lecture' : '';
+
+	switch (sectionType) {
+		case 'subsubsection':
+			child = child.closeTo(RegExp('^(subsection|section|chapter|course|root)$', 'i'));
+			if (!(child.node.nodeName.match(/^subsection$/i))) {
+				child = addSection('subsection', '', child, options).closeTo(RegExp('^subsection$', 'i'));
+			}
+			break;
+		case 'subsection':
+			child = child.closeTo(RegExp('^(section|chapter|course|root)$', 'i'));
+			if (!(child.node.nodeName.match(/^section$/i))) {
+				child = addSection('section', '', child, options).closeTo(RegExp('^section$', 'i'));
+			}
+			break;
+		case 'section':
+			child = child.closeTo(RegExp('^(chapter|course|root)$', 'i'));
+			if (!(child.node.nodeName.match(/^chapter$/i))) {
+				child = addSection('chapter', '', child, options).closeTo(RegExp('^chapter$', 'i'));
+			}
+			break;
+		case 'week':
+			// chapterType = 'Week';
+		case 'lecture':
+			// chapterType = 'Lecture';
+		case 'chapter':
+			child = child.closeTo(RegExp('course|root', 'i'));
+			if (!(child.node.nodeName.match(/course/i))) {
+				child = addSection('course', '', child, options).closeTo(RegExp('course', 'i'));
+			}
+			stackName = 'chapter';
+			break;
+		case 'course':
+			child = child.closeTo(/root/i);
+			break;
+	}
+	
+	child = child.addChild(stackName);
+	if (!stackName.match(/section/i)) {
+		child.node.setAttribute('type', stackName.charAt(0).toUpperCase() + stackName.slice(1));
+	} else {
+		child.node.setAttribute('type', 'Section');
+	}
+	if (sectionType.match(/chapter|week|lecture/i)) {
+		child.node.setAttribute('chapter_type', sectionType.charAt(0).toUpperCase() + sectionType.slice(1));
+	}
+
+
+	child.node.setAttribute("wbtag", sectionType);
+	if (stackName.match(/week|lecture|chapter/)) {
+		secNums[stackName] = title;
+		secNums['statement'] = 1;
+		child.node.setAttribute("num", secNums[stackName]++);
+	}
+
+	if (typeof(title) !== 'undefined' && title != null && title.trim() != '') {
+		child.node.setAttribute("title", title.replace(/[^a-zÀ-ÿ0-9\s\-]/ig, '').trim());
+		child = child.addChild('title');
+		if(!stackName.match(/chapter/i)) {
+			child.node.textContent = title;
+		}
+		child.node.setAttribute("wbtag", sectionType);
+		child.node.setAttribute("scope", stackName);
+		child = child.closeTo(RegExp(stackName, 'i'));
+	}
+	
+	// if (((typeof title != 'undefined') && title.trim() != '' && title != null) || stackName.match(/chapter|course/i)) {
+	// 	child.node.setAttribute("title", title.replace(/[^a-zÀ-ÿ0-9\s\-]/ig,'').trim());
+	// 	child = child.addChild('title');
+	// 	child.node.textContent = title;
+	// 	child.node.setAttribute("wbtag", sectionType);
+	// 	child.node.setAttribute("scope", stackName);
+	// 	child = child.closeTo(RegExp(stackName, 'i'));
+	// }
+
+	child.loadOptions(options);
+	child = child.addChild('slides').addChild('slide');
+	child.node.setAttribute("canon_num", secNums['slide']);
+	child.node.setAttribute("scope", sectionType);
+	secNums['slide']++;
+	return child;
+}
 
 function Stack(node, doc) {
 	this.doc = doc;
@@ -136,16 +774,16 @@ function Stack(node, doc) {
 		this.node.setAttribute("environment", "");
 	} catch (err) { }
 	this.node.textContent = "";
-	this.words = [];
+	this.tokens = [];
 	this.is_comment = false;
 	this.html_environments = [];
 	this.stepsID = 0;
 	this.course = '';
 	this.chapterType = '';
+	this.step = 0;
 	// this.wwID = 0;
 
-	this.addChild = function (name) {
-		let namespace = 'http://www.math.cuhk.edu.hk/~pschan/cranach';
+	this.addChild = function (name, namespace = 'http://www.math.cuhk.edu.hk/~pschan/cranach') {
 		let parent = this;
 		while (parent.node.nodeName.match(/PARAGRAPHS/i)) {
 			parent = parent.close();
@@ -158,7 +796,7 @@ function Stack(node, doc) {
 		}
 
 		child.doc = parent.doc;
-		child.words = parent.words;
+		child.tokens = parent.tokens;
 		child.html_environments = parent.html_environments;
 		child.stepsID = parent.stepsID;
 		child.is_comment = parent.is_comment;
@@ -185,7 +823,7 @@ function Stack(node, doc) {
 		}
 
 		child.doc = parent.doc;
-		child.words = parent.words;
+		child.tokens = parent.tokens;
 		child.html_environments = parent.html_environments;
 		child.stepsID = parent.stepsID;
 		child.is_comment = parent.is_comment;
@@ -210,7 +848,7 @@ function Stack(node, doc) {
 		let child = new Stack(parent.doc.createComment(text));
 
 		child.doc = parent.doc;
-		child.words = parent.words;
+		child.tokens = parent.tokens;
 		child.html_environments = parent.html_environments;
 		child.stepsID = parent.stepsID;
 		child.is_comment = parent.is_comment;
@@ -226,15 +864,15 @@ function Stack(node, doc) {
 			if (this.node.nodeName.match(/statement|substatement|figure/i)) {
 				let strippedText = this.node.textContent.replace(/[^a-zA-Z0-9]/g, '')
 				if (strippedText != '') {
-					let textMD5 = md5(strippedText);
+					let textMD5 = base62md5(strippedText);
 					this.node.setAttribute('md5', textMD5);
 				} else {
 					let serialized = xmlSerializer.serializeToString(this.node);
-					this.node.setAttribute('md5', md5(serialized));
+					this.node.setAttribute('md5', base62md5(serialized));
 				}
 			}
 			this.parent.node.appendChild(this.node);
-			this.parent.words = this.words;
+			this.parent.tokens = this.tokens;
 			this.parent.html_environments = this.html_environments;
 			this.parent.stepsID = this.stepsID;
 			this.parent.is_comment = this.is_comment;
@@ -289,596 +927,153 @@ function Stack(node, doc) {
 		return this.node;
 	}
 
-	this.weave = function () {
-		let originalWord = this.words.shift();
-		const word = originalWord.trim();
-		let verbatim = this.node.nodeName.match(/(script|textarea)/i);
-		let parent, child;
-
-		child = this;
-
-		if (verbatim) {
-			report('DEFAULT: ' + originalWord);
-			if (!originalWord.match(new RegExp('</' + verbatim[1] + '>', 'i'))) {
-				originalWord = originalWord.replace(/@@(\w+)/g, "@$1");
-				this.node.textContent += originalWord;
-				return this;
-			}
-		} else {
-			if (originalWord.match(/^\n$/)) {
-				return this;
-			}
-			originalWord = originalWord.replace(/@@(\w+)/g, "@escaped{$1}");
-		}
-
-		report('WEAVING: ' + originalWord);
-
-
-		if (word.match(/^\<\!\-\-/)) {
-			while (child.node.nodeName.match(/PARAGRAPHS/i)) {
-				child = child.close();
-			}
-			child = child.addChild("comment");
-			child.is_comment = true;
-			return child;
-		}
-
-		if (word.match(/\-\-\>/)) {
-			child = child.close();
-			child.is_comment = false;
-			return child;
-		} else if (child.is_comment) {
-			child.node.textContent += originalWord;
-			return child;
-		}
-
-		// HTML section
-		let htmlMatches = word.match(htmlTagRe);
-		if (htmlMatches) {
-			return weaveHtml(child, word, htmlMatches);
-		} else {
-			htmlMatches = word.match(htmlTagCloseRe);
-			if (htmlMatches) {
-				let re = new RegExp(xh_prefix + htmlMatches[1], 'i');
-				child = child.closeTo(re);
-				report('TAG CLOSED');
-				child = child.close();
-				return child;
-			}
-		}
-		// END HTML section
-
-		return this.weaveNonHtml(child, originalWord);
-
-	}
-
-	this.weaveNonHtml = function (child, originalWord) {
-		const STATEMENT_TYPES = {
-			STATEMENT: 'statement',
-			SUBSTATEMENT: 'substatement',
-		};
-
-		const SUBSTATEMENT_TAGS = ['@proof', '@sol', '@ans', '@notation', '@remark'];
-
-		// Helper function to determine if a word is a substatement
-		const isSubstatement = (word) => SUBSTATEMENT_TAGS.some(tag => word.match(new RegExp(tag, 'i')));
-
-		// Helper function to close the child node if it matches PARAGRAPHS
-		const closeChildIfParagraph = (child) => {
-			while (child.node.nodeName.match(/PARAGRAPHS/i)) { // changed if to while
-				child = child.close();
-			}
-			return child;
-		};
-
-		let word = originalWord.trim();
-		let tagname = '';
-		let argument = '';
-		let options = null;
-		let matches;
-
-		matches = word.match(/^(@[a-zA-Z\*]+)(?:{((?:.|\n)*?)})?(?:\[(.*?)\])?$/);
-		if (matches) {
-			word = matches[1];
-			tagname = word.substr(1);
-			if (matches[2]) {
-				argument = matches[2].trim();
-			}
-			if (matches[3]) {
-				try {
-					options = JSON.parse('{' + matches[3].trim().replace(/'/g, '"') + '}');
-				} catch (e) {
-					options = JSON.parse('{"name":"' + matches[3].trim() + '"}');
-				}
-			}
-		}
-		switch (word) {
-			case "@course":
-				if (argument.trim().toLowerCase() != this.course.trim().toLowerCase()) {
+	this.weaveNonHtml = function (_child, token) {
+		const sectionHandlers = {
+			course: (child, argument, options) => {
+				const normalizedArg = argument.trim().toLowerCase();
+				const normalizedCourse = this.course.trim().toLowerCase();
+				if (normalizedArg !== normalizedCourse) {
 					secNums['chapter'] = 1;
 					child = addSection('course', argument, child, options);
 					child.node.setAttribute('course', argument);
 					child.node.setAttribute('title', argument);
 					child.course = argument;
 				}
-				break;
-			case '@setchapter':
+				return child;
+			},
+			setchapter: (child, argument) => {
 				secNums['chapter'] = argument;
 				child = child.addChild('setchapter');
 				child.node.setAttribute('wbtag', tagname);
 				child.node.setAttribute('argument', argument);
-				child = child.close();
-				break;
-			case '@chapter':
-			case '@section':
-			case '@subsection':
-			case '@subsubsection':
-				child = addSection(tagname, argument, child, options);
-				break;
-			case '@week':
-				chapterType = "Week";
-				secNums['chapter'] = +argument;
-				child = addSection('week', '', child, options);
-				break;
-			case '@lecture':
-				chapterType = "Lecture";
-				secNums['chapter'] = +argument;
-				child = addSection('lecture', '', child, options);
-				break;
-			case '@chapter_type':
-				parent = child.closeTo(/chapter/i);
-				parent.node.setAttribute("chapter_type", argument);
-				chapterType = argument;
-				break;
-			case '@skip':
-				child.node.setAttribute("data-lecture-skip", "true");
-				break;
-			case '@slide':
-				child = child.closeTo(/SLIDES|section|chapter|course|root/i);
-				if (!child.node.nodeName.match(/SLIDES/i)) {
-					child = child.addChild('slides');
-				}
-				child = child.addChild('slide');
-				child.node.setAttribute("wbtag", tagname);
-				child.node.setAttribute("canon_num", secNums['slide']);
-				secNums['slide']++;
-				break;
-			case '@enumerate':
-				while (child.node.nodeName.match(/PARAGRAPHS/i)) {
-					child = child.close();
-				}
-				child = child.addChild(tagname);
-				child.node.setAttribute("wbtag", tagname);
-				break;
-			case '@itemize':
-				while (child.node.nodeName.match(/PARAGRAPHS/i)) {
-					child = child.close();
-				}
-				child = child.addChild(tagname);
-				child.node.setAttribute("wbtag", tagname);
-				break;
-			case "@item":
-				child = child.closeTo(/enumerate|itemize|slide/i);
-				child = child.addChild(tagname);
-				child.node.setAttribute("wbtag", tagname);
-				break;
-			case '@newcol':
-			case '@collapse':
-			case '@col':
-				while (child.node.nodeName.match(/PARAGRAPHS/i)) {
-					child = child.close();
-				}
-				if ((word == '@newcol') || (child.getEnvironment() != 'newcol')) {
-					tagname = 'newcol';
-				} else {
-					tagname = 'collapse';
-				}
-				child = child.addChild(tagname);
-				child.node.setAttribute("wbtag", tagname);
-				break;
-			case '@endcol':
-				child = child.closeTo(/newcol/i).close();
-				break;
-			case "@ul":
-			case "@ol":
-				child = child.addChild('col_' + tagname);
-				child.node.setAttribute("wbtag", 'col_' + tagname);
-				break;
-			case "@li":
-				child = child.closeTo(/col_ul|col_ol/i);
-				child = child.addChild('col_' + tagname);
-				child.node.setAttribute("wbtag", 'col_' + tagname);
-				break;
-			case "@endul":
-			case "@endol":
-				child = child.closeTo(/col_ul|col_ol/i).close();
-				break;
-			case '@ex':
-			case '@eg':
-			case '@fact':
-			case '@defn':
-			case '@thm':
-			case '@prop':
-			case '@cor':
-			case '@lemma':
-			case '@claim':
-			case '@remark':
-			case '@proof':
-			case '@sol':
-			case '@ans':
-			case '@notation':
-				const statementType = isSubstatement(word) ? STATEMENT_TYPES.SUBSTATEMENT : STATEMENT_TYPES.STATEMENT;
+				return child.close();
+			},
+			defaultChapter: (child, argument, options) => addSection(token.name, argument, child, options),
+			defaultSection: (child, argument, options) => addSection(token.name, argument, child, options)
+		};
 
-				child = closeChildIfParagraph(child);
-				parent = child;
-				child = parent.addChild(statementType);
+		let { tagname, argument, options } = processDirectiveToken(token);
 
-				child.node.setAttribute('type', dictionary[word.trim()]);
-				child.node.setAttribute('wbtag', tagname);
+		const sectionHandler = sectionHandlers[token.name]
+			|| (sectionTypes.includes(token.name) ? sectionHandlers.defaultSection : null)
+			|| (chapterTypes.includes(token.name) ? sectionHandlers.defaultChapter : null);
 
-				if (!isSubstatement(word)) {
-					child.node.setAttribute('num', secNums['statement']++);
-				}
-				break;
-			case "@figure":
-				child = closeChildIfParagraph(child);
-				parent = child;
-				child = parent.addChild('figure');
-				child.node.setAttribute("wbtag", tagname);
-				child.node.setAttribute("type", 'Figure');
-				child.node.setAttribute("num", secNums['figure']++);
-				break;
-			case "@endfigure":
-				if (!environs.includes(child.getEnvironment())) {
-					break;
-				}
-				child = child.closeTo(/figure/i).close();
-				break;
-			case "@of":
-				let match = originalWord.trim().match(/@of{(.*?)}/)[1];
-				parent = child.closeTo(/substatement/i);
-				parent.node.setAttribute("of", match);
-				break;
-			case "@title":
-				child = closeChildIfParagraph(child);
-				if (argument) {
-					child.node.setAttribute("title", argument.replace(/[^a-zÀ-ÿ0-9\s\-\']/ig, ''));
-					let title = child.addChild("title");
-					title.node.textContent += argument.trim();
-					// title.node.setAttribute('scope', parent.node.nodeName);
-					title.node.setAttribute('wbtag', child.node.nodeName);
-					title.close();
-				} else {
-					child = child.addChild("title");
-					child.node.setAttribute('wbtag', child.node.nodeName);
-				}
-				break;
-			case "@endtitle":
-				if (!environs.includes(child.getEnvironment())) {
-					break;
-				}
-				parent = child.getParent(/statement|substatement|chapter|section|subsection|subsubsection/i);
-				parent.node.setAttribute("title", child.node.textContent.replace(/[^a-zÀ-ÿ0-9\s\-\']/ig, ''));
-				child = child.closeTo(/title|slide/i).close();
-				break;
-			case "@caption":
-				child = closeChildIfParagraph(child);
-				child = child.addChild("caption");
-				child.node.textContent += argument;
-				child = child.close();
-				break;
-			case "@framebox":
-				child = child.addChild("framebox");
-				child.node.setAttribute("wbtag", "framebox");
-				break;
-			case "@endenumerate":
-				if (!environs.includes(child.getEnvironment())) {
-					break;
-				}
-				child = child.closeTo(/enumerate|slide/i).close();
-				break;
-			case "@enditemize":
-				if (!environs.includes(child.getEnvironment())) {
-					break;
-				}
-				child = child.closeTo(/itemize|slide/i).close();
-				break;
-			case "@end":
-				if (!environs.includes(child.getEnvironment())) {
-					break;
-				}
-				// let re = new RegExp(child.getEnvironment(), 'i');
-				child = child.closeTo(/statement|substatement|enumerate|itemize|center|left|right|slide|framebox|figure/i).close();
-				break;
-			case "@center":
-				child = child.addChild("center");
-				child.node.setAttribute("wbtag", "center");
-				break;
-			case "@endcenter":
-				if (!environs.includes(child.getEnvironment())) {
-					break;
-				}
-				child = child.closeTo(/center|slide/i).close();
-				break;
-			case "@left":
-				child = child.addChild("left");
-				child.node.setAttribute("wbtag", "left");
-				break;
-			case "@endleft":
-				if (!environs.includes(child.getEnvironment())) {
-					break;
-				}
-				child = child.closeTo(/left|slide/i).close();
-				break;
-			case "@right":
-				if (child.getEnvironment().match(/left/i)) {
-					child = child.closeTo(/left/i).close();
-				}
-				child = child.addChild("right");
-				child.node.setAttribute("wbtag", "right");
-				break;
-			case "@endright":
-				if (!environs.includes(child.getEnvironment())) {
-					break;
-				}
-				child = child.closeTo(/right|slide/i).close();
-				break;
-			case "@image":
-				child = child.addChild("image");
-				child.node.setAttribute("data-src", argument);
-				child.node.setAttribute("wbtag", "image");
-				child = child.close();
-				break;
-			case "@webwork":
-				child = child.addChild("webwork");
-				child.node.setAttribute("wbtag", "webwork");
-				child.node.setAttribute("pg_file", argument);
-				child = child.close();
-				break;
-			case "@wiki":
-				child = child.addChild("wiki");
-				child.node.setAttribute("wbtag", tagname);
-				child.node.textContent += argument;
-				child = child.close();
-				break;
-			case "@topic":
-				let ancestorNode = child.getParent(/chapter|course/i);
-				if (!ancestorNode.node.nodeName.match(/chapter|course/i)) {
-					break;
-				}
-				let topics = ancestorNode.node.getAttribute('topic');
-				if (typeof topics != typeof undefined && topics != null && topics != '') {
-					ancestorNode.node.setAttribute('topic', topics + ', ' + argument);
-				} else {
-					ancestorNode.node.setAttribute('topic', argument);
-				}
-				let aux = ancestorNode.addChild("topic");
-				aux.node.setAttribute('scope', 'chapter');
-				aux.node.textContent += argument;
-				aux = aux.close();
-				break;
-			case "@steps":
-				child.stepsID++;
-				step = 0;
-				while (child.node.nodeName.match(/PARAGRAPHS/i)) {
-					child = child.close();
-				}
-				child = child.addChild("steps");
-				child.node.setAttribute('wbtag', 'steps');
-				child.node.setAttribute("stepsid", 'steps' + child.stepsID);
-				break;
-			case "@nstep":
-				let insert = '\\class{steps}{\\cssId{step' + step + '}{' + argument + '}}';
-				step++;
-				child.node.textContent += insert;
-				break;
-			case "@endsteps":
-				child = child.closeTo(/steps/i).close();
-				break;
-			case "@endproof":
-			case "@qed":
-				child = child.addChild("qed");
-				child = child.close();
-				break;
-			case "@break":
-				break;
-			case "@newline":
-				while (child.node.nodeName.match(/PARAGRAPHS/i)) {
-					child = child.close();
-				}
-				child = child.addChild("newline");
-				child = child.close();
-				break;
-			case "@para":
-				child = child.addChild("para");
-				child.node.setAttribute("wbtag", tagname);
-				break;
-			case "@label":
-				parent = child.closeTo(/statement|course|chapter|section|subsection|subsubsection|figure/i);
-				let label = parent.addChild("label");
-				label.node.setAttribute('wbtag', tagname);
-				label.node.setAttribute('name', argument);
-				label.node.setAttribute('type', parent.node.getAttribute('type'));
-				label.close();
-				break;
-			case "@ref":
-				while (child.node.nodeName.match(/PARAGRAPHS/i)) {
-					child = child.close();
-				}
-				child = child.addChild("ref");
-				matches = originalWord.match(/@ref{(.*?)}(\[(.*?)\])*/);
-				if (matches) {
-					if (matches[1]) {
-						child.node.setAttribute('label', matches[1]);
-					}
-					if (options != null) {
-						child.loadOptions(options);
-					}
-				}
-				child.node.setAttribute('wbtag', 'ref');
-				child = child.close();
-				break;
-			case "@href":
-				child = child.addChild("href");
-				matches = originalWord.match(/@href{(.*?)}(\[(.*?)\])*/);
-				if (matches) {
-					if (matches[1]) {
-						child.node.setAttribute('src', matches[1]);
-					}
-					if (matches[2]) {
-						child.node.setAttribute('name', matches[2]);
-					} else {
-						child.node.setAttribute('name', matches[1]);
-					}
-				}
-				child.node.setAttribute('wbtag', 'href');
-				child.node.setAttribute('argument', argument);
-				child = child.close();
-				break;
-			case "@keyword":
-				if (child.node.nodeName.match(/PARAGRAPHS/i)) {
-					child = child.close();
-				}
-				child = child.addChild('inline_keyword');
-				child.node.textContent += argument;
-				child = child.close();
-				break;
-			case "@keyword*":
-				let slide = child.getParent(/slide/i);
-				let kw = slide.addChild("hc_keyword");
-				kw.node.setAttribute("wbtag", "hc_keyword");
-				kw.node.setAttribute("class", "hidden");
-				kw.node.textContent += argument;
-				kw.close();
-				break;
-			case "@escaped":
-				if (!child.node.nodeName.match(/script|textarea/i)) {
-					child = child.addChild('escaped');
+		let child = _child;
+		if (sectionHandler) {
+			return sectionHandler(child, argument, options);
+		} else if (token.type == 'directive' && STATEMENTLIKE_TAGS.includes(tagname)) {
+			return statementHandler(child, token, tagname);
+		} else if (environmentClosures[tagname]) { // && environs.includes(child.getEnvironment())
+			const { targets, action } = environmentClosures[token.name];
+			if (action) action(child);
+			return child.closeTo(targets).close();
+		} else if (tagname in environmentSelfClosing) {
+			const action = environmentSelfClosing[tagname].action;
+			if (action) {
+				child = action(child, argument, options);
+			}
+			child.node.setAttribute("wbtag", tagname);
+			return child.close();
+		} else if (tagname in procedural) {
+			const action = procedural[tagname].action;
+			if (action) {
+				// console.log(tagname + ' ' + argument);
+				action(child, argument, options);
+			}
+			return child;
+		} else if (token.name == 'escaped') {
+			if (!child.node.nodeName.match(/script|textarea/i)) {
+				child = child.addChild('escaped');
+				if (token.type == 'at_word') {
+					child.node.setAttribute('wbtag', 'escaped');
+					child.node.setAttribute('argument', token.tagname);
+				} else if (token.type == 'directive') {
 					child.node.setAttribute('wbtag', 'escaped');
 					child.node.setAttribute('argument', argument);
-					child = child.close();
-					break;
-				} else {
-					originalWord = '@' + argument;
 				}
-			default:
-				report('DEFAULT: ' + originalWord);
-				if (originalWord.match(/@@\w+/)) {
-					originalWord = originalWord.replace(/@@/, '@');
+				return child = child.close();
+			} else {
+				return environmentSelfClosing.paragraphs.action(child, token.verbatim);
+			}
+		} else if (token.name == 'title') {
+			// child = closeChildIfParagraph(_child);
+			if (child.node.nodeName.match(/paragraphs/i)) {
+				child = child.close();
+			}
+			if (argument.trim() != '') {
+				child.node.setAttribute("title", argument.replace(/[^a-zÀ-ÿ0-9\s\-\']/ig, ''));
+				let title = child.addChild("title");
+				title.node.textContent += argument.trim();
+				title.node.setAttribute('wbtag', child.node.nodeName);
+				title.close();
+			} else if (token.value != '@title{}'){
+				// console.log('standalone title');
+				child = child.addChild("title");
+				child.node.setAttribute('wbtag', child.node.nodeName);
+			}
+			return child;
+		} else {
+			let type = Object.keys(environmentTypes).find(key =>
+				environmentTypes[key].includes(tagname)) || null;
+			let environmentHandler = type ? environmentOpenings[type]
+				: (tagname in environmentOpenings) ? environmentOpenings[tagname] : null;
+			if (environmentHandler) {
+				const action = environmentHandler.action;
+				let output = { node: child, name: tagname };
+				if (action) {
+					output = action(child, tagname);
 				}
-				if (!child.node.nodeName.match(/^(script|textarea|steps|table|tbody)$/i)) {
-					let chunks = originalWord.split(/(?:\s*\n\s*)(?:\s*\n\s*)+/);
-					report(chunks);
-					let chunk;
-					if (originalWord.match(/^\s*\n\s*\n\s*/)) {
-						child = child.addChild('newline').close();
-					}
-					for (let i = 0; i < chunks.length; i++) {
-						if (!child.node.nodeName.match(/title/i)) {
-							chunk = chunks[i].replace(/(^\n+)|(\n+$)/g, ' ');
-						} else {
-							chunk = chunks[i].replace(/(^\n+)|(\n+$)/g, '');
-						}
-						if (chunk != '') {
-							report('CHUNK: ' + chunk);
-							if (!child.node.nodeName.match(/PARAGRAPHS/i)) {
-								if (child.node.nodeName.match(/root|course|chapter|section/i)) {
-									child = child.addChild('slides').addChild('slide');
-									child.node.setAttribute("canon_num", secNums['slide']);
-									secNums['slide']++;
-								}
-								child = child.addChild("paragraphs");
-								child.node.setAttribute("wbtag", "paragraphs");
-							}
-							child.node.textContent += chunk;
-							child = child.close();
-							if (i < chunks.length - 1) {
-								child = child.addChild('newline').close();
-							} else if (originalWord.match(/\n\s*\n\s*$/)) {
-								child = child.addChild('newline').close();
-							}
-						}
-					}
-				} else {
-					if (!child.node.nodeName.match(/^(table|tbody)$/i)) {
-						child.node.textContent += originalWord;
-					}
+				child = output.node;
+				tagname = output.name;
+				// console.log(tagname);
+				child = child.addChild(tagname);
+				child.node.setAttribute("wbtag", tagname);
+				const post = environmentHandler.post;
+				if (post) {
+					post(child);
 				}
-				break;
+				return child;
+			}
+			return environmentSelfClosing.paragraphs.action(child, token.value);
 		}
-		return child;
 
 	}
-}
 
+	this.weave = function () {
+		const originaltoken = this.tokens.shift();
+		let token = originaltoken;
 
-function addSection(sectionType, title, child, options) {
-	let stackName = sectionType;
-	let chapterType = '';
+		let child;
 
-	switch (sectionType) {
-		case 'subsubsection':
-			child = child.closeTo(RegExp('^(subsection|section|chapter|course|root)$', 'i'));
-			if (!(child.node.nodeName.match(/^subsection$/i))) {
-				child = addSection('subsection', '', child, options).closeTo(RegExp('^subsection$', 'i'));
+		child = this;
+		// console.log(token);
+
+		const verbatimMatch = child.node.nodeName.match(verbatimTags);
+
+		if (token.type == 'comment_open') {
+			while (child.node.nodeName.match(/PARAGRAPHS/i)) {
+				child = child.close();
 			}
-			break;
-		case 'subsection':
-			child = child.closeTo(RegExp('^(section|chapter|course|root)$', 'i'));
-			if (!(child.node.nodeName.match(/^section$/i))) {
-				child = addSection('section', '', child, options).closeTo(RegExp('^section$', 'i'));
-			}
-			break;
-		case 'section':
-			child = child.closeTo(RegExp('^(chapter|course|root)$', 'i'));
-			if (!(child.node.nodeName.match(/^chapter$/i))) {
-				child = addSection('chapter', '', child, options).closeTo(RegExp('^chapter$', 'i'));
-			}
-			break;
-		case 'week':
-		case 'lecture':
-		case 'chapter':
-			child = child.closeTo(RegExp('course|root', 'i'));
-			if (!(child.node.nodeName.match(/course/i))) {
-				child = addSection('course', '', child, options).closeTo(RegExp('course', 'i'));
-			}
-			stackName = 'chapter';
-			break;
-		case 'course':
-			child = child.closeTo(/root/i);
-			break;
+			child = child.addChild("comment");
+			child.is_comment = true;
+			return child;
+		} else if (token.type == 'comment_close') {
+			child = child.close();
+			child.is_comment = false;
+			return child;
+		} else if (child.is_comment) {
+			child.node.textContent += token.value;
+			return child;
+		} else if (verbatimMatch) {
+			return handleVerbatimNode(child, token);
+		} else if (token.type == 'newline') {
+			// console.log('adding newline');
+			return child.addChild('newline').close();
+		} else if (token.type.startsWith('html_')) { // HTML section
+			return handleHtmlToken(child, token);
+		} else {
+			return this.weaveNonHtml(child, token);
+		}
 	}
 
-	child = child.addChild(stackName);
-	if (!stackName.match(/section/i)) {
-		child.node.setAttribute('type', stackName.charAt(0).toUpperCase() + stackName.slice(1));
-	} else {
-		child.node.setAttribute('type', 'Section');
-	}
-	if (sectionType.match(/chapter|week|lecture/i)) {
-		child.node.setAttribute('chapter_type', sectionType.charAt(0).toUpperCase() + sectionType.slice(1));
-	}
-
-
-	child.node.setAttribute("wbtag", sectionType);
-	if (stackName.match(/week|lecture|chapter/)) {
-		secNums['statement'] = 1;
-		child.node.setAttribute("num", secNums[stackName]++);
-	}
-
-	if (((typeof title != typeof undefined) && title != '' && title != null) || stackName.match(/chapter|course/i)) {
-		child.node.setAttribute("title", title.replace(/[^a-zÀ-ÿ0-9\s\-]/ig, ''));
-		child = child.addChild('title');
-		child.node.textContent = title;
-		child.node.setAttribute("wbtag", sectionType);
-		child.node.setAttribute("scope", stackName);
-		child = child.closeTo(RegExp(stackName, 'i'));
-	}
-
-	child.loadOptions(options);
-	child = child.addChild('slides').addChild('slide');
-	child.node.setAttribute("canon_num", secNums['slide']);
-	child.node.setAttribute("scope", sectionType);
-	secNums['slide']++;
-	return child;
 }

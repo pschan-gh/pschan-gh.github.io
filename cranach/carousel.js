@@ -342,24 +342,38 @@ function addCanvas(slide, output = document.getElementById('output')) {
 	slide.querySelector('canvas').style.top = -voffset;
 }
 
-function isScrolledToBottom() {
-	const scrollTop = window.scrollY || document.documentElement.scrollTop;
-	const scrollHeight = document.documentElement.scrollHeight;
-	const clientHeight = document.documentElement.clientHeight;
+const output = document.getElementById('output');
+let lastScrollTop = output.scrollTop; // Keep track of the last scroll position
 
-	return scrollTop + clientHeight >= scrollHeight;
+function isScrolledToBottom() {	
+	// const scrollTop = window.scrollY || output.scrollTop;
+	const scrollTop = output.scrollTop;
+	const scrollHeight = output.scrollHeight;
+	const clientHeight = output.clientHeight;
+
+	// Check if we're within 1 pixel of the bottom (adjust threshold as needed)
+	const atBottom = scrollTop + clientHeight >= scrollHeight - 5;
+
+	// Determine scroll direction
+	const isScrollingDown = scrollTop > lastScrollTop;
+
+	// Update last scroll position
+	lastScrollTop = scrollTop;
+
+	// Return true only if we're at the bottom AND scrolling down
+	return atBottom && isScrollingDown;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
 
 	// Add scroll event listener
-	document.getElementById('output').addEventListener('scroll', () => {
-		if (isScrolledToBottom()) {
-			let slide = document.querySelector('#output > div.slide.active');
-			if (slide === null) { return 0; }
-			if (typeof slide.cfd != 'undefined') {
-				slide.cfd.expandCanvas(1, 10);
-			}
+	document.getElementById('output').addEventListener('scroll', () => {		
+		let slide = document.querySelector('#output > div.slide.active');
+		if (slide === null) { return 0; }
+		if (typeof slide.cfd == 'undefined') return 0;
+		if (slide.cfd.canvas.classList.contains('disabled')) return 0;
+		if (isScrolledToBottom()) {			
+			slide.cfd.expandCanvas(1, 30);
 		}
 	});
 

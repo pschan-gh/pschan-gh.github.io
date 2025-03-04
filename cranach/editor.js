@@ -57,7 +57,14 @@ function updateEditor(cranach) {
 		renderSel.innerHTML = '<option value="">Render</option><option value="all">All</option>';
 
 		const dir = cranach.attr['dir'];
-		baseRenderer = new Cranach(window.location.href).setup({'dir':dir, 'query':query, 'lectureMode':cranach.attr['lectureMode'], 'selectedSlide':selectedSlideNum, 'indexDoc':cranach.indexDoc})
+		baseRenderer = new Cranach(window.location.href).setup({
+			'dir': dir,
+			'query': query,
+			'lectureMode': cranach.attr['lectureMode'],
+			'selectedSlide': selectedSlideNum,
+			'indexDoc': cranach.indexDoc,
+			'wbPath': null,
+		})
 		.then(cranach => {
 			console.log(cranach);
 			MathJax.typesetClear();

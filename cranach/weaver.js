@@ -1,13 +1,34 @@
 const xmlSerializer = new XMLSerializer();
 
-function md5(text) {
-	return CryptoJS.MD5(text);
+// Function to convert hex MD5 to base62
+function hexToBase62(hexString) {
+	// Convert hex string to BigInt
+	let num = BigInt('0x' + hexString);
+	let result = '';
+  
+	// Convert to base62
+	while (num > 0n) {
+	  const remainder = Number(num % 62n);
+	  result = BASE62[remainder] + result;
+	  num = num / 62n;
+	}
+  
+	// Pad with leading zeros if needed (to ensure consistent length)
+	return result.padStart(22, '0');
+  }
+
+const BASE62 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+function base62md5(text) {
+	const md5 = window.md5(text);
+	// console.log(md5);
+	return hexToBase62(md5);
+	// return CryptoJS.MD5(text);
 }
 
 function generateXML(source) {
 	console.log('IN GENERATEXML');
 
-	let wbMD5 = md5(source);
+	let wbMD5 = base62md5(source);
 
 	secNums = {
 		'chapter' : 1,
@@ -35,16 +56,17 @@ function generateXML(source) {
 			}
 		}
 	}
-
-	source = source.replace(/@sep/g, '@slide')
-	.replace(/@example/g, '@eg')
-	.replace(/@definition/g, '@defn')
-	.replace(/@def([^n]|$)/g, '@defn$1')
-	.replace(/@theorem/g, '@thm')
-	.replace(/@proposition/g, '@prop')
-	.replace(/@corollary/g, '@cor')
-	.replace(/@solution/g, '@sol')
-	.replace(/#(nstep|ref|label)/g, "@$1")
+	
+	// .replace(
+	// 	/@sep/g, '@slide')
+	// .replace(/@example/g, '@eg')
+	// .replace(/@definition/g, '@defn')
+	// .replace(/@def([^n]|$)/g, '@defn$1')
+	// .replace(/@theorem/g, '@thm')
+	// .replace(/@proposition/g, '@prop')
+	// .replace(/@corollary/g, '@cor')
+	// .replace(/@solution/g, '@sol')
+	source = source.replace(/#(nstep|ref|label)/g, "@$1")
 	.replace(/\<p\s*\>/g, '<p/>')
 	.replace(/\<\/p\>/g, '')
 	.replace(/%\n/g, '')
@@ -63,14 +85,15 @@ function generateXML(source) {
 
 	let child = root;
 
-	child.words = source.match(mainTokensRe);
-
-	while (child.words.length) {
+	// console.log(source);
+	// child.words = source.match(mainTokensRe);
+	child.tokens = tokenizeAndProcess(source);
+	
+	while (child.tokens.length) {
 		child = child.weave();
 	}
 	console.log('END REACHED: ' + child.node.nodeName);
 	child = child.closeTo(/root/i);
-
 	console.log('END WEAVER');
 	return new XMLSerializer().serializeToString(child.node);
 }

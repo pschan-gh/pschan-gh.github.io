@@ -343,10 +343,10 @@ const CanvasFreeDrawing = (function () {
 
 				this.context.beginPath();
 				this.context.ellipse(
-					position.x,
-					position.y,
-					position.radiusX,
-					position.radiusY,
+					Math.floor(position.x),
+					Math.floor(position.y),
+					Math.floor(position.radiusX),
+					Math.floor(position.radiusY),
 					position.angle,
 					0,
 					2 * Math.PI
@@ -595,13 +595,8 @@ const CanvasFreeDrawing = (function () {
                 if (steps == 1 && meanFirst.y * meanFirst.x != 0) {
                     if ( Math.abs( meanFirst.y / meanFirst.x ) < 0.15 ) {
                         positions[positions.length - 1].y = positions[0].y;
-                        // positions[positions.length - 1].x = meanFirst.x > 0 ?
-                        // positions[0].x + fullLength :
-                        // positions[0].x - fullLength;
                     } else if ( Math.abs( meanFirst.x / meanFirst.y ) < 0.15 ) {
                         positions[positions.length - 1].x = positions[0].x;
-                        // positions[positions.length - 1].y = meanFirst.y > 0 ? positions[0].y + fullLength :
-                        // positions[0].y - fullLength;
                     }
                 }
 
