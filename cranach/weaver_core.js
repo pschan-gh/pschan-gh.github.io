@@ -80,6 +80,7 @@ const mainTokensRe = new RegExp(
 );
 
 const COUNTERED_TAGS = ["thm", "prop", "lemma", "cor", "defn", "claim", "fact", "remark", "eg", "ex", 'figure'];
+const STATEMENT_TAGS = ["thm", "prop", "lemma", "cor", "defn", "claim", "fact", "remark", "eg", "ex"];
 const SUBSTATEMENT_TAGS = ['proof', 'sol', 'ans', 'notation', 'remark'];
 const verbatimTags = /^(script|textarea)$/i;
 const createClosingTagRegex = tag => new RegExp(`</${tag}>`, 'i');
@@ -158,7 +159,7 @@ const environmentSelfClosing = {
 			let child = _child;
 			child = child.addChild('href');
 			child.node.setAttribute('src', argument);
-			child.node.setAttribute('name', options.name ? options.name : argument);
+			child.node.setAttribute('name', options ? (options.name ? options.name : argument) : argument);
 			child.node.setAttribute('argument', argument);
 			return child;
 		}
@@ -467,13 +468,13 @@ const isSubstatement = (tagname) => SUBSTATEMENT_TAGS.some(tag =>
 	typeof (tagname) === 'undefined' ? null :
 		tagname.match(new RegExp(tag, 'i'))
 );
-const isStatement = (tagname) => COUNTERED_TAGS.some(tag =>
+const isStatement = (tagname) => STATEMENT_TAGS.some(tag =>
 	typeof (tagname) === 'undefined' ? null :
 		tagname.match(new RegExp(tag, 'i'))
 );
 const counteredTokenType = (tagname) => isSubstatement(tagname) ? 'substatement' :
 	isStatement(tagname) ? 'statement' :
-		tagname === 'figure' ? 'figure' : undefined;
+		tagname == 'figure' ? 'figure' : undefined;
 
 const statementHandler = (child, token, tagname) => {
 	const statementType = counteredTokenType(tagname);
@@ -680,7 +681,8 @@ function weaveHtml(child, token) {
 	return child;
 }
 
-function addSection(sectionType, title, child, options) {
+function addSection(sectionType, _title, child, options) {
+	
 	let stackName = ['lecture', 'week'].includes(sectionType) ? 'chapter' : sectionType;
 	chapterType = sectionType == 'week' ? 'Week' : sectionType == 'Lecture' ? 'Lecture' : '';
 
@@ -728,25 +730,32 @@ function addSection(sectionType, title, child, options) {
 	if (sectionType.match(/chapter|week|lecture/i)) {
 		child.node.setAttribute('chapter_type', sectionType.charAt(0).toUpperCase() + sectionType.slice(1));
 	}
-
-
+	
 	child.node.setAttribute("wbtag", sectionType);
+
+	const title = _title == null || _title.trim() == '' ? secNums['chapter'].toString() : _title.trim();
+
 	if (stackName.match(/week|lecture|chapter/)) {
-		secNums[stackName] = title;
+		if(!isNaN(title) && title != '') { // title is integer
+			secNums[stackName] = title;
+		}
 		secNums['statement'] = 1;
-		child.node.setAttribute("num", secNums[stackName]++);
+		child.node.setAttribute("num", secNums['chapter']++);
 	}
 
-	if (typeof(title) !== 'undefined' && title != null && title.trim() != '') {
+	// if (typeof(title) !== 'undefined' && title != null && title != '') {
 		child.node.setAttribute("title", title.replace(/[^a-zÀ-ÿ0-9\s\-]/ig, '').trim());
+		
 		child = child.addChild('title');
-		if(!stackName.match(/chapter/i)) {
+		
+		// if(!['Week', 'Lecture'].includes(chapterType)) {
+		if (isNaN(title)) {
 			child.node.textContent = title;
 		}
 		child.node.setAttribute("wbtag", sectionType);
 		child.node.setAttribute("scope", stackName);
 		child = child.closeTo(RegExp(stackName, 'i'));
-	}
+	// }
 	
 	// if (((typeof title != 'undefined') && title.trim() != '' && title != null) || stackName.match(/chapter|course/i)) {
 	// 	child.node.setAttribute("title", title.replace(/[^a-zÀ-ÿ0-9\s\-]/ig,'').trim());
@@ -941,8 +950,9 @@ function Stack(node, doc) {
 				}
 				return child;
 			},
-			setchapter: (child, argument) => {
+			setchapter: (child, argument, options) => {
 				secNums['chapter'] = argument;
+				console.log(secNums['chapter']);
 				child = child.addChild('setchapter');
 				child.node.setAttribute('wbtag', tagname);
 				child.node.setAttribute('argument', argument);
@@ -952,7 +962,10 @@ function Stack(node, doc) {
 			defaultSection: (child, argument, options) => addSection(token.name, argument, child, options)
 		};
 
+		// console.log(token);
 		let { tagname, argument, options } = processDirectiveToken(token);
+
+		// console.log(tagname + ' ' + argument + ' ' + options);
 
 		const sectionHandler = sectionHandlers[token.name]
 			|| (sectionTypes.includes(token.name) ? sectionHandlers.defaultSection : null)

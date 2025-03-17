@@ -554,28 +554,18 @@ const CanvasFreeDrawing = (function () {
 				varFirst +=  (
 					( 1 - ( entry.x * meanFirst.x ) - ( entry.y * meanFirst.y ) )**2
 				) * (entry.length);
-                // varFirst +=
-				// 	Math.abs( this.orientation(entry, meanFirst, 10 * entry.length / fullLength ) ) * entry.length ;
+                
 			});
 
 			const sdFirst = Math.sqrt(varFirst / fullLength );
-			// console.log(sdFirst * 25);
-
-			// const inflectionPoints = this.getInflectionPoints( firstDerivatives.slice(), positions.slice() );
-	        // console.log(inflectionPoints);
-	        // if (inflectionPoints.length > 0) {
-	        //     return null;
-	        // }
-
+			
 			const steps = Math.ceil( sdFirst * 20 );
-			// console.log(steps);
-
+			
 			const smoothFactor = Math.min(
 				positions.length - 1,
 				Math.ceil(positions.length / steps)
 			);
-			// console.log('smoothFactor: ' + smoothFactor);
-
+			
 			const ellipse = this.getEllipse(firstDerivatives, positions);
 			// console.log(ellipse);
 			if (ellipse !== null) {

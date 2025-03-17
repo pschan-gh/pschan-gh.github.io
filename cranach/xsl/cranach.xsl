@@ -216,8 +216,9 @@
             <xsl:attribute name="serial">
                 <xsl:value-of select="$serial"/>
             </xsl:attribute>
-            <xsl:if test="./lv:slides/lv:slide/lv:title">
-                <xsl:if test="not(./lv:title)">
+            <xsl:choose>
+                <xsl:when test="./lv:slides/lv:slide/lv:title">
+                <!-- <xsl:if test="not(./lv:title)"> -->
                     <xsl:apply-templates select="./lv:slides/lv:slide/lv:title">
                         <xsl:with-param name="course" select="$course"/>
                         <xsl:with-param name="chapter" select="$chapter"/>
@@ -226,9 +227,20 @@
                         <xsl:with-param name="old_serial" select="$serial"/>
                         <xsl:with-param name="scope" select="local-name()"/>
                     </xsl:apply-templates>
-                </xsl:if>
-            </xsl:if>
-            <xsl:apply-templates select="lv:subsection|lv:subsubsection|lv:slides|lv:bare|lv:keywords|lv:label|lv:title|text()">
+                <!-- </xsl:if> -->
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:apply-templates select="./lv:title">
+                        <xsl:with-param name="course" select="$course"/>
+                        <xsl:with-param name="chapter" select="$chapter"/>
+                        <xsl:with-param name="chapter_type" select="$chapter_type"/>
+                        <xsl:with-param name="section" select="$section"/>
+                        <xsl:with-param name="old_serial" select="$serial"/>
+                        <xsl:with-param name="scope" select="local-name()"/>
+                    </xsl:apply-templates>
+                </xsl:otherwise>
+            </xsl:choose>
+            <xsl:apply-templates select="lv:subsection|lv:subsubsection|lv:slides|lv:bare|lv:keywords|lv:label|text()">
                 <xsl:with-param name="course" select="$course"/>
                 <xsl:with-param name="chapter" select="$chapter"/>
                 <xsl:with-param name="chapter_type" select="$chapter_type"/>
@@ -270,19 +282,31 @@
             <xsl:attribute name="serial">
                 <xsl:value-of select="$serial"/>
             </xsl:attribute>
-            <xsl:if test="./lv:slides/lv:slide/lv:title">
-                <xsl:if test="not(./lv:title)">
+            <xsl:choose>
+                <xsl:when test="./lv:slides/lv:slide/lv:title">
+                <!-- <xsl:if test="not(./lv:title)"> -->
                     <xsl:apply-templates select="./lv:slides/lv:slide/lv:title">
                         <xsl:with-param name="course" select="$course"/>
                         <xsl:with-param name="chapter" select="$chapter"/>
                         <xsl:with-param name="chapter_type" select="$chapter_type"/>
                         <xsl:with-param name="section" select="$section"/>
-                        <xsl:with-param name="serial" select="$serial"/>
+                        <xsl:with-param name="old_serial" select="$serial"/>
                         <xsl:with-param name="scope" select="local-name()"/>
                     </xsl:apply-templates>
-                </xsl:if>
-            </xsl:if>
-            <xsl:apply-templates select="lv:subsubsection|lv:slides|lv:bare|lv:keywords|lv:label|lv:title|text()">
+                <!-- </xsl:if> -->
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:apply-templates select="./lv:title">
+                        <xsl:with-param name="course" select="$course"/>
+                        <xsl:with-param name="chapter" select="$chapter"/>
+                        <xsl:with-param name="chapter_type" select="$chapter_type"/>
+                        <xsl:with-param name="section" select="$section"/>
+                        <xsl:with-param name="old_serial" select="$serial"/>
+                        <xsl:with-param name="scope" select="local-name()"/>
+                    </xsl:apply-templates>
+                </xsl:otherwise>
+            </xsl:choose>
+            <xsl:apply-templates select="lv:subsubsection|lv:slides|lv:bare|lv:keywords|lv:label|text()">
                 <xsl:with-param name="course" select="$course"/>
                 <xsl:with-param name="chapter" select="$chapter"/>
                 <xsl:with-param name="chapter_type" select="$chapter_type"/>
@@ -320,19 +344,31 @@
             <xsl:attribute name="serial">
                 <xsl:value-of select="$serial"/>
             </xsl:attribute>
-            <xsl:if test="./lv:slides/lv:slide/lv:title">
-                <xsl:if test="not(./lv:title)">
+            <xsl:choose>
+                <xsl:when test="./lv:slides/lv:slide/lv:title">
+                <!-- <xsl:if test="not(./lv:title)"> -->
                     <xsl:apply-templates select="./lv:slides/lv:slide/lv:title">
                         <xsl:with-param name="course" select="$course"/>
                         <xsl:with-param name="chapter" select="$chapter"/>
                         <xsl:with-param name="chapter_type" select="$chapter_type"/>
                         <xsl:with-param name="section" select="$section"/>
-                        <xsl:with-param name="serial" select="$serial"/>
+                        <xsl:with-param name="old_serial" select="$serial"/>
                         <xsl:with-param name="scope" select="local-name()"/>
                     </xsl:apply-templates>
-                </xsl:if>
-            </xsl:if>
-            <xsl:apply-templates select="lv:slides|lv:bare|lv:keywords|lv:label|lv:title|text()">
+                <!-- </xsl:if> -->
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:apply-templates select="./lv:title">
+                        <xsl:with-param name="course" select="$course"/>
+                        <xsl:with-param name="chapter" select="$chapter"/>
+                        <xsl:with-param name="chapter_type" select="$chapter_type"/>
+                        <xsl:with-param name="section" select="$section"/>
+                        <xsl:with-param name="old_serial" select="$serial"/>
+                        <xsl:with-param name="scope" select="local-name()"/>
+                    </xsl:apply-templates>
+                </xsl:otherwise>
+            </xsl:choose>
+            <xsl:apply-templates select="lv:slides|lv:bare|lv:keywords|lv:label|text()">
                 <xsl:with-param name="course" select="$course"/>
                 <xsl:with-param name="chapter" select="$chapter"/>
                 <xsl:with-param name="chapter_type" select="$chapter_type"/>
@@ -473,7 +509,6 @@
                 <xsl:value-of select="ancestor::lv:section/@title"/>
             </xsl:attribute>
 
-
             <xsl:if test="position() = 1">
                 <xsl:if test="not(lv:title)">
                     <xsl:apply-templates select="../../lv:title">
@@ -494,7 +529,7 @@
                 <xsl:with-param name="slide" select="$slide" />
             </xsl:call-template>
 
-            <xsl:apply-templates select="*[not(self::slide)]|text()|comment()">
+            <xsl:apply-templates select="*[not(self::lv:slide)]|text()|comment()">
                 <xsl:with-param name="slide" select = "$slide" />
                 <xsl:with-param name="course" select="$course"/>
                 <xsl:with-param name="chapter" select="$chapter"/>

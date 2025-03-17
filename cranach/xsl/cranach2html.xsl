@@ -356,7 +356,7 @@
 			</xsl:attribute>
 			<xsl:attribute name="wbtag">
 				<xsl:choose>
-        			<xsl:when test="contains('subsubsection|subsection|section|chapter|course', local-name(parent::*/parent::*)) and position() = 1">					
+        			<xsl:when test="contains('subsubsection|subsection|section|chapter|course', local-name(parent::*/parent::*)) and position() = 1">
           				<xsl:text>transparent</xsl:text>
         			</xsl:when>
         			<xsl:otherwise>
@@ -1209,17 +1209,28 @@
 		<!-- <small class="light"> (powered by </small>
 		<small><a target="_blank" href="https://libretexts.org/">LibreTexts</a></small>
 		<small class="light">)</small> -->
-		<div class="ww" style="overflow:auto;padding-bottom:1.2em">
+		<div class="ww" style="overflow:auto;padding-bottom:1.2em;position:relative;">
 			<xsl:attribute name="id">
 				<xsl:value-of select="concat('ww_inner_', @ww_id)" />
 			</xsl:attribute>
-			<div class="loading_icon" wbtag="ignore">
+			<div class="loading_icon ww" wbtag="ignore">
 				<div class="spinner-border text-secondary" style="margin:2em" role="status">
 					<span class="visually-hidden">Loading...</span>
 				</div>
 				<br/>
 				<div style="margin-top:-2.25cm" class="text-muted">Click to Load.</div>
 			</div>
+			<form class="ww-login-form hidden" method="post" action="https://www.math.cuhk.edu.hk/~pschan/wwfwd/authenticate2.php">
+				<div class="ww-login-overlay row">
+					<div class="col-4">
+	                    <input class="form-control" type="text" name="username" value="cuhkmath" readonly="readonly"/>
+					</div>
+					<div class="col-8 d-inline-flex">
+	                    <input class="form-control" type="password" name="password" placeholder="Enter password" required="required"/>
+	                    <button class="btn btn-secondary ms-2" type="submit">Login</button>
+					</div>
+        		</div>
+			</form>
 			<iframe style="overflow-x:auto;overflow-y:hidden;" class="webwork hidden">
 				<xsl:attribute name="rendered">0</xsl:attribute>
 				<xsl:attribute name="data-src">

@@ -2,11 +2,20 @@ MathJax = {
 	startup: {
 		typeset: false,
 		ready() {
-			typeset = function (doms) {
-				MathJax.startup.promise = MathJax.startup.promise
-					.then(() => { return MathJax.typesetPromise(doms) })
-					.catch((err) => console.log('Typeset failed: ' + err.message));
-				return MathJax.startup.promise;
+			// typeset = function (doms) {
+			// 	MathJax.startup.promise = MathJax.startup.promise
+			// 		.then(() => { return MathJax.typesetPromise(doms) })
+			// 		.catch((err) => console.log('Typeset failed: ' + err.message));
+			// 	return MathJax.startup.promise;
+			// };
+			typeset = async function (doms) {
+				try {
+					await MathJax.startup.promise;
+					return await MathJax.typesetPromise(doms);
+				} catch (err) {
+					console.log('Typeset failed: ' + err.message);
+					throw err;
+				}
 			};
 			MathJax.getAllJax = function (name) {
 				const list = Array.from(MathJax.startup.document.math);
@@ -49,33 +58,39 @@ MathJax = {
 
 			document.querySelectorAll('.icon.latex, .icon.xml').forEach(el => el.classList.add('hidden'));
 			const body = document.querySelector('body');
-			baseRenderer.then(cranach => {
-				let output = cranach.bare ? body : document.getElementById('output');
-				return cranach.render(output);
-			}).then(renderer => {
-				if (renderer.bare) {
-					return renderer;
-				}
-				return renderer.displayIndexDocToHtml(document.getElementById('index'));
-			}).then(renderer => {
-				if (renderer.bare) {
-					return renderer;
-				} else {
-					document.querySelectorAll('#render_sel').forEach(el => el.disabled = false);
-					document.querySelectorAll('#wb_button').forEach(el => el.disabled = false);
-					return renderer;
-				}
-			}).then(renderer => {
-				MathJax.startup.defaultReady();
-				MathJax.startup.promise.then(() => {
+			(async () => {
+				try {
+					// First stage: render cranach
+					const cranach = await baseRenderer;
+					const output = cranach.bare ? body : document.getElementById('output');
+					const renderer = await cranach.render(output);
+
+					// Second stage: handle index display
+					if (!renderer.bare) {
+						await renderer.displayIndexDocToHtml(document.getElementById('index'));
+					}
+
+					// Third stage: enable buttons if not bare
+					if (!renderer.bare) {
+						document.querySelectorAll('#render_sel').forEach(el => el.disabled = false);
+						document.querySelectorAll('#wb_button').forEach(el => el.disabled = false);
+					}
+
+					// Fourth stage: MathJax processing
+					MathJax.startup.defaultReady();
+					await MathJax.startup.promise;
 					MathJax.startup.document.state(0);
 					MathJax.texReset();
-					return MathJax.tex2chtmlPromise(renderer.macrosString);
-				}).then(() => {
+					await MathJax.tex2chtmlPromise(renderer.macrosString);
+
+					// Final processing
 					postprocess(renderer);
 					convertCranachDocToWb(renderer.cranachDoc, ace.edit("input"));
-				});
-			});
+				} catch (error) {
+					console.error('Error in renderer processing:', error);
+					throw error;
+				}
+			})();
 		}
 	},
 	loader: {
@@ -110,16 +125,3 @@ MathJax = {
 		titleID: 0                     // initial id number to use for aria-labeledby titles
 	}
 };
-
-// function renderScriptMath(el) {
-// 	let doc = MathJax.startup.document;
-// 	for (const node of el.querySelectorAll('script[type^="math/tex"]')) {
-// 		const display = !!node.type.match(/; *mode=display/);
-// 		const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
-// 		const text = document.createTextNode('');
-// 		node.parentNode.replaceChild(text, node);
-// 		math.start = {node: text, delim: '', n: 0};
-// 		math.end = {node: text, delim: '', n: 0};
-// 		doc.math.push(math);
-// 	}
-// }

@@ -1,5 +1,5 @@
 function postprocess(cranach) {
-  console.log('POSTPROCESS');
+	console.log('POSTPROCESS');
 	document.querySelectorAll('#loading_icon').forEach(el => el.classList.add('hidden'));
 
 	let output = document.getElementById('output');
@@ -8,7 +8,7 @@ function postprocess(cranach) {
 	updateSlideClickEvent();
 	updateScrollEvent();
 	updateKeywords();
-	updateTitle( document.querySelector('.output > div.slide.selected, .output > div.slide') );
+	updateTitle(document.querySelector('.output > div.slide.selected, .output > div.slide'));
 	if (document.getElementById('item_modal') !== null) {
 		updateModal(cranach);
 	}
@@ -30,14 +30,14 @@ function postprocess(cranach) {
 	document.querySelectorAll("[data-bs-toggle=popover]").forEach(e => {
 		let html = '<div class="loading">loading...</div>';
 		let popover = new bootstrap.Popover(e, {
-			html : true,
-			content: function() {
+			html: true,
+			content: function () {
 				return html;
 			}
 		});
-		e.addEventListener('shown.bs.popover', function() {
-			let popoverBody =  document.getElementById(this.getAttribute('aria-describedby'))
-			.querySelector('.popover-body');
+		e.addEventListener('shown.bs.popover', function () {
+			let popoverBody = document.getElementById(this.getAttribute('aria-describedby'))
+				.querySelector('.popover-body');
 			if (popoverBody.querySelector('.loading') !== null) {
 				popoverBody.querySelector('.loading').remove();
 			}
@@ -63,10 +63,56 @@ function postprocess(cranach) {
 		showSlide(null, cranach);
 	}
 
-	baseRenderer.then(cranach => {
+	const loginForms = document.querySelectorAll('.ww-login-form'); // Select all elements with class loginForm
+	const loginOverlays = document.querySelectorAll('.ww-login-overlay'); // Select all elements with class loginForm
+	// const loginOverlay = document.getElementById('loginOverlay');
+	const wwIframes = document.querySelectorAll('iframe.webwork');
+	const iframes = document.querySelectorAll('iframe');
+
+	wwIframes.forEach(iframe => {
+		iframe.onload = () => {
+			// ww.contentWindow.location.reload(true); // Reload after the iframe is fully loaded
+			iFrameResize({
+				log: false,
+				checkOrigin: false,
+				resizedCallback: adjustHeight,
+			}, iframe);
+		};
+	});
+
+	// Attach event listener to each form
+	loginForms.forEach(form => {
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const formData = new FormData(form); // Use the specific form that triggered the event
+
+			try {
+				const response = await fetch('https://www.math.cuhk.edu.hk/~pschan/wwfwd/authenticate2.php', {
+					method: 'POST',
+					body: formData
+				});
+				const data = await response.json();
+
+				if (data.success) {
+					loginForms.forEach(form => form.classList.add('hidden'));
+					wwIframes.forEach(ww => {
+						ww.src = ww.dataset.src;// + '&t=' + new Date().getTime(); // Trigger the reload
+						// console.log(ww);
+						ww.classList.remove('hidden');
+					});
+				} else {
+					alert('Invalid password');
+				}
+			} catch (error) {
+				alert('Error connecting to server');
+			}
+		});
+	});
+
+	// baseRenderer.then(cranach => {
 		if (cranach.attr['selectedItem']) {
 			document.querySelectorAll('.item_title[serial="' + cranach.attr['selectedItem'] + '"], .item_title[md5="' + cranach.attr['selectedItem'] + '"], .label[name="' + cranach.attr['selectedItem'] + '"]')
-			.forEach(item => focusOn(item.closest('.item_title')));
+				.forEach(item => focusOn(item.closest('.item_title')));
 		} else if (cranach.attr['selectedSection']) {
 			document.querySelectorAll('.section_title[serial="' + cranach.attr['selectedSection'] + '"], .label[name="' + cranach.attr['selectedSection'] + '"]').forEach(section => focusOn(section.closest('.section_title')));
 		} else if (cranach.attr['selectedSlide']) {
@@ -76,10 +122,10 @@ function postprocess(cranach) {
 			});
 		}
 		if (cranach.attr['selectedKeyword']) {
-			document.querySelectorAll('.output div.slide[slide="' + cranach.attr['selectedSlide']  + '"]')
-			.forEach(selectedSlide => focusOn(selectedSlide, cranach.attr['selectedKeyword'].toLowerCase().replace(/[^a-zA-Z0-9]/g, '')));
+			document.querySelectorAll('.output div.slide[slide="' + cranach.attr['selectedSlide'] + '"]')
+				.forEach(selectedSlide => focusOn(selectedSlide, cranach.attr['selectedKeyword'].toLowerCase().replace(/[^a-zA-Z0-9]/g, '')));
 		}
 		updateToc(cranach);
-	});
+	// });
 
 }

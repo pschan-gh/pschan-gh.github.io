@@ -111,6 +111,13 @@
 					<xsl:value-of select="./xh:span[@class='num']"/>
 				</xsl:attribute>
 			</xsl:if>
+			<xsl:if test="xh:*[@wbtag='title']/text()">
+				<xsl:element name="slides" namespace="{$lv}">
+					<xsl:element name="slide" namespace="{$lv}">
+						<xsl:apply-templates select="xh:*[@wbtag='title']"/>
+					</xsl:element>
+				</xsl:element>
+			</xsl:if>
 		</xsl:element>
 	</xsl:template>
 

@@ -110,23 +110,23 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	});
 
-	document.querySelector('#latex_icon').addEventListener('click', function () {
-		baseRenderer.then(cranach => {
+	document.querySelector('#latex_icon').addEventListener('click', async function () {
+		// baseRenderer.then(cranach => {
 			bootstrap.Modal.getOrCreateInstance(document.querySelector('#text_modal')).toggle();
-			showLatex(cranach);
-		});
+			showLatex(await baseRenderer);
+		// });
 	});
-	document.querySelector('#beamer_icon').addEventListener('click', function () {
-		baseRenderer.then(cranach => {
+	document.querySelector('#beamer_icon').addEventListener('click', async function () {
+		// baseRenderer.then(cranach => {
 			bootstrap.Modal.getOrCreateInstance(document.querySelector('#text_modal')).toggle();
-			showLatex(cranach, 'beamer');
-		});
+			showLatex(await baseRenderer, 'beamer');
+		// });
 	});
-	document.querySelector('#xml_icon').addEventListener('click', function () {
-		baseRenderer.then(cranach => {
+	document.querySelector('#xml_icon').addEventListener('click', async function () {
+		// baseRenderer.then(cranach => {
 			bootstrap.Modal.getOrCreateInstance(document.querySelector('#text_modal')).toggle();
-			showXML(cranach);
-		});
+			showXML(await baseRenderer);
+		// });
 	});
 
 	document.querySelector('#xmlInput').addEventListener('change', function () {
@@ -143,41 +143,22 @@ document.addEventListener('DOMContentLoaded', () => {
 	document.querySelector('#latexMacrosInput').addEventListener('change', function () {
 		const file = this.files[0];
 		const reader = new FileReader();
-		
+
 		reader.addEventListener("load", async function () {
 			const renderer = await baseRenderer;
 			renderer.macrosString = reader.result;
-			
-			const domParser = new DOMParser();
-			renderer.macros = domParser.parseFromString(`<div>\\(${renderer.macrosString}\\)</div>`, "text/xml");
-			
+
+			// const domParser = new DOMParser();
+			// renderer.macros = domParser.parseFromString(`<div>\\(${renderer.macrosString}\\)</div>`, "text/xml");
+
 			await renderer.render(document.getElementById('output'));
 			await MathJax.startup.promise;
 			await MathJax.tex2chtmlPromise(renderer.macrosString);
-			
+
 			postprocess(renderer);
 			convertCranachDocToWb(renderer.cranachDoc, ace.edit("input"));
-		  });
+		});
 
-		// reader.addEventListener("load", function () {
-		// 	baseRenderer.then(renderer => {
-		// 		renderer.macrosString = reader.result;
-		// 		const domparser = new DOMParser();
-		// 		renderer.macros = domparser.parseFromString('<div>\\(' + this.macrosString + '\\)</div>', "text/xml");
-		// 		return renderer.render(document.getElementById('output'));
-		// 	})
-		// 	.then(renderer => {
-		// 		// MathJax.startup.defaultReady();
-		// 		MathJax.startup.promise.then(() => {
-		// 			// MathJax.startup.document.state(0);
-		// 			// MathJax.texReset();
-		// 			return MathJax.tex2chtmlPromise(renderer.macrosString);
-		// 		}).then(() => {
-		// 			postprocess(renderer);
-		// 			convertCranachDocToWb(renderer.cranachDoc, ace.edit("input"));
-		// 		});
-		// 	});
-		// });
 		reader.readAsText(file);
 	});
 

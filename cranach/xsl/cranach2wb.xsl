@@ -169,15 +169,36 @@
 	<xsl:value-of select="concat('@ref{', @label, '}')"/>
 </xsl:template>
 
-<xsl:template match="lv:course|lv:chapter|lv:section|lv:subsection|lv:subsubsection">
+<xsl:template match="lv:course|lv:section|lv:subsection|lv:subsubsection">
 	<xsl:text>&#xa;</xsl:text>
 	<xsl:text>@</xsl:text>
-	<!-- <xsl:value-of select="@wbtag"/> -->
 	<xsl:value-of select="local-name()"/>
 	<xsl:text>{</xsl:text>
 	<xsl:apply-templates select="./lv:title/*|./lv:title/text()" />
 	<xsl:text>}</xsl:text>
-	<!-- <xsl:text>&#xa;</xsl:text> -->
+	<xsl:apply-templates select="*[not(self::lv:title)]" />
+</xsl:template>
+
+<xsl:template match="lv:chapter">
+	<xsl:text>&#xa;</xsl:text>
+	<xsl:text>@</xsl:text>
+	<!-- <xsl:value-of select="local-name()"/>	 -->
+	<xsl:value-of select="@wbtag"/>
+	<xsl:choose>
+		<xsl:when test="./lv:slides/lv:slide/lv:title/text()">
+			<xsl:text>{</xsl:text>
+				<xsl:apply-templates select="./lv:slides/lv:slide/lv:title/*|./lv:slides/lv:slide/lv:title/text()" />
+			<xsl:text>}</xsl:text>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:if test="not(./lv:slides/lv:slide/lv:setchapter)">
+				<xsl:text>{</xsl:text>
+					<xsl:apply-templates select="@num" />
+				<xsl:text>}</xsl:text>
+			</xsl:if>
+		</xsl:otherwise>
+	</xsl:choose>
+	<xsl:apply-templates select="./lv:title/*|./lv:title/text()" />
 	<xsl:apply-templates select="*[not(self::lv:title)]" />
 </xsl:template>
 
@@ -186,7 +207,6 @@
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:if>
 	<xsl:value-of select="concat('@', @wbtag, '{', @argument, '}')"/>
-	<!-- <xsl:text>&#xa;</xsl:text> -->
 </xsl:template>
 
 <xsl:template match="lv:bare">
@@ -212,7 +232,7 @@
 </xsl:template>
 
 
-<xsl:template match="lv:chapter[@wbtag='week' or @wbtag='lecture']">
+<!-- <xsl:template match="lv:chapter[@wbtag='week' or @wbtag='lecture']">
 	<xsl:text>&#xa;</xsl:text>
 	<xsl:text>@</xsl:text>
 	<xsl:value-of select="@wbtag"/>
@@ -223,9 +243,8 @@
 			<xsl:text>}</xsl:text>
 		</xsl:when>
 	</xsl:choose>
-	<!-- <xsl:text>&#xa;</xsl:text> -->
 	<xsl:apply-templates select="*|text()" />
-</xsl:template>
+</xsl:template> -->
 
 <xsl:template match="lv:escaped" >
 	<xsl:value-of select="concat('@escaped{', @argument, '}')"/>

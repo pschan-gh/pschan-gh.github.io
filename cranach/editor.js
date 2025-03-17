@@ -20,7 +20,7 @@ editor.commands.addCommand({
 	}
 });
 
-function updateEditor(cranach) {	
+function updateEditor(_cranach) {	
 
 	document.getElementById('render_sel').addEventListener('mouseover', () => {
 		if (!editor.getValue().match(/@(slide|sep|course|week|lecture|chapter|section|subsection|subsubsection)/g)) {
@@ -50,7 +50,7 @@ function updateEditor(cranach) {
 		}
 	});
 
-	document.getElementById('render_sel').addEventListener('change', function(event) {
+	document.getElementById('render_sel').addEventListener('change', async function(event) {
 		const renderSel = document.getElementById('render_sel');
 		const query = event.target.value == 'all' ? '' : `//lv:slide[@slide="${event.target.value}"]`;
 		const selectedSlideNum = document.querySelector('.output > div.slide.selected') !== null ?
@@ -58,34 +58,32 @@ function updateEditor(cranach) {
 
 		renderSel.innerHTML = '<option value="">Render</option><option value="all">All</option>';
 
-		const dir = cranach.attr['dir'];
-		baseRenderer = new Cranach(window.location.href).setup({
-			'dir': dir,
+		// baseRenderer = new Cranach(window.location.href).setup({
+		let cranach = await new Cranach(window.location.href).setup({
+			'dir': await _cranach.attr['dir'],
 			'query': query,
-			'lectureMode': cranach.attr['lectureMode'],
+			'lectureMode': await _cranach.attr['lectureMode'],
 			'selectedSlide': selectedSlideNum,
-			'indexDoc': cranach.indexDoc,
+			'indexDoc': await _cranach.indexDoc,
 			'wbPath': null,
-		})
-		.then(cranach => {
-			console.log(cranach);
-			MathJax.typesetClear();
-			return cranach.setOutput(document.getElementById('output')).renderWb(editor.getValue());
-		})
-		.then(cranach => {
-			postprocess(cranach);
-			if (query != '') {
-				document.querySelectorAll('.output > div.slide .collapse').forEach(collapse => {
-					bootstrap.Collapse.getOrCreateInstance(collapse).show();
-				});
-				document.querySelectorAll('.output > div.slide collapsea').forEach(collapsea => {
-					collapsea.classList.remove('collapsed');
-				});
-
-			}
-			return cranach;
 		});
+		MathJax.typesetClear();
+		cranach = await cranach.setOutput(document.getElementById('output')).renderWb(editor.getValue());
+
+		postprocess(cranach);
+		if (query != '') {
+			document.querySelectorAll('.output > div.slide .collapse').forEach(collapse => {
+				bootstrap.Collapse.getOrCreateInstance(collapse).show();
+			});
+			document.querySelectorAll('.output > div.slide collapsea').forEach(collapsea => {
+				collapsea.classList.remove('collapsed');
+			});
+		}
+		
+		baseRenderer = await cranach;
+		return await cranach;
 	});
+
 	const editBox = document.getElementById('edit_box');
 	if (editBox !== null) {
 		editBox.addEventListener('change', function(event) {
@@ -125,17 +123,16 @@ function scrollToLine(editor, slide) {
 	}
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-	baseRenderer.then(cranach => {
-		document.getElementById('save_icon').addEventListener('click', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+	let cranach = await baseRenderer;
+	document.getElementById('save_icon').addEventListener('click', () => {
 			saveWb(editor, cranach);
-		});
-
-		if (document.querySelector('.ace_editor') !== null) {
-			updateEditor(cranach);
-		}
 	});
 
+	if (document.querySelector('.ace_editor') !== null) {
+		updateEditor(await cranach);
+	}
+	
 	let observer = new MutationObserver(function(mutations) {
 		mutations.forEach(function(mutation) {
 			if (mutation.type == "attributes") {

@@ -104,9 +104,6 @@ function showLatex(el, mode = 'report') {
 		.then(response => response.text())
 		.then(xsl => {
 			let xml = new XMLSerializer().serializeToString(docCranach);
-			// xml = xml.replace(/&lt;(div|table|thead|tr|td|th|a)\s*.*?&gt;/g, '<$1>');
-			// xml = xml.replace(/&lt;\/(div|table|thead|tr|td|th|a)\s*&gt;/g, '</$1>');
-			// const tags = "div|table|thead|tr|td|th|a";
 			xml = xml.replace(new RegExp(`&lt;(${htmlElements})\\s*.*?&gt;`, 'g'), "<$1>")
 				.replace(new RegExp(`&lt;\\/(${htmlElements})\\s*&gt;`, 'g'), "</$1>")
 				.replace(/#/g, '\#');
@@ -117,7 +114,7 @@ function showLatex(el, mode = 'report') {
 			xsltProcessor.setParameter('', 'contenturldir', contentURLDir);
 			xsltProcessor.setParameter('', 'contenturl', contentURL);
 
-			let fragment = xsltProcessor.transformToFragment(xmlDOM, document);
+			const fragment = xsltProcessor.transformToFragment(xmlDOM, document);
 			report(fragment);
 			fragmentStr = new XMLSerializer().serializeToString(fragment);
 
@@ -127,9 +124,9 @@ function showLatex(el, mode = 'report') {
 			let latex = unescapeHtml(fragmentStr
 				.replace(/\n\n\n*/g, "\n\n")
 				.replace(/\n(\ )*/g, "\n")
-				.replace(/\<!--.*?--\>/g, '')				
+				.replace(/\<!--.*?--\>/g, '')
 				.replace(/\\class{.*?}/g, '')
-				.replace(/\\cssId{.*?}/g, '')				
+				.replace(/\\cssId{.*?}/g, '')
 				.replace(/\\href{([^}]+)}{([^}]+)}/g, (match) => {
 					return match.replace(/_/g, '\\_');
 				})
@@ -264,10 +261,6 @@ function openXML(renderer, filePath) {
 
 	let reader = new FileReader();
 
-	const progressBar = document.querySelector('.progress-bar');
-	progressBar.style.width = '20%';
-	progressBar.setAttribute('aria-valuenow', '20');
-
 	document.getElementById('loading_icon').classList.remove('hidden');
 
 	if (file) {
@@ -286,47 +279,43 @@ function openXML(renderer, filePath) {
 		}
 	}
 
-	console.log(filename);
-	reader.addEventListener("load", function () {
-		progressBar.style.width = '50%';
-		progressBar.setAttribute('aria-valuenow', '50');
+	// console.log(filename);
+	reader.addEventListener("load", (async () => {
 
-		let cranachDoc = new DOMParser().parseFromString(reader.result, "application/xml");
-		baseRenderer = renderer.then(cranach => {
-			progressBar.style.width = '75%';
-			progressBar.setAttribute('aria-valuenow', '75');
+		const cranachDoc = new DOMParser().parseFromString(reader.result, "application/xml");
+		// baseRenderer = renderer.then(cranach => {
+		
+		baseRenderer = renderer;
+		let cranach = await baseRenderer;
 
-			cranach.attr['wbPath'] = null;
-			cranach.attr['localName'] = filename;
-			cranach.attr['dir'] = dir;
-			cranach.cranachDoc = cranachDoc;
+		cranach.attr['wbPath'] = null;
+		cranach.attr['localName'] = filename;
+		cranach.attr['dir'] = dir;
+		cranach.cranachDoc = cranachDoc;
 
-			MathJax.startup.document.state(0);
-			MathJax.texReset();
-			MathJax.typesetClear();
+		MathJax.startup.document.state(0);
+		MathJax.texReset();
+		MathJax.typesetClear();
 
-			return cranach.displayCranachDocToHtml();
-		}).then(cranach => {
-			postprocess(cranach);
-			document.getElementById('loading_icon').classList.add('hidden');
+		cranach = await cranach.displayCranachDocToHtml();
+		// }).then(async function(cranach) {
+		postprocess(cranach);
+		document.getElementById('loading_icon').classList.add('hidden');
 
-			const editorElement = document.querySelector('.editor.ace_editor');
-			convertCranachDocToWb(cranach.cranachDoc, editor);
+		// const editorElement = document.querySelector('.editor.ace_editor');
+		convertCranachDocToWb(await cranach.cranachDoc, editor);
 
-			return cranach;
-		});
-	}, false);
+	}), false);
 
 	reader.readAsText(file);
 
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-	baseRenderer.then(cranach => {
-		document.querySelectorAll('.modal .btn.save').forEach(el =>
-			el.addEventListener('click', function (event) {
-				saveText(document.getElementById('source_text').value, cranach, event.target.getAttribute('ext'));
-			})
-		);
-	});
+document.addEventListener('DOMContentLoaded', async () => {
+	const cranach = await baseRenderer;
+	document.querySelectorAll('.modal .btn.save').forEach(el =>
+		el.addEventListener('click', function (event) {
+			saveText(document.getElementById('source_text').value, cranach, event.target.getAttribute('ext'));
+		})
+	)
 });
