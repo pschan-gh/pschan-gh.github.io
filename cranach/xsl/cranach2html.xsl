@@ -6,6 +6,7 @@
 	xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
 	xmlns:idx = "http://www.math.cuhk.edu.hk/~pschan/elephas_index"
 	xmlns:m = "http://www.w3.org/1998/Math/MathML"
+	xmlns:svg = "http://www.w3.org/2000/svg"
 	exclude-result-prefixes="xh"
 	>
 
@@ -20,6 +21,7 @@
 	<xsl:param name="contentdir" select="''" />
 
 	<xsl:variable name="xh" select="'http://www.w3.org/1999/xhtml'"/>
+	<xsl:variable name="svg" select="'http://www.w3.org/2000/svg'"/>
 
 	<xsl:template match="/">
 		<xsl:apply-templates select="lv:document" />
@@ -125,6 +127,13 @@
 
 	<xsl:template match="xh:*[not(self::xh:iframe) and not(self::xh:img) and not(self::xh:br or self::xh:hr)]">
 		<xsl:element name="{local-name()}" namespace="{$xh}">
+			<xsl:copy-of select="@*[(name(.)!='environment') and (name(.)!='chapter_type')]"/>
+			<xsl:apply-templates select="text()|comment()|*"/>
+		</xsl:element>
+	</xsl:template>
+
+	<xsl:template match="svg:*">
+		<xsl:element name="{local-name()}" namespace="{$svg}">
 			<xsl:copy-of select="@*[(name(.)!='environment') and (name(.)!='chapter_type')]"/>
 			<xsl:apply-templates select="text()|comment()|*"/>
 		</xsl:element>

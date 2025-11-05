@@ -5,6 +5,7 @@
     xmlns:lv = "http://www.math.cuhk.edu.hk/~pschan/cranach"
     xmlns:idx = "http://www.math.cuhk.edu.hk/~pschan/elephas_index"
     xmlns:m = "http://www.w3.org/1998/Math/MathML"
+    xmlns:svg = "http://www.w3.org/2000/svg"
     >
 
     <xsl:preserve-space elements="xh:pre lv:paragraphs"/>
@@ -12,6 +13,7 @@
 
     <xsl:variable name="lv" select="'http://www.math.cuhk.edu.hk/~pschan/cranach'"/>
     <xsl:variable name="xh" select="'http://www.w3.org/1999/xhtml'"/>
+    <xsl:variable name="svg" select="'http://www.w3.org/2000/svg'"/>
 
 	<xsl:param name="indexxml" select="''" />
 	<xsl:variable name="indexdoc" select="document($indexxml)" />
@@ -32,6 +34,30 @@
         <xsl:param name="subsubsection" select="@subsubsection"/>
         <xsl:param name="item" />
         <xsl:element name="{local-name()}" namespace="{$xh}">
+            <xsl:copy-of select="@*[not(@environment) and not(@chapter_type)]"/>
+            <!-- <xsl:copy-of select="@wbtag"/> -->
+            <xsl:apply-templates select="*|text()|comment()">
+                <xsl:with-param name="slide" select = "$slide" />
+                <xsl:with-param name="course" select="$course"/>
+                <xsl:with-param name="chapter" select="$chapter"/>
+                <xsl:with-param name="chapter_type" select="$chapter_type"/>
+                <xsl:with-param name="section" select="$section"/>
+                <xsl:with-param name="subsection" select="$subsection"/>
+                <xsl:with-param name="subsubsection" select="$subsubsection"/>
+            </xsl:apply-templates>
+        </xsl:element>
+    </xsl:template>
+
+    <xsl:template match="svg:*">
+        <xsl:param name="slide"/>
+        <xsl:param name="course" select="@course"/>
+        <xsl:param name="chapter" select="@chapter"/>
+        <xsl:param name="chapter_type" select="@chapter_type"/>
+        <xsl:param name="section" select="@section"/>
+        <xsl:param name="subsection" select="@subsection"/>
+        <xsl:param name="subsubsection" select="@subsubsection"/>
+        <xsl:param name="item" />
+        <xsl:element name="{local-name()}" namespace="{$svg}">
             <xsl:copy-of select="@*[not(@environment) and not(@chapter_type)]"/>
             <!-- <xsl:copy-of select="@wbtag"/> -->
             <xsl:apply-templates select="*|text()|comment()">

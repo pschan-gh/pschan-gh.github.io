@@ -1079,6 +1079,11 @@ canvas.disabled {
 	padding-left: 5px;
 }
 
+.slide_content .dual {
+	display: table;
+	width: 100%;
+}
+
 .latexSource {
 	border: 1px solid;
 	font-family: "Courier New";

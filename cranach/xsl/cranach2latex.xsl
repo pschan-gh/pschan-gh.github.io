@@ -140,14 +140,24 @@
 	<xsl:template match="lv:keywords|lv:keyword|lv:hc_keyword|lv:title"/>
 
 	<xsl:template match="xh:a[@href]">
-		<xsl:value-of select="concat('\href{',  @href, '}{')"/>
-		<xsl:apply-templates select="*|text()" />
+		<xsl:value-of select="concat('\href{',  @href, '}{LINK')"/>
+		<xsl:if test="./text()">
+		<xsl:text> </xsl:text>
+		<xsl:apply-templates select="text()" />
+		</xsl:if>
 		<xsl:text>}</xsl:text>
+		<xsl:text>&#xa;</xsl:text>
+		<xsl:apply-templates select="*" />
 	</xsl:template>
     <xsl:template match="xh:a[@lcref]">
-		<xsl:value-of select="concat('\href{',  @lcref, '}{')"/>
-		<xsl:apply-templates select="*|text()" />
+		<xsl:value-of select="concat('\href{',  @lcref, '}{LINK')"/>
+		<xsl:if test="./text()">
+		<xsl:text> </xsl:text>
+		<xsl:apply-templates select="text()" />
+		</xsl:if>
 		<xsl:text>}</xsl:text>
+		<xsl:text>&#xa;</xsl:text>
+		<xsl:apply-templates select="*" />
 	</xsl:template>
 
 	<xsl:template match="lv:paragraphs" >

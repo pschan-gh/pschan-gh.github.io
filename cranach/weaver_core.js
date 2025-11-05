@@ -54,7 +54,7 @@ const environs = [
 	"nstep"
 ];
 
-const htmlElements = /a|abbr|acronym|address|area|article|aside|audio|b|base|bdi|bdo|big|blockquote|body|br|button|canvas|caption|cite|code|col|colgroup|data|datalist|dd|del|details|dfn|dialog|div|dl|dt|em|embed|fieldset|figcaption|figure|footer|form|h1|h2|h3|h4|h5|h6|head|header|hgroup|hr|html|i|iframe|img|input|ins|kbd|label|legend|li|link|main|map|mark|meta|meter|nav|noscript|object|ol|optgroup|option|output|p|param|picture|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|small|source|span|strong|style|sub|summary|sup|svg|table|tbody|td|template|textarea|tfoot|th|thead|time|title|tr|track|u|ul|var|video|wbr|center/;
+const htmlElements = /a|abbr|acronym|address|area|article|aside|audio|b|base|bdi|bdo|big|blockquote|body|br|button|canvas|caption|cite|code|col|colgroup|data|datalist|dd|del|details|dfn|dialog|div|dl|dt|em|embed|fieldset|figcaption|figure|footer|form|h1|h2|h3|h4|h5|h6|head|header|hgroup|hr|html|i|iframe|img|input|ins|kbd|label|legend|li|link|main|map|mark|meta|meter|nav|noscript|object|ol|optgroup|option|output|p|param|picture|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|small|source|span|strong|style|sub|summary|sup|svg|table|tbody|td|template|textarea|tfoot|th|thead|time|title|tr|track|u|ul|var|video|wbr|center|rect/;
 
 const htmlOpenRe = /<([a-zA-Z][a-zA-Z0-9]*)(?:\s+([^>]*))?\s*(\/)?>\n*/i;
 const htmlCloseRe = /<\/([a-zA-Z][a-zA-Z0-9]*)>/i;
@@ -417,7 +417,9 @@ const handleHtmlToken = (child, token) => {
 
 	if (token.type === 'html_close') {
 		const tagName = token.tag.toLowerCase();
-		const prefixedTagRe = new RegExp(`${xh_prefix || ''}${tagName}`, 'i');
+		// const prefixedTagRe = new RegExp(`${xh_prefix || ''}${tagName}`, 'i');
+		const prefixedTagRe = new RegExp(`\\b${tagName}\\b`, 'i');
+		console.log(prefixedTagRe);
 		child = child.closeTo(prefixedTagRe);
 		// console.log(`TAG CLOSED: ${tagName}`);
 		child = child.close();
@@ -503,22 +505,22 @@ function tokenizeAndProcess(input) {
 			commentOpen,       // 1
 			commentClose,      // 2
 			atWord,           // 3
-			atWordName,
-			atWordNested,
-			atWordBracket,
-			directiveFull,     // 4
-			directiveWord,     // 5
-			nestedContent,     // 6
-			directiveBracket,    // 7
-			htmlOpenFull,      // 8
-			tagNameOpen,       // 9
-			attributes,        // 10
-			selfClosing,       // 11
-			htmlCloseFull,     // 12
-			tagNameClose,      // 13
-			newline,
-			plainTextFull,     // 14
-			plainText          // 15
+			atWordName,		// 4
+			atWordNested,	// 5
+			atWordBracket,	// 6
+			directiveFull,     // 7
+			directiveWord,     // 8
+			nestedContent,     // 9
+			directiveBracket,    // 10
+			htmlOpenFull,      // 11
+			tagNameOpen,       // 12
+			attributes,        // 13
+			selfClosing,       // 14
+			htmlCloseFull,     // 15
+			tagNameClose,      // 16
+			newline,		// 17
+			plainTextFull,     // 18
+			plainText          // 19
 		] = match;
 		// console.log(match);
 
@@ -642,10 +644,9 @@ function parseAttributes(attributeString) {
 function weaveHtml(child, token) {
 	const tagName = token.tag;
 	const parameters = typeof (token.attributes) === 'undefined' ? '' : token.attributes;
-	const isSelfClosing = token.value.endsWith('/>') ||
+	const isSelfClosing = token.value.trim().endsWith('/>') ||
 		['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']
 			.includes(tagName);
-
 	const wrappingTags = {
 		li: [/ol|ul/i, `<ul><li ${parameters}></li></ul>`],
 		tr: [/tbody|table/i, `<table><tr ${parameters}></tr></table>`],
@@ -661,7 +662,12 @@ function weaveHtml(child, token) {
 		child = child.closeTo(closeToPattern); // Close up to matching parent
 	}
 
-	child = child.addChild(tagName, nsResolver('xh'));
+	if ((['svg', 'rect'].includes(tagName))) {
+		child = child.addChild(tagName, nsResolver('svg'));
+	} else {
+		child = child.addChild(tagName, nsResolver('xh'));
+	}
+	
 	if (parameters) {
 		Object.entries(parameters).forEach(([name, value]) => {
 			// Convert boolean true to empty string (HTML convention for boolean attributes)

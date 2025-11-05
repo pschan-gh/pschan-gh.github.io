@@ -238,7 +238,7 @@ async function updateSlideContent(slide, carousel = false) {
 
 	slide.querySelectorAll('.loading_icon').forEach(e => e.classList.add('hidden'));
 
-	const loginForms = document.querySelectorAll('.ww-login-form'); // Select all elements with class loginForm
+	const loginForms = slide.querySelectorAll('.ww-login-form'); // Select all elements with class loginForm
 	if (loginForms.length > 0) {
 		const response = await fetch('https://www.math.cuhk.edu.hk/~pschan/wwfwd/authenticate2.php', {
 			method: 'POST',
@@ -397,6 +397,17 @@ function highlight(item) {
 
 }
 
+function hasSizeAttributes(imgElement) {
+  const style = window.getComputedStyle(imgElement);
+  
+  return {
+    hasMaxHeight: style.maxHeight !== 'none',
+    hasMaxWidth: style.maxWidth !== 'none',
+    hasHeight: style.height !== 'auto' && style.height !== '0px',
+    hasWidth: style.width !== 'auto' && style.width !== '0px'
+  };
+}
+
 // deepseek
 function imagePostprocess(image) {
 	const isExempt = image.classList.contains('exempt');
@@ -435,7 +446,8 @@ function imagePostprocess(image) {
 		image.classList.remove('loading');
 
 		// If the image is exempt or too small, show it and exit
-		if (isExempt || Math.max(image.naturalWidth, image.naturalHeight) < 450) {
+		// if (isExempt || Math.max(image.naturalWidth, image.naturalHeight) < 450) {
+		if (isExempt || hasSizeAttributes(image)) {
 			image.classList.remove('hidden');
 			return;
 		}

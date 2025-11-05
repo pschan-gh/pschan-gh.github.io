@@ -6,7 +6,8 @@ function nsResolver(prefix) {
 		'lv': "http://www.math.cuhk.edu.hk/~pschan/cranach",
 		'idx': "http://www.math.cuhk.edu.hk/~pschan/elephas_index",
 		'xh': 'http://www.w3.org/1999/xhtml',
-		'm': 'http://www.w3.org/1998/Math/MathML'
+		'm': 'http://www.w3.org/1998/Math/MathML',
+		'svg': 'http://www.w3.org/2000/svg'
 	};
 	return ns[prefix] || null;
 }
@@ -173,7 +174,7 @@ function Cranach(url) {
 				}
 
 				const wb = await response.text();
-				console.log(wb);
+				// console.log(wb);
 				// editor.setValue(wb, 1);
 				this.preCranachDoc = domparser.parseFromString(generateXML(wb), "text/xml");
 			}
@@ -216,7 +217,7 @@ function Cranach(url) {
 		const indexDom = this.indexDoc;
 		const preCranachDoc = this.preCranachDoc;
 
-		// console.log(prettyPrintXML(preCranachDoc));
+		console.log(prettyPrintXML(preCranachDoc));
 		if (indexDom.getElementsByTagName('index')[0]) {
 			const index = indexDom.getElementsByTagNameNS("http://www.math.cuhk.edu.hk/~pschan/elephas_index", 'index')[0].cloneNode(true);
 			preCranachDoc.getElementsByTagName('root')[0].appendChild(index);
@@ -315,7 +316,6 @@ function Cranach(url) {
 	this.updateIndex = async function () {
 		let xmlDom = this.cranachDoc;
 		const filename = this.attr['query'] == '' ? this.attr['localName'] : 'local';
-
 		const contents = new XMLSerializer().serializeToString(xmlDom);
 		const fileMD5 = base62md5(contents);
 
@@ -329,11 +329,15 @@ function Cranach(url) {
 			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
 			null
 		);
-		for (let i = 0; i < newBranches.snapshotLength; i++) {
-			indexDom.getElementsByTagName('index')[0]
-				.appendChild(
-					newBranches.snapshotItem(i).cloneNode(true)
-				);
+		if (indexDom.getElementsByTagName('index')[0]) {
+			for (let i = 0; i < newBranches.snapshotLength; i++) {
+				indexDom.getElementsByTagName('index')[0]
+					.appendChild(
+						newBranches.snapshotItem(i).cloneNode(true)
+					);
+			}
+		} else {
+			return this;
 		}
 
 		let response = await fetch('xsl/updateindex.xsl');
