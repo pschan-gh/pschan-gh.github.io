@@ -1,0 +1,122 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow-y: hidden;
+}
+
+body {
+    font-family: sans-serif;
+    background-color: #f0f0f0;
+}
+
+.math-label mjx-container {
+    font-size: 120%;
+    color: #777;
+    /* Adjust percentage as needed */
+}
+
+#container {
+    display: flex;
+    position: absolute;
+    margin: 0;
+    height: 100%;
+    padding: 5px;
+}
+
+#main {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensures body takes full viewport height */
+    margin: 0;
+    /* width:1280px; */
+}
+
+#controls {
+    position: relative;
+    /* top: 10px;
+      left: 10px; */
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    margin: 10px;
+    border-radius: 8px;
+    color: white;
+    width: 240px;
+    height: auto;
+    overflow-y: scroll;
+}
+
+/* #three-container {
+    position:relative;
+    margin: 10px 0px;
+    padding:2px;
+    border:2px solid #ddd;
+    border-radius:10px;
+    height:640px;
+} */
+
+.three {
+    position: relative;
+    margin-left: 10px;
+    margin-top: 10px;
+    padding: 2px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    height: 640px;
+    width:640px;
+}
+
+label {
+    display: block;
+    margin: 12px 0 4px;
+}
+
+input[type="range"] {
+    width: 100%;
+}
+
+.value {
+    float: right;
+    width: 50px;
+    text-align: right;
+}
+
+#text-container {
+    display: block;
+    position: relative;
+    width:1300px;
+    /* height:100%; */
+    height: calc(100vh - 670px);
+    /* padding: 20px; */
+    margin:10px;
+    background-color: inherit;
+    border-radius: 10px;
+    color: #666;
+}
+
+#text {
+    display: block;
+    position: relative;
+    font-size: 1.2em;
+    color: #444;
+    /* width: 40em; */
+    background-color: #f9f9f4;
+    height: 98%;
+    border-radius: 10px;
+    overflow-y: auto;
+}
+
+#text > div {
+    text-align: justify;
+    /* width: 90%; */
+    margin: 5px;
+    padding: 5px;
+    background-color: #f9f9f4;
+    border-radius: 10px;
+    color: #666;
+}
+
+#text > div > p {
+    padding: 0px 20px;
+}
