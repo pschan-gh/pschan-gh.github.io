@@ -1,0 +1,504 @@
+<div>
+    <div style="display:none">
+        $\newcommand{\ora}[1]{\overrightarrow{#1}}$
+        $\newcommand{\abs}[1]{\left|#1\right|}$
+    </div>
+    <h3>Perspectival Projection</h3>
+    <div class="section1">
+        <p>
+            Given an observing "eyeball" $O$, we choose a <em>picture plane</em> $\Pi$ at a fixed distance from $O$.
+        </p>
+        <p>
+            For any point $P$ in space, on either side of $\Pi$, we define the <strong>seat</strong>
+            of $P$ to be the unique point $P^{\dagger}$ on $\Pi$
+            such that the line segment $\overline{P^{\dagger}P}$ is perpendicular to $\Pi$. This point
+            always exists because any line which is not parallel to a plane must intersect that plane at
+            a unique point.
+        </p>
+        <p>
+            We denote by $Z$ the seat of $O$. We call it the <strong>center</strong> of $\Pi$.
+        </p>
+        <p>
+            Let $A$ be any point in space on the other side of the picture plane $\Pi$ from $O$.
+            Its <strong>perspectival projection</strong> $A'$ is by definiton the unique point where
+            the line passing through $A$ and $O$ intersects $\Pi$.
+            Let $A^{\dagger}$ denote the seat of $A$.
+        </p>
+        <div class="default"></div>
+        <p>
+            If $\overline{OA}$ is perpendicular to $\Pi$, then
+            then $A' = Z$, since there is exactly one unique line passing through $O$
+            which is perpendicular to $\Pi$.
+        </p>
+        <p>
+            Assume now that $\overline{OA}$ is not perpendicular to $\Pi$.
+            We claim that $O, Z, A, A'$, and $A^{\dagger}$ all belong to the same plane.
+            To see this, observe that by assumption the points $O, Z, A$
+            are non-colinear (i.e. not all on the same line).
+            It is known that any three non-colinear points determine a unique
+            plane containing all three. Let $\mathcal{P}$ be the plane which contains
+            $O, Z, A$. Since $\overline{AA^{\dagger}}$ and $\overline{OZ}$ are both
+            perpendicular to $\Pi$, they are parallel to each other.
+            This implies that $A^{\dagger}$ lies on $\mathcal{P}$.
+        </p>
+        <div class="seat"></div>
+        <p>
+            Moreover, since $\mathcal{P}$ contains the line segment $\overline{OZ}$
+            which is perpendicular to $\Pi$,
+            the point $\mathcal{P}$ cannot be parallel to $\Pi$. Hence,
+            $\mathcal{P}$ intersects $\Pi$ at a unique line $\mathbf{K}$.
+            Since $Z$ and $A^{\dagger}$ belong to both $\mathcal{P}$ and $\Pi$,
+            they must both lie on $\mathbf{K}$. Since $Z \neq A^{\dagger}$, it follows that
+            $\mathbf{K}$ is the unique line passing through $Z$ and $A^{\dagger}$.
+            Since $A'$ by definition must lie on $\Pi$ and also on $\overline{OA}$,
+            which lies on $\mathcal{P}$, the point $A'$ must belong to the intersection of $\mathcal{P}$
+            and $\Pi$.
+            Hence, $A'$ lies in the intersection of $\overline{OA}$ and $\mathbf{K}$.
+            Since $\mathbf{K}$ lies on $\Pi$, and $\overline{OA}$ intersects $\Pi$
+            at exactly one point, the intersection of $\overline{OA}$ and $\mathbf{K}$
+            consists of $A'$ alone.
+        </p>
+        <!-- <p>
+            From Euclidean geometry (i.e. "school geometry"), the triangles $\Delta OA'Z$
+            and $\Delta AA'A^{\dagger}$ are similar.  -->
+        <!-- Hence, $A'$ is the unique point on the line segment
+            $\overline{ZA^{\dagger}}$ such that:
+            \[
+            \frac{\abs{\overline{ZA'}}}{\abs{\overline{A^{\dagger}A'}}}
+            =
+            \frac{\abs{\overline{OZ}}}{\abs{\overline{A^{\dagger}A}}}
+            \]
+        </p>
+        <p>
+            In other words, the position of $A'$ may be uniquely determined from the location of the seat
+            of $A$ and the distance of $A$ from $\Pi$.
+        </p> -->
+    </div>
+    <div class="section2">
+        <p>
+            In practice, the point $A'$ may be found on the picture plane as follows:
+            First, find the seat $A^{\dagger}$ on $\Pi$.
+            Then, draw the line $\mathbf{K}$ through the points $Z$ and $A^{\dagger}$.
+            Draw a point $O^{\ast}$ on $\Pi$ such that the distance between $O^{\ast}$
+            and the center $Z$ is equal to that between $O$ and $Z$. Next, draw a point $A^{\ast}$
+            on $\Pi$, on the other side of $\overline{OA^{\dagger}}$ from $O^{\ast}$,
+            such that the distance between $A^{\dagger}$ and $A^{\ast}$ is equal to that between
+            $A$ and $\Pi$ (or, equivalently, the length of $\overline{A^{\dagger}A})$.
+        </p>
+        <p>
+            Draw the line segment $\overline{O^{\ast}A^{\ast}}$. Where this line segment intersects
+            $\mathbf{K}$ is the location of $A'$, the perspectival projection of the point $A$.
+        </p>
+        <div class="rotateStar"></div>
+        <p>
+            (Essentially, we are rotating the plane containing $O, Z, A, A'$ and $A^{\dagger}$
+            about the line $\mathbf{K}$ by 90 degrees.)
+        </p>
+        <p>
+            In fact, it may be shown that $A'$ always lie within the line segment
+            $\overline{ZA^{\dagger}}$, so in practice one could have drawn $\overline{ZA^{\dagger}}$ instead of
+            $\mathbf{K}$.
+        </p>
+    </div>
+
+    <p>
+        Alternatively, one could fix a frame of reference, and a suitably normalized unit of measurement,
+        so that the observer eyeball corresponds to the origin $(0, 0, 0)$ in Cartesian space and the picture plane
+        corresponds
+        to the plane defined by the equation $x = 1$. In such a setup, the perspectival projection of any point
+        in 3-dimensional space
+        with coordinates $(x, y, z)$ is simply $(1, y/x, z/x)$ provided that $x \neq 0$.
+        <!-- (Curiously, this projection
+        could be defined even if the point is on the <em>same side</em> of the picture plane as the observer.) If the
+        $x$-coordinate of the point in question is equal to $0$,
+        then the point has no perspectival projection. -->
+    </p>
+    <p>
+        In principle, this is all one needs to render images in linear perspective, especially with the help of
+        modern computing technology.
+
+        Without the aid of such tools, finding the perspectival projection
+        of more complicated objects point-by-point in a purely computational manner could be tedious,
+        and it is useful to develop a set of laws which describe how higher order geometric objects
+        like lines, ellipses and cubes, etc, transform under perspectival projection.
+        <!-- not to mention a tendency of such an approach to obfuscate deeper geometric truths, leading one to miss
+        the forest for the trees, so to speak. -->
+    </p>
+    <!-- <p>
+        For a deeper understanding of the geometric principles involved,
+        it is worthwhile to examine the laws governing the perspectival projection
+        of higher order geometric objects such as lines, ellipses, cube, etc.
+    </p> -->
+    <div class="section2">
+        <p>
+            One of the most important of these laws concerns the perspectival projection of
+            straight lines.
+            In other words, viewing a line or line segment as a collection of infinitely many points,
+            what does the set of perspectival projections
+            of all these points look like? Is it a line, part of a line, or something else entirely?
+        </p>
+        <div class="moveA"></div>
+    </div>
+    <p>
+        There two types of lines to consider: <strong>Transversals</strong> and <strong>Non-Transversals</strong>.
+    </p>
+    <div class="section1">
+        <p>
+            By definition, a transversal line is a line which is parallel to the picture plane.
+            For any transveral line $\mathbf{L}$,
+            its perspectival projection is the intersection of $\Pi$ with the unique plane which
+            contains
+            both $O$ and $\mathbf{L}$.
+            In particular, the projection is a line on $\Pi$ which is parallel to the original line.
+        </p>
+        <div class="transversal"></div>
+        <p>
+            For any two points $A$ And $B$ on a transversal line, its follows from Euclidean geometry
+            that the distance between their perspectival projections $A'$ and $B'$
+            is equal to the distance between $A$ and $B$ divided by a fixed factor $s$ defined as follows:
+            \[
+            s = 1 + \frac{\text{distance between transversal line and $\Pi$}}
+            {\text{distance between the observer and $\Pi$}}
+            \]
+        </p>
+        <div class="transversalMove"></div>
+        <p>
+            Notice that this factor $s$ is independent of the position of $A$ and $B$ on the transversal line. This
+            implies
+            that
+            there is no distortion in the perspectival projection of a transversal line, in the sense that evenly spaced
+            points
+            on the transversal line (e.g. points on a ruler) project to evenly spaced points on $\Pi$.
+            This is a useful fact to be exploited later in the discussion of measuring points.
+        </p>
+        <p>
+            Also, if the transversal line happens to lie on the picture plane, then $s = 1$,
+            which makes sense since in this case the line is the same as its own perspectival projection.
+        </p>
+    </div>
+    <div class="section2">
+        <p>
+            The second type of lines we consider are the non-transversal lines, namely lines
+            which are not parallel to the picture plane.
+            <!-- Generally speaking, the perspectival projection of such a line is a "half-line" on the picture plane.
+            In the sense that one end of the line terminates at a "vanishing point." -->
+        </p>
+        <!-- <p>
+            In the special case where the non-transveral line happens to pass through the eyeball $O$,
+            its perspectival projection is just a single point,
+            namely the unqiue point where it intersects the picture plane.
+            This point may also be called its vanishing point.
+        </p> -->
+        <!-- <p>
+            <strong>We will explore how to find the vanishing point of non-transveral line,
+                and why the perspectival projection of non-transverals terminate at their vanishing points.</strong>
+        </p> -->
+        <p>
+            Given any non-transversal line $\mathbf{L}$, we define the <strong>directional</strong> of $\mathbf{L}$
+            to be the unique line $\mathbf{D}$ passing through $O$ which is parallel to $\mathbf{L}$.
+            (Brook Taylor called $\mathbf{D}$ the <em>parallel of the original line</em> $\mathbf{L}$.)
+        </p>
+        <p>
+            Since $\mathbf{L}$ is by assumption not transversal, neither is $\mathbf{D}$. So, $\mathbf{D}$ intersects
+            the
+            picture plane at a unique point $V$. We call this point $V$ the <strong>vanishing point</strong> of
+            $\mathbf{L}$.
+        </p>
+        <div class="nontransversal"></div>
+        <div class="theorem">
+            <strong>Theorem.</strong>
+            Let $B$ be the point where $\mathbf{L}$ intersects the picture plane.
+            The perspectival projection of every point on $\mathbf{L}$
+            (on the other side of $\Pi$ from $O$)
+            must lie on the line segment $\overline{VB}$, and <em>vice versa</em>:
+            every point on the line segment $\overline{VB}$, except possibly $V$ itself, is a perspectival projection
+            of a point on $\mathbf{L}$.
+        </div>
+        <a class="proofButton" data-bs-toggle="collapse" href="#proofvp" role="button" aria-expanded="false"
+            aria-controls="proofvp">
+            <strong>Proof.</strong>
+        </a>
+        <div id="proofvp" class="collapse theorem">
+            <p>
+                Let $A$ be any point on $\mathbf{L}$ on the other side of the picture plane from $O$.
+                If $\mathbf{L}$ passes through $O$, then $B = V$, and the "line segment" $\overline{VB}$ is just the
+                point
+                $V$.
+            </p>
+            <p>
+                From now on, suppose $\mathbf{L}$ does not pass through $O$.
+                Linear algebra tells us that there is a unique plane $\mathcal{P}$ which contains both the point $O$
+                and the line $\mathbf{L}$. Moreover, since $\mathbf{L}$ is non-transversal, $\mathcal{P}$ is not
+                parallel
+                to $\Pi$, so the the intersection of these two planes is a line $\mathbf{L}'$.
+                <!-- (This result, though possibly intuitive, is not completely trivial,
+                but in any event it does follow from basic linear algebra.) -->
+                By construction,
+                the line segment $\overline{VB}$ contains both the point $V$ and the point $B$. Since $V$ and $B$
+                both lie on $\Pi$ and $\mathcal{P}$, they both lie on $\mathbf{L}'$. Hence, $\overline{VB}$
+                is part of $\mathbf{L}'$.
+            </p>
+            <p>
+                By definition, the perspectival projection $A'$ of $A$ must lie on the line segment
+                $\overline{OA}$, which in turn lies on $\mathcal{P}$.
+                Moreover, since $A'$ is the unique point where $\overline{OA}$ intersects $\Pi$,
+                it must belong to $\mathbf{L}'$, the intersection of these two planes.
+            </p>
+            <p>
+                It remains to show why $A'$ lies on the line segment $\overline{VB}$.
+            </p>
+            <p>
+                Since $A'$ lies on the line segment $\overline{OA}$,
+                we have:
+                \[
+                \overrightarrow{A'A} = \alpha \overrightarrow{A'O}\\
+                \]
+                for some number $\alpha \lt 0$.
+            </p>
+            <p>
+                Since $\mathbf{L}$ is parallel to $\overline{OV}$,
+                \[
+                \overrightarrow{BA} = \beta \overrightarrow{VO},
+                \]
+                for some $\beta \lt 0$.
+            </p>
+            <p>
+                Likewise,
+                \[
+                \overrightarrow{A'B} = \gamma \overrightarrow{A'V}
+                \]
+                for some number $\gamma$. The sign of $\gamma$ will tell us whether
+                $A'$ lies "between" $V$ and $B$.
+            </p>
+            <p>
+                Since:
+                \begin{align*}
+                \overrightarrow{A'A}
+                &= \overrightarrow{A'B} + \overrightarrow{BA}\\
+                \overrightarrow{A'O}
+                &= \overrightarrow{A'V} + \overrightarrow{VO'},\\
+                \end{align*}
+                we have:
+                \begin{align*}
+                \overrightarrow{A'B}
+                &=\overrightarrow{A'A} - \overrightarrow{BA}\\
+                \overrightarrow{A'V} &=\overrightarrow{A'O} -
+                \overrightarrow{VO}\\
+                \gamma\overrightarrow{A'V} &=\alpha\overrightarrow{A'O} - \beta\overrightarrow{VO}\\
+                \end{align*}
+            </p>
+            <p>
+                It follows that:
+                \[
+                \vec{0} = (\gamma - \alpha)\overrightarrow{A'O} - (\gamma - \beta)\overrightarrow{VO}\\
+                \]
+                Since $\overrightarrow{A'O}$ and $\overrightarrow{VO}$ are not parallel
+                (hence <em>linearly independent</em>),
+                we have must have:
+                \[
+                \gamma - \alpha = \gamma - \beta = 0.
+                \]
+                So, $\gamma = \alpha \lt 0$, implying that
+                the vectors $\ora{A'V}$ and $\ora{A'B}$ point in opposite directions.
+                Hence, it follows that $A'$ lies on the line segment $\overline{VB}$ between
+                the points $V$ and $B$.
+            </p>
+            <!-- <p>
+                (Incidentally, we have also effectively proved that the triangles $\Delta OA'V$ and $\Delta AA'B$
+                are similar to each other, which also follows from well-known Euclidean principles in school geometry.)
+            </p> -->
+            <hr />
+            <p>
+                <b>Conversely</b>, let $A'$ be any point strictly between $V$ and $B$ on $\overline{VB}$.
+                We want to show that $A'$ is the perspectival projection of a point $A$ on $\mathbf{L}$.
+            </p>
+            <p>
+                Let $\mathbf{M}$ be the line passing through $O$ and $A'$. Since both $O$ and $A$ lies on
+                $\mathcal{P}$. The line $\mathbf{M}$ must also lie on $\mathcal{P}$. Moreover,
+                since $A'$ is not equal to $V$, the line $\mathbf{M}$ is non-parallel to $\mathbf{D}$,
+                and hence also non-parallel to $\mathbf{L}$. By school geometry applied to the plane $\mathcal{P}$,
+                the non-parallel lines $\mathbf{M}$ and $\mathbf{L}$ must intersect at a unqiue point $A$.
+            </p>
+            <p>
+                It remains to show that $A$ is on the other side of $\Pi$ from $O$. We have:
+            </p>
+            <p>
+                \[
+                \ora{BA} = \ora{A'A} - \ora{A'B}
+                \]
+                \[
+                \ora{VO} = \ora{A'O} - \ora{A'V}
+                \]
+                Since $\ora{BA} \parallel \ora{VO}$, there exists some number $\gamma$ such that:
+                \[
+                \ora{BA} = \gamma\ora{VO}.
+                \]
+                Likewise, there are numbers $\alpha, \beta$ such that:
+                \[
+                \ora{A'A} = \alpha\ora{A'O}, \quad \ora{A'B} = \beta\ora{A'V}.
+                \]
+                Moreover, since by assumption $A'$ is strictly between $V$ and $B$,
+                we know that $\beta \lt 0$.
+            </p>
+            <p>
+                Hence, we have:
+                \begin{align*}
+                \gamma\ora{VO} &= \alpha\ora{A'O} - \beta\ora{A'V}\\
+                \ora{VO} &= \ora{A'O} - \ora{A'V},
+                \end{align*}
+                which implies that:
+                \[
+                (\gamma - \beta)\ora{VO} = - (\alpha - \beta)\ora{A'O}.
+                \]
+                Since $\ora{VO} \nparallel \ora{VO}$, both $\gamma - \beta$ and $\alpha - \beta$
+                must be equal to $0$. In particular, $\gamma = \beta \lt 0,$ which implies that
+                $A$ is on the opposite side of the picture plane from $O$. We conclude that
+                $A'$ is the perspectival projection of a point $A$ on $\mathbf{L}$.
+            </p>
+        </div>
+    </div>
+    <h3>Finding the Vanishing Point on the Picture Plane</h3>
+    <div class="section1">
+        <p>
+            If the line $\mathbf{L}$ is orthogonal to the picture plane, then its directional $\mathbf{D}$
+            is also orthogonal to $\Pi$. The vanishing point $V$ in this case coincides with the so-called
+            center point $Z$ of $\Pi$,
+        <div class="orthogonal"></div>
+        </p>
+        <!-- <p>
+            Now, consider any non-transveral line $\mathbf{L}$ which is not orthogonal to $\Pi$.
+            To find the vanishing point $V$ of $\mathbf{L}$, it is useful to consider how $\mathbf{L}$ deviates
+            from being orthogonal to $\Pi$, in the following sense:
+        </p> -->
+    </div>
+    <!-- <div class="section1"> -->
+    <p>
+        Before we continue with finding the vanishing point for any non-transversal line $\mathbf{L}$.
+        It is useful to first establish the following results:
+    </p>
+    <div class="theorem">
+        <b>Theorem.</b>
+        Let $\mathcal{Q}$ be any plane in space which is not parallel to the picture plane.
+        Then, there exists a line $\mathbf{H}$ on $\Pi$ such that
+        the perspectival projection of $\mathcal{Q}$ terminates at $\mathbf{H}$,
+        in the sense that the vanishing point of any nontransversal line $\mathbf{N}$ parallel to
+        $\mathcal{Q}$ must lie on $\mathbf{H}$.
+    </div>
+    <a class="proofButton" data-bs-toggle="collapse" href="#proofvl" role="button" aria-expanded="false"
+        aria-controls="proofvp">
+        <strong>Proof.</strong>
+    </a>
+    <div id="proofvl" class="collapse theorem">
+        Let $\mathcal{H}$ be the unique plane containing $O$ which is parallel to $\mathcal{Q}$.
+        Let $\mathbf{H}$ be the intersection of $\mathcal{H}$ and the picture plane.
+        <!-- Pick any two parallel lines $\mathbf{L}_1$, $\mathbf{L}_2$ which lie on $\mathcal{Q}$, corresponding to
+            vanishing points $V_1$ and $V_2$, respectively,
+            which in turn are where the directionals $\mathbf{D}_1$ and $\mathbf{D}_2$
+            of the two lines intersect the picture plane.
+            <br /> -->
+        Given any line $\mathbf{J}$ which is parallel to $\mathcal{Q}$, its directional $\mathbf{D}$
+        passes through $O$ and is parallel to $\mathbf{H}$. Hence, $\mathbf{D}$ lies on $\mathcal{H}$.
+        By definition, the vanishing point of $\mathbf{J}$ is the point where $\mathbf{D}$ intersects
+        $\Pi$.
+        Since by construction the line $\mathbf{H}$ is the intersection of
+        $\mathcal{H}$ and $\Pi$,
+        it follows that the vanishing point of $\mathbf{J}$ lies on $\mathbf{H}$.
+    </div>
+    <p>
+        Also, by construction,
+    </p>
+    <div class="theorem">
+        <b>Corollary.</b>
+        The line $\mathbf{H}$ is parallel to the intersection of $\mathcal{Q}$ with $\Pi$.
+    </div>
+    <p>
+        We call this line $\mathbf{H}$ the <strong>vanishing line</strong> of the plane $\mathcal{Q}$.
+        It may be shown that any two planes which are parallel to each other, but not parallel to $\Pi$,
+        have the same vanishing line.
+    </p>
+    <p>
+        In the common situation where the observer has fixed a frame of reference giving meaning to such
+        qualities as "vertical" and "horizontal"
+        (notice that these terms have never been used so far in our discussion),
+        the vanishing line of any horizontal plane is precisely the <strong>horizon</strong>
+        discussed in most introductory texts on linear perspective.
+    </p>
+    <!-- </div> -->
+    <div class="section2">
+        <p>
+            Now, back to the non-transveral line $\mathbf{L}$.
+            Let $V$ be the vanishing point of $\mathbf{L}$.
+            Let $B$ be the point where $\mathbf{L}$ intersects $\Pi$.
+            Let $\mathbf{K}$ be the line orthogonal to $\Pi$ which intersects $\mathbf{L}$
+            at the point $B$. (In fact, any other point
+            on $\mathbf{L}$ will work just fine. We just need to fix a point for our demonstration.)
+            Let $\mathcal{G}$ be the unique plane containing $B$
+            which is parallel to both $\mathbf{K}$ and $\mathbf{L}$.
+            Let's call $\mathcal{G}$ the <strong>ground plane</strong> of $\mathbf{L}$.
+        </p>
+        <div class="groundPlane"></div>
+        <p>
+            (Note that if $\mathbf{L}$ is orthogonal to $\Pi$, then $\mathbf{L}$
+            is equal to $\mathbf{K}$.
+            In this case, there are infinitely many planes containing $\mathbf{L}$ which are orthogonal to the
+            $\Pi$.)
+        </p>
+        <p>
+            Let $\mathbf{H}$ be the vanishing line of $\mathcal{G}$.
+            Let $\mathbf{G}$ be the line which is the intersection of $\mathcal{G}$ and $\Pi$.
+            Then, by the theorems above, the line $\mathbf{H}$ is parallel to $\mathbf{G}$.
+            Moreover, both the center point $Z$ and the vanishing point $V$ lie on $\mathbf{H}$,
+            since they are the vanishing points of lines, $\mathbf{K}$ and $\mathbf{L}$, respectively,
+            which are parallel to $\mathcal{G}$.
+        </p>
+        <p>
+            We call the lines $\mathbf{H}$ and $\mathbf{G}$ the
+            <strong>horizon</strong> and <strong>ground line</strong>, respectively,
+            associated with $\mathbf{L}$.
+        </p>
+        <p>
+            It may be shown that every point on $\mathbf{G}$ is the seat of a point on $\mathbf{L}$.
+            Hence, we call $\mathbf{G}$ the <strong>seat</strong> of $\mathbf{L}$.
+            To find $\mathbf{H}$ in practice, we first find the seat $\mathbf{G}$ of $\mathbf{L}$
+            on $\Pi$, then translate $\mathbf{G}$ without altering its direction so that it passes
+            through $Z$. This shifted $\mathbf{G}$ is equal to $\mathbf{H}$.
+        </p>
+        <div class="groundLine"></div>
+    </div>
+    <div class="section1">
+        <p>
+            Let $\delta$ be the ($\leq 90^\circ$) angle between $\mathbf{K}$ and $\mathbf{L}$. Then, the angle between
+            the
+            line segments $\overline{OZ}$ and $\overline{OV}$ is also $\delta$. To find the location of
+            $V$ on the horizon $\mathbf{H}$, imagine rotating the triangle $\Delta ZOV$ about $\mathbf{H}$
+            by 90 degrees. Then, $O$ is transformed to a point $\hat{O}$ on $\Pi$ whose distance
+            to $Z$ is equal to that between $O$ and $Z$, and the angle between $\overline{\hat{O}Z}$ and
+            $\overline{\hat{O}V}$ is also equal to $\delta$.
+        </p>
+        <div class="rotate"></div>
+        <p>
+            Hence, once the horizon $\mathbf{H}$ associated with $\mathbf{L}$ has been determined,
+            one can find the location of $V$ this way:
+        <ul>
+            <li>
+                First, draw a point $\hat{O}$ on $\Pi$ such that
+                $\overline{\hat{O}Z}$ is perpendicular to $\mathbf{H}$,
+                and the distance between $\hat{O}$
+                and $Z$ is equal to that between $O$ and $Z$.
+            </li>
+            <li>
+                Then, draw a line through $\hat{O}$ such that the angle between the line and $\overline{\hat{O}Z}$
+                is $\delta$. Where this line intersects $\mathbf{H}$ is the vanishing point $V$ of $\mathbf{L}$.
+            </li>
+        </ul>
+        </p>
+    </div>
+    <footer>
+        <p>
+            This work is licensed under
+            <a target="_blank" license" href="https://creativecommons.org/licenses/by-sa/4.0/">
+                Creative Commons Attribution-ShareAlike 4.0 International
+            </a>.
+        </p>
+    </footer>
+</div>

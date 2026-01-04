@@ -1,0 +1,198 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow-y: hidden;
+}
+
+body {
+    font-family: sans-serif;
+    background-color: #fff;
+}
+
+#controls hr {
+    height: 2px;
+    background-color: #666; /* Example: Red color (hex code) */
+    border: none; /* Removes the default 3D/shaded border */
+}
+
+.math-label mjx-container {
+    font-size: 120%;
+    color: #555;
+    /* Adjust percentage as needed */
+}
+
+#container {
+    display: flex;
+    position: absolute;
+    margin: 0;
+    height: 100%;
+    padding: 5px;
+}
+
+#main {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensures body takes full viewport height */
+    margin: 0;
+    /* width:1280px; */
+}
+
+#controls {
+    position: relative;
+    /* top: 10px;
+      left: 10px; */
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    margin: 10px;
+    border-radius: 8px;
+    color: white;
+    width: 240px;
+    height: auto;
+    overflow-y: scroll;
+}
+
+div.visibility {
+    display: flex;
+    /* align-items: center; */
+    gap: 0px;
+    margin: 0px 0;
+    user-select: none;
+    color: #eee;
+    /* font-family: system-ui, sans-serif; */
+}
+
+[hidden] {
+    display: none !important;
+}
+
+div.visibility label {
+    margin-left: 8px;
+    cursor: "pointer";
+    color: "#eee";
+}
+
+/* #three-container {
+    position:relative;
+    margin: 10px 0px;
+    padding:2px;
+    border:2px solid #ddd;
+    border-radius:10px;
+    height:640px;
+} */
+
+.three {
+    position: relative;
+    margin-left: 10px;
+    margin-top: 10px;
+    padding: 2px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    height: 600px;
+    width: 600px;
+}
+
+label {
+    display: block;
+    margin: 4px 0 4px 0;
+}
+
+input[type="range"] {
+    width: 100%;
+}
+
+.value {
+    float: right;
+    width: 50px;
+    text-align: right;
+}
+
+#text-container {
+    display: block;
+    position: relative;
+    width: 1300px;
+    /* height:100%; */
+    height: calc(100vh - 670px);
+    /* padding: 20px; */
+    margin: 10px;
+    background-color: inherit;
+    border-radius: 10px;
+    color: #666;
+}
+.text-container.vertical {
+    display: block;
+    position: relative;
+    /* width: 1300px; */
+    height:100vh;
+    /* padding: 20px; */
+    margin: 10px;
+    background-color: inherit;
+    border-radius: 10px;
+    color: #666;
+    overflow-y:hidden;
+}
+
+#text {
+    display: block;
+    position: relative;
+    font-size: 1.2em;
+    color: #444;
+    /* width: 50em; */
+    background-color: #f9f9f4;
+    height: 98%;
+    border-radius: 10px;
+    overflow-y: scroll;
+}
+
+#text > div {
+    text-align: justify;
+    /* width: 90%; */
+    margin: 5px;
+    padding: 5px;
+    width: 45em;
+    background-color: #f9f9f4;
+    border-radius: 10px;
+    color: #666;
+}
+
+#text > div > p {
+    padding: 0px 20px;
+}
+
+#text div.section1 {
+    margin: 15px 5px;
+    padding: 20px 20px;
+    border-radius: 10px;
+    background-color: #def;
+}
+
+#text div.section2 {
+    margin: 15px 5px;
+    padding: 20px 20px;
+    border-radius: 10px;
+    background-color: #dee;
+}
+
+#text div.theorem {
+    margin: 15px 5px;
+    padding: 10px 10px;
+    border-radius: 10px;
+    border: 5px solid #aaa;
+    background-color: #efeaea;
+}
+
+.math-label {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.25s ease-in-out, visibility 1.5s; /* Match 1s duration */
+}
+
+.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.proofButton {
+    margin-left:10px;
+}
