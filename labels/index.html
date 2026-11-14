@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Artwork Label Generator</title>
+  <style>
+    :root {
+      --sidebar-width: 340px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      height: 100vh;
+      background: #e8e8e8;
+      color: #222;
+    }
+
+    /* ---------- Sidebar ---------- */
+    #sidebar {
+      width: var(--sidebar-width);
+      background: #fff;
+      border-right: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #sidebar h1 {
+      font-size: 1.1rem;
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .controls {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px 24px;
+    }
+
+    .group {
+      margin-bottom: 18px;
+    }
+
+    .group h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #666;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 3px;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+    }
+
+    label input[type="number"],
+    label input[type="text"] {
+      width: 90px;
+      padding: 3px 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+
+    label input[type="color"] {
+      width: 42px;
+      height: 26px;
+      padding: 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .file-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .file-row input[type="file"] {
+      flex: 1;
+      font-size: 0.8rem;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      background: #68a;
+      color: #fff;
+    }
+
+    .btn:hover {
+      background: #111;
+    }
+
+    .btn.secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .btn.secondary:hover {
+      background: #d0d0d0;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    #status {
+      font-size: 0.8rem;
+      color: #555;
+      margin-top: 10px;
+      min-height: 1.2em;
+    }
+
+    /* ---------- Preview area ---------- */
+    #preview-wrap {
+      flex: 1;
+      overflow: auto;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    #preview {
+      background: white;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+      /* A4 at 96dpi roughly scaled for screen */
+      width: 210mm;
+      min-height: 297mm;
+      transform-origin: top center;
+    }
+
+    /* ---------- Label styles (driven by JS) ---------- */
+    .page {
+      display: grid;
+      justify-content: start;
+    }
+
+    .label {
+      overflow: hidden;
+      page-break-inside: avoid;
+    }
+
+    .label-inner {
+      display: flex;
+      height: 100%;
+    }
+
+    .left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .logo {
+      display: block;
+      height: auto;
+    }
+
+    .logo-placeholder {
+      background: #eee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7pt;
+      color: #999;
+    }
+
+    .qr {
+      display: block;
+    }
+
+    .artwork-id {
+      text-align: center;
+      letter-spacing: 0.3px;
+    }
+
+    .right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .title {
+      font-weight: bold;
+      line-height: 1.15;
+    }
+
+    .artist {
+      font-weight: bold;
+    }
+
+    /* .prices {
+      margin-top: auto;
+    } */
+
+    .price {
+      font-weight: bold;
+    }
+
+    .group-header {
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      margin-bottom: 0;
+    }
+
+    .group-header:hover {
+      color: #000;
+    }
+
+    .chevron {
+      font-size: 0.7rem;
+      transition: transform 0.15s ease;
+    }
+
+    .group.collapsed>h3>.chevron {
+      transform: rotate(-90deg);
+      color: unset;
+    }
+
+    .group:not(.collapsed):has(> h3 > .chevron)>h3 {
+      color: #68a;
+    }
+
+    .group.collapsed>.group-body {
+      display: none;
+    }
+
+    .group-body {
+      padding-top: 6px;
+    }
+
+    .group>.group-body>.group {
+      padding-left: 6px;
+    }
+
+    /* Print */
+    @media print {
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      html,
+      body {
+        width: 210mm;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        overflow: visible !important;
+        height: auto !important;
+        /* ← important: allow multiple pages */
+      }
+
+      #sidebar {
+        display: none !important;
+      }
+
+      #preview-wrap {
+        position: static !important;
+        width: 210mm !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        display: block !important;
+      }
+
+      #preview {
+        width: 210mm !important;
+        min-height: 0 !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        transform: none !important;
+        overflow: visible !important;
+      }
+
+      .page {
+        width: 210mm !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        gap: 0 !important;
+        display: grid !important;
+      }
+
+      .label {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <aside id="sidebar">
+    <h1>Artwork Label Generator</h1>
+    <div class="controls">
+      <div class="group">
+        <h3>Source file</h3>
+        <div class="file-row">
+          <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,text/csv">
+        </div>
+        <div id="status">No file loaded</div>
+      </div>
+      <div class="group">
+        <h3>Logo</h3>
+        <div class="file-row">
+          <input type="file" id="logoInput" accept="image/*">
+        </div>
+        <div style="font-size:0.75rem;color:#666;margin-top:4px;">Optional – leave empty for placeholder</div>
+      </div>
+
+      <div class="group">
+        <button class="btn" id="btnPrint">Print / Save PDF</button>
+      </div>
+
+      <div class="group">
+        <h3>Settings</h3>
+        <button class="btn secondary" id="btnExport">Export</button>
+        <button class="btn secondary" id="btnImport">Import</button>
+        <input type="file" id="importFile" accept=".json,application/json" style="display:none;">
+        <button class="btn secondary" id="btnReset">Default</button>
+      </div>
+
+      <div class="group">
+        <h3>Label size</h3>
+        <label>Width (mm) <input type="number" id="width" value="80" min="40" max="120" step="1"></label>
+        <label>Height (mm) <input type="number" id="height" value="50" min="30" max="100" step="1"></label>
+        <label>Font size (pt) <input type="number" id="fontsize" value="10" min="7" max="16" step="0.5"></label>
+      </div>
+
+      <div class="group">
+        <h3>Page & Grid</h3>
+        <label>Page margin (mm) <input type="number" id="PAGE_MARGIN_MM" value="0" step="0.5"></label>
+        <label>Gap X (mm) <input type="number" id="GRID_GAP_X_MM" value="0" step="0.5"></label>
+        <label>Gap Y (mm) <input type="number" id="GRID_GAP_Y_MM" value="0" step="0.5"></label>
+        <label>Page padding (mm) <input type="number" id="PAGE_PADDING_MM" value="0" step="0.5"></label>
+      </div>
+
+      <div class="group">
+        <h3>Border</h3>
+        <label>Border width (px) <input type="number" id="LABEL_BORDER_WIDTH_PX" value="1" min="0" max="10"></label>
+        <label>Border colour <input type="color" id="LABEL_BORDER_COLOR" value="#dddddd"></label>
+      </div>
+
+      <div class="group">
+        <h3>Fonts & Colours</h3>
+        <label>Text colour <input type="color" id="INFO_FONT_COLOR" value="#000000"></label>
+        <label>Font family <input type="text" id="FONT_FAMILY" value='Calibri, "Segoe UI", Arial, sans-serif'
+            style="width:180px"></label>
+      </div>
+
+      <div class="group collapsed">
+        <h3 class="group-header">Left column <span class="chevron">▾</span></h3>
+        <div class="group-body">
+          <label>Column width (mm) <input type="number" id="LEFT_COL_WIDTH_MM" value="30" step="0.5"></label>
+          <label>Padding top (mm) <input type="number" id="LEFT_PADDING_TOP_MM" value="4" step="0.5"></label>
+          <label>Padding side (mm) <input type="number" id="LEFT_PADDING_SIDE_MM" value="1" step="0.5"></label>
+          <label>Padding bottom (mm) <input type="number" id="LEFT_PADDING_BOTTOM_MM" value="2" step="0.5"></label>
+          <label>Logo width (mm) <input type="number" id="LOGO_WIDTH_MM" value="22" step="0.5"></label>
+          <label>Logo margin bottom (mm) <input type="number" id="LOGO_MARGIN_BOTTOM_MM" value="3" step="0.5"></label>
+          <label>QR size (mm) <input type="number" id="QR_SIZE_MM" value="16" step="0.5"></label>
+          <label>QR margin Y (mm) <input type="number" id="QR_MARGIN_Y_MM" value="1" step="0.5"></label>
+          <label>ID font size (pt) <input type="number" id="ARTWORK_ID_FONT_SIZE_PT" value="6" step="0.5"></label>
+          <label>ID margin top (mm) <input type="number" id="ARTWORK_ID_MARGIN_TOP_MM" value="1.5" step="0.5"></label>
+          <label>ID colour <input type="color" id="ARTWORK_ID_COLOR" value="#666666"></label>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3 class="group-header">Right column <span class="chevron">▾</span></h3>
+        <div class="group-body">
+          <div class="group collapsed">
+            <h3 class="group-header">Padding <span class="chevron">▾</span></h3>
+            <div class="group-body">
+              <!-- all the labels/inputs that belong to this group go here -->
+              <label>Padding top (mm) <input type="number" id="RIGHT_PADDING_TOP_MM" value="3.5" step="0.5"></label>
+              <label>Padding right (mm) <input type="number" id="RIGHT_PADDING_RIGHT_MM" value="3" step="0.5"></label>
+              <label>Padding bottom (mm) <input type="number" id="RIGHT_PADDING_BOTTOM_MM" value="2" step="0.5"></label>
+              <label>Padding left (mm) <input type="number" id="RIGHT_PADDING_LEFT_MM" value="2.5" step="0.5"></label>
+
+            </div>
+          </div>
+
+          <div class="group collapsed">
+            <h3 class="group-header">Title <span class="chevron">▾</span></h3>
+            <div class="group-body">
+              <label>Title size (pt) <input type="number" id="TITLE_FONT_SIZE_PT" value="11" step="0.5"></label>
+
+              <label>Title weight
+                <select id="TITLE_FONT_WEIGHT">
+                  <option value="normal">Normal</option>
+                  <option value="bold" selected>Bold</option>
+                </select>
+              </label>
+
+              <label>Title style
+                <select id="TITLE_FONT_STYLE">
+                  <option value="normal" selected>Normal</option>
+                  <option value="italic">Italic</option>
+                </select>
+              </label>
+
+              <label>Title margin bottom (mm) <input type="number" id="TITLE_MARGIN_BOTTOM_MM" value="1.5"
+                  step="0.5"></label>
+              <label>Artist size (pt) <input type="number" id="ARTIST_FONT_SIZE_PT" value="10" step="0.5"></label>
+            </div>
+          </div>
+
+          <div class="group collapsed">
+            <h3 class="group-header">Artist <span class="chevron">▾</span></h3>
+            <div class="group-body">
+              <label>Artist weight
+                <select id="ARTIST_FONT_WEIGHT">
+                  <option value="normal">Normal</option>
+                  <option value="bold" selected>Bold</option>
+                </select>
+              </label>
+
+              <label>Artist style
+                <select id="ARTIST_FONT_STYLE">
+                  <option value="normal" selected>Normal</option>
+                  <option value="italic">Italic</option>
+                </select>
+              </label>
+
+              <label>Artist margin bottom (mm) <input type="number" id="ARTIST_MARGIN_BOTTOM_MM" value="1.5"
+                  step="0.5"></label>
+            </div>
+          </div>
+
+          <div class="group collapsed">
+            <h3 class="group-header">Meta <span class="chevron">▾</span></h3>
+            <div class="group-body">
+              <label>Meta size (pt) <input type="number" id="META_FONT_SIZE_PT" value="10" step="0.5"></label>
+              <label>Meta weight
+                <select id="META_FONT_WEIGHT">
+                  <option value="normal" selected>Normal</option>
+                  <option value="bold">Bold</option>
+                </select>
+              </label>
+              <label>Meta style
+                <select id="META_FONT_STYLE">
+                  <option value="normal" selected>Normal</option>
+                  <option value="italic">Italic</option>
+                </select>
+              </label>
+              <label>Meta line height <input type="number" id="META_LINE_HEIGHT" value="1.25" step="0.05"></label>
+              <label>Meta item margin (mm) <input type="number" id="META_ITEM_MARGIN_MM" value="0.3" step="0.1"></label>
+              <label>Medium margin top (mm) <input type="number" id="MEDIUM_MARGIN_TOP_MM" value="0.5"
+                  step="0.1"></label>
+              <label>Edition margin top (mm) <input type="number" id="EDITION_MARGIN_TOP_MM" value="0.8"
+                  step="0.1"></label>
+            </div>
+          </div>
+
+          <div class="group collapsed">
+            <h3 class="group-header">Price <span class="chevron">▾</span></h3>
+            <div class="group-body">
+              <label>Price size (pt) <input type="number" id="PRICE_FONT_SIZE_PT" value="10" step="0.5"></label>
+              <label>Price weight
+                <select id="PRICE_FONT_WEIGHT">
+                  <option value="normal">Normal</option>
+                  <option value="bold" selected>Bold</option>
+                </select>
+              </label>
+
+              <label>Price style
+                <select id="PRICE_FONT_STYLE">
+                  <option value="normal" selected>Normal</option>
+                  <option value="italic">Italic</option>
+                </select>
+              </label>
+
+              <label>Price line height <input type="number" id="PRICE_LINE_HEIGHT" value="1.3" step="0.05"></label>
+              <!-- <label>Prices padding top (mm) <input type="number" id="PRICES_PADDING_TOP_MM" value="1" step="0.5"></label> -->
+              <label>Price margin top (mm) <input type="number" id="PRICE_MARGIN_TOP_MM" value="1.5" step="0.5"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <div id="preview-wrap">
+    <div id="preview">
+      <div style="padding:40px;color:#888;text-align:center;">
+        Load a CSV or Excel file to see the labels
+      </div>
+    </div>
+  </div>
+
+  <!-- QR code library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Excel support -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <script>
+    const DEFAULTS = {
+      width: 80,
+      height: 50,
+      fontsize: 10,
+
+      PAGE_MARGIN_MM: 0,
+      GRID_GAP_X_MM: 0,
+      GRID_GAP_Y_MM: 0,
+      PAGE_PADDING_MM: 0,
+
+      LABEL_BORDER_WIDTH_PX: 1,
+      LABEL_BORDER_COLOR: "#dddddd",
+
+      LEFT_COL_WIDTH_MM: 30,
+      LEFT_PADDING_TOP_MM: 4,
+      LEFT_PADDING_SIDE_MM: 1,
+      LEFT_PADDING_BOTTOM_MM: 2,
+      LOGO_WIDTH_MM: 22,
+      LOGO_MARGIN_BOTTOM_MM: 3,
+      QR_SIZE_MM: 16,
+      QR_MARGIN_Y_MM: 1,
+      ARTWORK_ID_FONT_SIZE_PT: 6,
+      ARTWORK_ID_MARGIN_TOP_MM: 1.5,
+      ARTWORK_ID_COLOR: "#666666",
+
+      RIGHT_PADDING_TOP_MM: 3.5,
+      RIGHT_PADDING_RIGHT_MM: 3,
+      RIGHT_PADDING_BOTTOM_MM: 2,
+      RIGHT_PADDING_LEFT_MM: 2.5,
+      TITLE_FONT_SIZE_PT: 11,
+      TITLE_FONT_WEIGHT: "bold",
+      TITLE_FONT_STYLE: "normal",
+      TITLE_MARGIN_BOTTOM_MM: 1.5,
+      ARTIST_FONT_SIZE_PT: 10,
+      ARTIST_FONT_WEIGHT: "bold",
+      ARTIST_FONT_STYLE: "normal",
+      ARTIST_MARGIN_BOTTOM_MM: 1.5,
+      META_FONT_SIZE_PT: 10,
+      META_FONT_WEIGHT: "bold",
+      META_FONT_STYLE: "normal",
+      META_LINE_HEIGHT: 1.25,
+      META_ITEM_MARGIN_MM: 0.3,
+      MEDIUM_MARGIN_TOP_MM: 0.5,
+      EDITION_MARGIN_TOP_MM: 0.8,
+      PRICE_FONT_SIZE_PT: 10,
+      PRICE_FONT_SIZE_PT: 10,
+      PRICE_FONT_WEIGHT: "bold",
+      PRICE_FONT_STYLE: "normal",
+      PRICE_LINE_HEIGHT: 1.3,
+      PRICES_PADDING_TOP_MM: 1,
+      PRICE_MARGIN_TOP_MM: 1.5,
+
+      INFO_FONT_COLOR: "#000000",
+      FONT_FAMILY: 'Calibri, "Segoe UI", Arial, sans-serif'
+    };
+    /* ============================================================
+       State
+       ============================================================ */
+    let items = [];          // array of row objects
+    let logoDataUrl = null;  // optional
+
+    /* ============================================================
+       Helpers
+       ============================================================ */
+    function $(id) { return document.getElementById(id); }
+
+    function val(id) {
+      const el = $(id);
+      if (!el) return null;
+      if (el.type === "number") return parseFloat(el.value) || 0;
+      return el.value;
+    }
+
+    function sentenceCase(text) {
+      if (!text) return "";
+      return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+    }
+
+    function formatPrice(raw) {
+      if (!raw) return "";
+      try {
+        const cleaned = String(raw).replace(/HKD/gi, "").replace(/,/g, "").trim();
+        return Number(cleaned).toLocaleString("en-US");
+      } catch {
+        return raw;
+      }
+    }
+
+    function parseCSV(text) {
+      const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n").filter(l => l.trim());
+      if (lines.length < 2) return [];
+      // simple CSV split that handles quoted fields
+      function splitLine(line) {
+        const result = [];
+        let cur = "";
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') {
+            if (inQuotes && line[i + 1] === '"') { cur += '"'; i++; }
+            else inQuotes = !inQuotes;
+          } else if (ch === ',' && !inQuotes) {
+            result.push(cur.trim());
+            cur = "";
+          } else {
+            cur += ch;
+          }
+        }
+        result.push(cur.trim());
+        return result;
+      }
+      const headers = splitLine(lines[0]).map(h => h.trim());
+      const rows = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = splitLine(lines[i]);
+        const obj = {};
+        headers.forEach((h, idx) => obj[h] = cols[idx] || "");
+        rows.push(obj);
+      }
+      return rows;
+    }
+
+    /* ============================================================
+       Load file
+       ============================================================ */
+    $("fileInput").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      $("status").textContent = "Loading…";
+      try {
+        if (file.name.toLowerCase().endsWith(".csv")) {
+          const text = await file.text();
+          items = parseCSV(text);
+        } else {
+          // Excel
+          const data = await file.arrayBuffer();
+          const wb = XLSX.read(data);
+          const sheet = wb.Sheets[wb.SheetNames[0]];
+          items = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+        }
+        $("status").textContent = `Loaded ${items.length} rows from ${file.name}`;
+        render();
+      } catch (err) {
+        console.error(err);
+        $("status").textContent = "Error loading file";
+        alert("Could not read the file.\n\n" + err.message);
+      }
+    });
+
+    $("logoInput").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) {
+        logoDataUrl = null;
+        if (items.length) render();
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        logoDataUrl = ev.target.result;   // data URL
+        if (items.length) render();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    /* ============================================================
+       Collect current settings
+       ============================================================ */
+    function getConfig() {
+      return {
+        width: val("width"),
+        height: val("height"),
+        fontsize: val("fontsize"),
+
+        PAGE_MARGIN_MM: val("PAGE_MARGIN_MM"),
+        GRID_GAP_X_MM: val("GRID_GAP_X_MM"),
+        GRID_GAP_Y_MM: val("GRID_GAP_Y_MM"),
+        PAGE_PADDING_MM: val("PAGE_PADDING_MM"),
+
+        LABEL_BORDER_WIDTH_PX: val("LABEL_BORDER_WIDTH_PX"),
+        LABEL_BORDER_COLOR: val("LABEL_BORDER_COLOR"),
+
+        LEFT_COL_WIDTH_MM: val("LEFT_COL_WIDTH_MM"),
+        LEFT_PADDING_TOP_MM: val("LEFT_PADDING_TOP_MM"),
+        LEFT_PADDING_SIDE_MM: val("LEFT_PADDING_SIDE_MM"),
+        LEFT_PADDING_BOTTOM_MM: val("LEFT_PADDING_BOTTOM_MM"),
+        LOGO_WIDTH_MM: val("LOGO_WIDTH_MM"),
+        LOGO_MARGIN_BOTTOM_MM: val("LOGO_MARGIN_BOTTOM_MM"),
+        QR_SIZE_MM: val("QR_SIZE_MM"),
+        QR_MARGIN_Y_MM: val("QR_MARGIN_Y_MM"),
+        ARTWORK_ID_FONT_SIZE_PT: val("ARTWORK_ID_FONT_SIZE_PT"),
+        ARTWORK_ID_MARGIN_TOP_MM: val("ARTWORK_ID_MARGIN_TOP_MM"),
+        ARTWORK_ID_COLOR: val("ARTWORK_ID_COLOR"),
+
+        RIGHT_PADDING_TOP_MM: val("RIGHT_PADDING_TOP_MM"),
+        RIGHT_PADDING_RIGHT_MM: val("RIGHT_PADDING_RIGHT_MM"),
+        RIGHT_PADDING_BOTTOM_MM: val("RIGHT_PADDING_BOTTOM_MM"),
+        RIGHT_PADDING_LEFT_MM: val("RIGHT_PADDING_LEFT_MM"),
+
+        TITLE_FONT_SIZE_PT: val("TITLE_FONT_SIZE_PT"),
+        TITLE_FONT_WEIGHT: val("TITLE_FONT_WEIGHT"),
+        TITLE_FONT_STYLE: val("TITLE_FONT_STYLE"),
+        TITLE_MARGIN_BOTTOM_MM: val("TITLE_MARGIN_BOTTOM_MM"),
+
+        ARTIST_FONT_SIZE_PT: val("ARTIST_FONT_SIZE_PT"),
+        ARTIST_FONT_WEIGHT: val("ARTIST_FONT_WEIGHT"),
+        ARTIST_FONT_STYLE: val("ARTIST_FONT_STYLE"),
+        ARTIST_MARGIN_BOTTOM_MM: val("ARTIST_MARGIN_BOTTOM_MM"),
+
+        META_FONT_SIZE_PT: val("META_FONT_SIZE_PT"),
+        META_FONT_WEIGHT: val("META_FONT_WEIGHT"),
+        META_FONT_STYLE: val("META_FONT_STYLE"),
+        META_LINE_HEIGHT: val("META_LINE_HEIGHT"),
+        META_ITEM_MARGIN_MM: val("META_ITEM_MARGIN_MM"),
+
+        MEDIUM_MARGIN_TOP_MM: val("MEDIUM_MARGIN_TOP_MM"),
+        EDITION_MARGIN_TOP_MM: val("EDITION_MARGIN_TOP_MM"),
+
+        PRICE_FONT_SIZE_PT: val("PRICE_FONT_SIZE_PT"),
+        PRICE_FONT_WEIGHT: val("PRICE_FONT_WEIGHT"),
+        PRICE_FONT_STYLE: val("PRICE_FONT_STYLE"),
+        PRICE_LINE_HEIGHT: val("PRICE_LINE_HEIGHT"),
+        PRICES_PADDING_TOP_MM: val("PRICES_PADDING_TOP_MM"),
+        PRICE_MARGIN_TOP_MM: val("PRICE_MARGIN_TOP_MM"),
+
+        INFO_FONT_COLOR: val("INFO_FONT_COLOR"),
+        FONT_FAMILY: val("FONT_FAMILY"),
+      };
+    }
+
+    /* ============================================================
+       QR helper (returns data URL)
+       ============================================================ */
+    function makeQR(text, sizePx) {
+      return new Promise((resolve) => {
+        try {
+          // Create a temporary container
+          const div = document.createElement("div");
+          div.style.position = "absolute";
+          div.style.left = "-9999px";
+          document.body.appendChild(div);
+
+          const qr = new QRCode(div, {
+            text: text || "https://www.artalliancehk.com/",
+            width: sizePx,
+            height: sizePx,
+            colorDark: "#888888",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.L
+          });
+
+          // qrcodejs draws into a canvas or img inside the div
+          setTimeout(() => {
+            const canvas = div.querySelector("canvas");
+            const img = div.querySelector("img");
+            let dataUrl = "";
+
+            if (canvas) {
+              dataUrl = canvas.toDataURL("image/png");
+            } else if (img) {
+              dataUrl = img.src;
+            }
+
+            document.body.removeChild(div);
+            resolve(dataUrl || "");
+          }, 50);
+        } catch (e) {
+          console.error("QR error", e);
+          resolve("");
+        }
+      });
+    }
+
+    /* ============================================================
+       Render
+       ============================================================ */
+    async function render() {
+      if (!items.length) return;
+
+      const cfg = getConfig();
+      const preview = $("preview");
+      preview.innerHTML = "";
+
+      // Apply dynamic CSS variables via a style tag
+      let style = document.getElementById("dyn-style");
+      if (!style) {
+        style = document.createElement("style");
+        style.id = "dyn-style";
+        document.head.appendChild(style);
+      }
+
+      style.textContent = `
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      padding: ${cfg.PAGE_PADDING_MM}mm;
+      display: grid;
+      grid-template-columns: repeat(2, ${cfg.width}mm);
+      grid-auto-rows: ${cfg.height}mm;
+      gap: ${cfg.GRID_GAP_Y_MM}mm ${cfg.GRID_GAP_X_MM}mm;
+      justify-content: start;
+      font-family: ${cfg.FONT_FAMILY};
+      font-size: ${cfg.fontsize}pt;
+      color: ${cfg.INFO_FONT_COLOR};
+    }
+    .label {
+      width: ${cfg.width}mm;
+      height: ${cfg.height}mm;
+      border: ${cfg.LABEL_BORDER_WIDTH_PX}px solid ${cfg.LABEL_BORDER_COLOR};
+    }
+    .left {
+      width: ${cfg.LEFT_COL_WIDTH_MM}mm;
+      min-width: ${cfg.LEFT_COL_WIDTH_MM}mm;
+      padding: ${cfg.LEFT_PADDING_TOP_MM}mm ${cfg.LEFT_PADDING_SIDE_MM}mm ${cfg.LEFT_PADDING_BOTTOM_MM}mm;
+    }
+    .logo, .logo-placeholder { width: ${cfg.LOGO_WIDTH_MM}mm; }
+    .logo-wrap { margin-bottom: ${cfg.LOGO_MARGIN_BOTTOM_MM}mm; }
+    .qr-wrap { margin: ${cfg.QR_MARGIN_Y_MM}mm 0; }
+    .qr { width: ${cfg.QR_SIZE_MM}mm; height: ${cfg.QR_SIZE_MM}mm; }
+    .artwork-id {
+      font-size: ${cfg.ARTWORK_ID_FONT_SIZE_PT}pt;
+      color: ${cfg.ARTWORK_ID_COLOR};
+      margin-top: ${cfg.ARTWORK_ID_MARGIN_TOP_MM}mm;
+    }
+    .right {
+      padding: ${cfg.RIGHT_PADDING_TOP_MM}mm ${cfg.RIGHT_PADDING_RIGHT_MM}mm
+               ${cfg.RIGHT_PADDING_BOTTOM_MM}mm ${cfg.RIGHT_PADDING_LEFT_MM}mm;
+    }
+    .title {
+      font-size: ${cfg.TITLE_FONT_SIZE_PT}pt;
+      font-weight: ${cfg.TITLE_FONT_WEIGHT};
+      font-style: ${cfg.TITLE_FONT_STYLE};
+      margin-bottom: ${cfg.TITLE_MARGIN_BOTTOM_MM}mm;
+    }
+    .artist {
+      font-size: ${cfg.ARTIST_FONT_SIZE_PT}pt;
+      font-weight: ${cfg.ARTIST_FONT_WEIGHT};
+      font-style: ${cfg.ARTIST_FONT_STYLE};
+      margin-bottom: ${cfg.ARTIST_MARGIN_BOTTOM_MM}mm;
+    }
+
+    .meta {
+      line-height: ${cfg.META_LINE_HEIGHT};
+      font-size: ${cfg.META_FONT_SIZE_PT}pt;
+      font-weight: ${cfg.META_FONT_WEIGHT};
+      font-style: ${cfg.META_FONT_STYLE};
+      margin-bottom: 2mm;
+    }
+    .meta > div { margin-bottom: ${cfg.META_ITEM_MARGIN_MM}mm; }
+    .medium { margin-top: ${cfg.MEDIUM_MARGIN_TOP_MM}mm; }
+    .edition { margin-top: ${cfg.EDITION_MARGIN_TOP_MM}mm; }
+    .prices {
+      margin-top: ${cfg.PRICE_MARGIN_TOP_MM}mm;
+      padding-top: 0;
+    }
+    .price {
+      font-size: ${cfg.PRICE_FONT_SIZE_PT}pt;
+      font-weight: ${cfg.PRICE_FONT_WEIGHT};
+      font-style: ${cfg.PRICE_FONT_STYLE};
+      line-height: ${cfg.PRICE_LINE_HEIGHT};
+    }
+  `;
+
+      const page = document.createElement("div");
+      page.className = "page";
+
+      // Generate all QRs in parallel
+      const qrSizePx = Math.round(cfg.QR_SIZE_MM * 3.78 * 2); // higher res
+      const qrPromises = items.map(row => {
+        const url = row.qrcode_url || row.QRCODE_URL || "https://www.artalliancehk.com/";
+        return makeQR(url, qrSizePx);
+      });
+      const qrDataUrls = await Promise.all(qrPromises);
+
+      items.forEach((row, idx) => {
+        const get = (f) => (row[f] ?? row[f.toLowerCase()] ?? "").toString().trim();
+
+        const artwork_id = get("artwork_id") || "[artwork_id]";
+        const title = get("title") || "[artwork title]";
+        const artist = (get("artist") || "[artist name]").replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase());
+        const medium = sentenceCase(get("medium"));
+        const zh_medium = get("zh_medium") ? ` / ${get("zh_medium")}` : "";
+        const year = get("year");
+        let dimensions = get("dimensions") || "[dimensions]";
+        if (!dimensions.toLowerCase().endsWith("cm")) dimensions = dimensions.trim() + " cm";
+        dimensions = dimensions.replace(/\s/g, "").replace(/x/gi, " x ").replace(/cm/i, " cm");
+
+        const price = formatPrice(get("price") || get("price_framed"));
+        const price_unframed = formatPrice(get("price_unframed"));
+        const edition = get("edition");
+
+        const framed = edition ? " framed" : "";
+        const unframed = edition ? " w/o frame" : "";
+
+        let priceHtml = "";
+        if (price) priceHtml += `<div class="price">HKD ${price}${framed}</div>`;
+        if (price_unframed) priceHtml += `<div class="price">HKD ${price_unframed}${unframed}</div>`;
+        const editionHtml = edition ? `<div class="edition">Edition of ${edition}</div>` : "";
+
+        const label = document.createElement("div");
+        label.className = "label";
+        label.innerHTML = `
+      <div class="label-inner">
+        <div class="left">
+          <div class="logo-wrap">
+            ${logoDataUrl
+            ? `<img class="logo" src="${logoDataUrl}" alt="logo">`
+            : `<div class="logo-placeholder">LOGO</div>`}
+          </div>
+          <div class="qr-wrap">
+            <img class="qr" src="${qrDataUrls[idx]}" alt="QR">
+          </div>
+          <div class="artwork-id">${artwork_id}</div>
+        </div>
+        <div class="right">
+          <div class="title">${title}</div>
+          <div class="artist">${artist}</div>
+          <div class="meta">
+            <div>${year}</div>
+            <div>${dimensions}</div>
+            <div class="medium">${medium}${zh_medium}</div>
+            ${editionHtml}
+          </div>
+          <div class="prices">${priceHtml}</div>
+        </div>
+      </div>
+    `;
+        page.appendChild(label);
+      });
+
+      preview.appendChild(page);
+    }
+
+    /* ============================================================
+       Live update on any control change
+       ============================================================ */
+    // Live update when any control changes (inputs + selects)
+    document.querySelectorAll("#sidebar input, #sidebar select").forEach(el => {
+      el.addEventListener("input", () => {
+        if (items.length) render();
+      });
+      el.addEventListener("change", () => {   // needed for <select>
+        if (items.length) render();
+      });
+    });
+
+    /* ============================================================
+       Buttons
+       ============================================================ */
+    $("btnPrint").addEventListener("click", () => {
+      if (!items.length) {
+        alert("Load a file first.");
+        return;
+      }
+      window.print();
+    });
+
+    $("btnReset").addEventListener("click", () => {
+      if (!confirm("Reset all settings to defaults?")) return;
+
+      // Force every control back to the original value
+      Object.keys(DEFAULTS).forEach(key => {
+        const el = $(key);
+        if (el) el.value = DEFAULTS[key];
+      });
+
+      $("status").textContent = "Settings reset to defaults";
+      if (items.length) render();
+    });
+
+    // ---------- Export settings ----------
+    $("btnExport").addEventListener("click", () => {
+      const cfg = getConfig();
+
+      // Also save the basic size fields
+      const data = {
+        ...cfg,
+        width: val("width"),
+        height: val("height"),
+        fontsize: val("fontsize"),
+        exportedAt: new Date().toISOString()
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "label-settings.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      $("status").textContent = "Settings exported";
+    });
+
+    // ---------- Import settings ----------
+    $("btnImport").addEventListener("click", () => {
+      $("importFile").click();          // open file dialog
+    });
+
+    $("importFile").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const data = JSON.parse(ev.target.result);
+
+          // Apply every known key to the matching input
+          Object.keys(data).forEach(key => {
+            const el = $(key);
+            if (el) {
+              el.value = data[key];
+            }
+          });
+
+          // Also handle the three basic size fields (in case they were saved)
+          if (data.width !== undefined) $("width").value = data.width;
+          if (data.height !== undefined) $("height").value = data.height;
+          if (data.fontsize !== undefined) $("fontsize").value = data.fontsize;
+
+          $("status").textContent = "Settings imported";
+          if (items.length) render();          // refresh preview
+        } catch (err) {
+          alert("Could not read the settings file.\n\n" + err.message);
+        }
+      };
+      reader.readAsText(file);
+
+      // reset so the same file can be chosen again later
+      e.target.value = "";
+    });
+
+    document.querySelectorAll(".group-header").forEach(header => {
+      const group = header.parentElement;
+      const id = header.textContent.trim();
+
+      // restore state
+      if (localStorage.getItem("collapse-" + id) === "1") {
+        group.classList.add("collapsed");
+      }
+
+      header.addEventListener("click", () => {
+        group.classList.toggle("collapsed");
+        localStorage.setItem(
+          "collapse-" + id,
+          group.classList.contains("collapsed") ? "1" : "0"
+        );
+      });
+    });
+
+    /* Optional: load a logo if the user drops an image named artalliance.png
+       or you can add a logo file input later if needed */
+  </script>
+</body>
+
+</html>
