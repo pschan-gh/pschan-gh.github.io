@@ -98,48 +98,74 @@ function showLatex(el, mode = 'report') {
 	const contentURLDir = el.attr['contentURLDir'];
 	const contentURL = el.attr['contentURL'];
 
-	const xslFile = mode == 'report' ? 'xsl/cranach2latex.xsl' : 'xsl/cranach2beamer.xsl';
+	// const xslFile = mode == 'report' ? 'xsl/cranach2latex.xsl' : 'xsl/cranach2beamer.xsl';
 
-	fetch(xslFile + '?version=' + Math.random())
-		.then(response => response.text())
-		.then(xsl => {
-			let xml = new XMLSerializer().serializeToString(docCranach);
-			xml = xml.replace(new RegExp(`&lt;(${htmlElements})\\s*.*?&gt;`, 'g'), "<$1>")
-				.replace(new RegExp(`&lt;\\/(${htmlElements})\\s*&gt;`, 'g'), "</$1>")
-				.replace(/#/g, '\#');
+	// fetch(xslFile + '?version=' + Math.random())
+	// 	.then(response => response.text())
+	// 	.then(xsl => {
+	// 		let xml = new XMLSerializer().serializeToString(docCranach);
+	// 		xml = xml.replace(new RegExp(`&lt;(${htmlElements})\\s*.*?&gt;`, 'g'), "<$1>")
+	// 			.replace(new RegExp(`&lt;\\/(${htmlElements})\\s*&gt;`, 'g'), "</$1>")
+	// 			.replace(/#/g, '\#');
 
-			let xmlDOM = domparser.parseFromString(xml, "application/xml");
-			let xsltProcessor = new XSLTProcessor();
-			xsltProcessor.importStylesheet(domparser.parseFromString(xsl, "text/xml"));
-			xsltProcessor.setParameter('', 'contenturldir', contentURLDir);
-			xsltProcessor.setParameter('', 'contenturl', contentURL);
+	// 		let xmlDOM = domparser.parseFromString(xml, "application/xml");
+	// 		let xsltProcessor = new XSLTProcessor();
+	// 		xsltProcessor.importStylesheet(domparser.parseFromString(xsl, "text/xml"));
+	// 		xsltProcessor.setParameter('', 'contenturldir', contentURLDir);
+	// 		xsltProcessor.setParameter('', 'contenturl', contentURL);
 
-			const fragment = xsltProcessor.transformToFragment(xmlDOM, document);
-			report(fragment);
-			fragmentStr = new XMLSerializer().serializeToString(fragment);
+	// 		const fragment = xsltProcessor.transformToFragment(xmlDOM, document);
+	// 		report(fragment);
+	// 		fragmentStr = new XMLSerializer().serializeToString(fragment);
 
-			// .replace(/&amp;/g, "&")
-			// .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-			// .replace(/&ocirc/g, '\\^o')
-			let latex = unescapeHtml(fragmentStr
-				.replace(/\n\n\n*/g, "\n\n")
-				.replace(/\n(\ )*/g, "\n")
-				.replace(/\<!--.*?--\>/g, '')
-				.replace(/\\class{.*?}/g, '')
-				.replace(/\\cssId{.*?}/g, '')
-				.replace(/\\href{([^}]+)}{([^}]+)}/g, (match) => {
-					return match.replace(/_/g, '\\_');
-				})
-			);
+	const xslFile = mode == 'report' ? 'xsl/cranach2latex.sef.json' : 'xsl/cranach2beamer.sef.json';
 
-			let tmp = el.macrosString + "\n" + latex;
+	// 2. Perform the regex cleanup on your source XML as before
+	let xmlString = new XMLSerializer().serializeToString(docCranach);
+	xmlString = xmlString.replace(new RegExp(`&lt;(${htmlElements})\\s*.*?&gt;`, 'g'), "<$1>")
+		.replace(new RegExp(`&lt;\\/(${htmlElements})\\s*&gt;`, 'g'), "</$1>")
+		.replace(/#/g, '\#');
 
-			latex = collectNewcommands(tmp) + latex.replace(
-				/(\\newcommand{.*?}(?:\[\d+\])*{(?:([^{}]*)|(?:{(?:([^{}]*)|(?:{(?:([^{}]*)|(?:{[^{}]*}))*}))*}))+})/g, '')
-				.replace(/section{\s*(.*?)\s*}/g, "section{$1}");
+	// 3. Use SaxonJS.transform
+	// Since your original code was async (fetch), we use the async SaxonJS approach
+	SaxonJS.transform({
+		stylesheetLocation: xslFile + '?version=' + Math.random(),
+		sourceText: xmlString, // Saxon-JS can take the raw XML string directly
+		destination: "document",
+		stylesheetParams: {
+			"contenturldir": contentURLDir,
+			"contenturl": contentURL
+		}
+	}, "async").then(result => {
+		// The transformed DOM node
+		const fragment = result.principalResult;
 
-			document.getElementById('source_text').value = latex;
-		});
+		// Call your report function
+		report(fragment);
+
+		// Get the string representation
+		fragmentStr = new XMLSerializer().serializeToString(fragment);
+		let latex = unescapeHtml(fragmentStr
+			.replace(/\n\n\n*/g, "\n\n")
+			.replace(/\n(\ )*/g, "\n")
+			.replace(/\<!--.*?--\>/g, '')
+			.replace(/\\class{.*?}/g, '')
+			.replace(/\\cssId{.*?}/g, '')
+			.replace(/\\href{([^}]+)}{([^}]+)}/g, (match) => {
+				return match.replace(/_/g, '\\_');
+			})
+		);
+
+		let tmp = el.macrosString + "\n" + latex;
+
+		latex = collectNewcommands(tmp) + latex.replace(
+			/(\\newcommand{.*?}(?:\[\d+\])*{(?:([^{}]*)|(?:{(?:([^{}]*)|(?:{(?:([^{}]*)|(?:{[^{}]*}))*}))*}))+})/g, '')
+			.replace(/section{\s*(.*?)\s*}/g, "section{$1}");
+
+		document.getElementById('source_text').value = latex;
+	}).catch(err => {
+		console.error("Transformation error:", err);
+	});
 }
 
 function showXML(el) {
@@ -284,7 +310,7 @@ function openXML(renderer, filePath) {
 
 		const cranachDoc = new DOMParser().parseFromString(reader.result, "application/xml");
 		// baseRenderer = renderer.then(cranach => {
-		
+
 		baseRenderer = renderer;
 		let cranach = await baseRenderer;
 

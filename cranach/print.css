@@ -1,0 +1,110 @@
+/* @media print { */
+
+html {
+width: 180mm;
+}
+
+.dual-left {
+	display: table-cell;
+	width: 50%;
+	vertical-align: middle;
+	text-align: center;
+	padding-right: 5px;
+}
+
+.dual-right {
+	display: table-cell;
+	width: 50%;
+	vertical-align: middle;
+	text-align: center;
+	padding-left: 5px;
+}
+
+#left_half,
+#menu_container,
+iframe {
+	display: none;
+}
+
+body,
+#container,
+#right_half {
+	height: 100% !important;
+	width: 100% !important;
+}
+
+#output {
+	height: auto !important;
+	width: 90% !important;
+	margin: auto !important;
+}
+
+#right_half {
+	position: unset !important;
+	left: unset !important;
+	width: auto !important;
+	height: auto !important;
+	overflow: unset !important;
+	background-color: #fff !important;
+	font-family: sans-serif !important;
+}
+
+#right_half>.navbar,
+.separator,
+.collapse_icon,
+.collapsea {
+	display: none !important;
+}
+
+.slide_container {
+	text-align: justify !important;
+	text-justify: inter-word !important;
+}
+
+.plain_button {
+	border: none;
+	padding: 0;
+	background: hsla(0, 0%, 0%, 0);
+	cursor: pointer;
+	text-align: left;
+}
+
+.item_button {
+	border: none;
+	padding: 0;
+	background: hsla(0, 0%, 0%, 0);
+	cursor: pointer;
+}
+
+.framebox {
+	padding: 10px;
+	border: 10px solid SteelBlue;
+	border-radius: 10px;
+	width: 100%;
+	overflow-x: auto
+}
+
+div.image,
+.dual-left,
+.dual-right {
+	margin: 1em auto;
+	padding: 1em;
+	text-align: center;
+}
+
+.loading_icon {
+	display: none;
+}
+
+img, svg {
+	max-width: 100% !important;
+}
+
+/* Replace .your-class-name with your actual class */
+div.slide::after {
+  content: "";
+  display: block;
+  border-bottom: 1px solid #ccc; /* This acts as your hr line */
+  margin-top: 15px;               /* Space above the line */
+  margin-bottom: 15px;            /* Space below the line */
+}

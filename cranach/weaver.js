@@ -75,6 +75,9 @@ function generateXML(source) {
 	.replace(/@slide\s*@(course|week|lecture|chapter|section|subsection|subsubsection)/g, "@$1")
 	.replace(/__(.*?)__/g, "@keyword{$1}")
 	.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+	// .replace(/(?<!\n)\n(?!\n)\</g, "<");
+	// .replace(/(?<![\r\n])(?:\r\n|\r|\n)(?![\r\n])/g, "");
+	// console.log(source);
 
 	// END LEGACY COMPATIBILITY
 

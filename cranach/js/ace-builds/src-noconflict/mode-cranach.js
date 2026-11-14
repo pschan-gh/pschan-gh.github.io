@@ -16,6 +16,10 @@ var CranachHighlightRules = function() {
             token : ["wbkeyword"],
             regex : "__(.*?)__"
         }, {
+            // html img
+            token : ["htmlsrc"],
+            regex : 'src="(.*?)"'
+        }, {
             // Wb Tag
             token : ["sep"],
             regex : "([^@]|^)@(sep|slide|course|chapter|week|lecture|section|subsection|subsubsection)"

@@ -125,7 +125,7 @@
 		</li>
 	</xsl:template>
 
-	<xsl:template match="xh:*[not(self::xh:iframe) and not(self::xh:img) and not(self::xh:br or self::xh:hr)]">
+	<xsl:template match="xh:*[not(self::xh:iframe) and not(self::xh:img) and not(self::xh:a) and not(self::xh:br or self::xh:hr)]">
 		<xsl:element name="{local-name()}" namespace="{$xh}">
 			<xsl:copy-of select="@*[(name(.)!='environment') and (name(.)!='chapter_type')]"/>
 			<xsl:apply-templates select="text()|comment()|*"/>
@@ -1352,6 +1352,14 @@
 	<xsl:element name="math" namespace="http://www.w3.org/1998/Math/MathML">
 		<xsl:copy-of select="@*"/>
 		<xsl:copy-of select="*"/>
+	</xsl:element>
+</xsl:template>
+
+<xsl:template match="xh:a">
+	<xsl:element name="{local-name()}" namespace="{$xh}">
+		<xsl:copy-of select="@*[(name(.)!='environment') and (name(.)!='chapter_type')]"/>
+		<xsl:attribute name="target">_blank</xsl:attribute>
+		<xsl:apply-templates select="text()|comment()|*"/>
 	</xsl:element>
 </xsl:template>
 

@@ -1077,4 +1077,7 @@
 		</xsl:element>
     </xsl:template>
 
+    <!-- Ignore 'paragraph' elements that contain only whitespace -->
+    <xsl:template match="lv:paragraphs[not(normalize-space())]" />
+    
 </xsl:stylesheet>

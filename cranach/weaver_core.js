@@ -419,7 +419,7 @@ const handleHtmlToken = (child, token) => {
 		const tagName = token.tag.toLowerCase();
 		// const prefixedTagRe = new RegExp(`${xh_prefix || ''}${tagName}`, 'i');
 		const prefixedTagRe = new RegExp(`\\b${tagName}\\b`, 'i');
-		console.log(prefixedTagRe);
+		// console.log(prefixedTagRe);
 		child = child.closeTo(prefixedTagRe);
 		// console.log(`TAG CLOSED: ${tagName}`);
 		child = child.close();

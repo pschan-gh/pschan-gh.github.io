@@ -42,10 +42,10 @@
 	<xsl:template match="idx:entry[@keyword]">
 		<xsl:if test="position()!=1">
 		</xsl:if>
-		<xh:a namespace="http://www.w3.org/1999/xhtml" tabindex="0" role="button" class="btn btn-outline-info btn-sm btn_keyword index" data-bs-trigger="focus" data-bs-html="true" data-bs-toggle="popover" data-bs-placement="bottom" style="margin:2.5px">
+		<button namespace="http://www.w3.org/1999/xhtml" tabindex="0" role="button" class="btn btn-outline-info btn-sm btn_keyword index" data-bs-trigger="focus" data-bs-html="true" data-bs-toggle="popover" data-bs-placement="bottom" style="margin:2.5px">
 			<xsl:apply-templates select="idx:branch[@keyword]"/>
 			<xsl:value-of select="idx:branch[1]/text()"/>
-		</xh:a>
+		</button>
 		<xsl:text> </xsl:text>
 	</xsl:template>
 

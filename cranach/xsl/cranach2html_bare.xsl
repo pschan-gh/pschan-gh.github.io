@@ -12,6 +12,7 @@
 
     <xsl:output method="html"/>
 
+    <xsl:param name="timestamp" select="'0'" />
     <xsl:param name="contenturl" select="''" />
 	<xsl:param name="contentdir" select="''" />
 

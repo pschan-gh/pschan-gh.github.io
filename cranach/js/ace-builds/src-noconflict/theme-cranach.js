@@ -60,6 +60,9 @@ font-weight: 100;\
 .ace_wbkeyword {\
 color: #ffb;\
 }\
+.ace_htmlsrc {\
+color: #bfb;\
+}\
 .ace-cranach .ace_sep {\
 color: #000;\
 background-color: #fbb;\

@@ -156,7 +156,8 @@ function showJaxSource(outputId) {
 }
 
 function renderSlide(slide) {
-	if (slide == null) {
+
+	if (slide == null || slide.nodeType === Node.TEXT_NODE) {
 		return 0;
 	}
 	// console.log('renderSlide');
@@ -398,14 +399,14 @@ function highlight(item) {
 }
 
 function hasSizeAttributes(imgElement) {
-  const style = window.getComputedStyle(imgElement);
-  
-  return {
-    hasMaxHeight: style.maxHeight !== 'none',
-    hasMaxWidth: style.maxWidth !== 'none',
-    hasHeight: style.height !== 'auto' && style.height !== '0px',
-    hasWidth: style.width !== 'auto' && style.width !== '0px'
-  };
+	const style = window.getComputedStyle(imgElement);
+
+	return {
+		hasMaxHeight: style.maxHeight !== 'none',
+		hasMaxWidth: style.maxWidth !== 'none',
+		hasHeight: style.height !== 'auto' && style.height !== '0px',
+		hasWidth: style.width !== 'auto' && style.width !== '0px'
+	};
 }
 
 // deepseek
@@ -775,6 +776,33 @@ function printfriendly() {
 	const slides = Array.from(document.querySelectorAll('.slide'));
 	slides.forEach((slide) => {
 		console.log('rendering');
+
+
+		slide.querySelectorAll('iframe:not(.copied)').forEach(iframe => {
+			// Create the new anchor (a) element
+			const link = document.createElement('a');
+
+			link.target = '_BLANK';
+
+			// Set href to match the iframe's src
+			link.href = iframe.dataset.src;
+
+			// Set visible text for the link
+			link.textContent = 'IFRAME';
+
+			// Style the link to appear below the iframe
+			link.style.display = 'block';
+			link.style.marginTop = '5px';
+
+			// Insert the link immediately after the iframe
+			iframe.parentNode.insertBefore(link, iframe.nextSibling);
+			iframe.classList.add('copied');
+		});
+
+		slide.querySelectorAll('.slide_content div').forEach(div => {
+			div.style.height = 'unset';
+		});
+
 		renderSlide(slide);
 		const collapseElements = Array.from(slide.querySelectorAll('.collapse'));
 		// Loop through each element

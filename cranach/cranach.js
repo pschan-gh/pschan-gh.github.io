@@ -209,31 +209,113 @@ function Cranach(url) {
 		return this;
 	}
 
+	this.ensureDocument = function (result) {
+		if (!result) return result;
+
+		// Already a proper Document → return as-is
+		if (result.nodeType === Node.DOCUMENT_NODE) {
+			return result;
+		}
+
+		const doc = document.implementation.createDocument("", "", null);
+
+		// If it's a DocumentFragment, take its children
+		if (result.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+			// Clone and clean whitespace while moving
+			while (result.firstChild) {
+				let child = result.firstChild;
+				// Optional: Remove pure whitespace text nodes
+				if (child.nodeType === Node.TEXT_NODE && !/\S/.test(child.nodeValue)) {
+					result.removeChild(child);
+					continue;
+				}
+				doc.appendChild(child);
+			}
+		}
+		// If it's an Element (common case)
+		else if (result.nodeType === Node.ELEMENT_NODE) {
+			doc.appendChild(result);
+		}
+		else {
+			doc.appendChild(result);
+		}
+
+		return doc;
+	};
 
 	/* interact with Browser */
 
-	this.preCranachDocToCranachDoc = async function () {
+	// this.preCranachDocToCranachDoc = async function () {
 
+	// 	const indexDom = this.indexDoc;
+	// 	const preCranachDoc = this.preCranachDoc;
+
+	// 	console.log(prettyPrintXML(preCranachDoc));
+	// 	if (indexDom.getElementsByTagName('index')[0]) {
+	// 		const index = indexDom.getElementsByTagNameNS("http://www.math.cuhk.edu.hk/~pschan/elephas_index", 'index')[0].cloneNode(true);
+	// 		preCranachDoc.getElementsByTagName('root')[0].appendChild(index);
+	// 	}
+
+	// 	const response = await fetch('xsl/cranach.xsl');
+	// 	const xsltext = await response.text();
+	// 	console.log('PRECRANACHTOCRANACH');
+	// 	let xsltProcessor = new XSLTProcessor();
+	// 	let xsltdoc = domparser.parseFromString(xsltext, "text/xml");
+	// 	// console.log(xsltdoc);
+	// 	xsltProcessor.importStylesheet(xsltdoc);
+	// 	this.cranachDoc = xsltProcessor.transformToDocument(preCranachDoc);
+
+	// 	return this;
+	// }
+
+	this.preCranachDocToCranachDoc = async function () {
 		const indexDom = this.indexDoc;
 		const preCranachDoc = this.preCranachDoc;
 
-		console.log(prettyPrintXML(preCranachDoc));
+		// console.log(prettyPrintXML(preCranachDoc));
+
+		// Append index if present
 		if (indexDom.getElementsByTagName('index')[0]) {
-			const index = indexDom.getElementsByTagNameNS("http://www.math.cuhk.edu.hk/~pschan/elephas_index", 'index')[0].cloneNode(true);
+			const index = indexDom.getElementsByTagNameNS(
+				"http://www.math.cuhk.edu.hk/~pschan/elephas_index",
+				'index'
+			)[0].cloneNode(true);
+
 			preCranachDoc.getElementsByTagName('root')[0].appendChild(index);
 		}
 
-		const response = await fetch('xsl/cranach.xsl');
-		const xsltext = await response.text();
 		console.log('PRECRANACHTOCRANACH');
-		let xsltProcessor = new XSLTProcessor();
-		let xsltdoc = domparser.parseFromString(xsltext, "text/xml");
-		// console.log(xsltdoc);
-		xsltProcessor.importStylesheet(xsltdoc);
-		this.cranachDoc = xsltProcessor.transformToDocument(preCranachDoc);
 
+		// === SaxonJS Transformation (using pre-compiled SEF) ===
+		const transformResult = await SaxonJS.transform({
+			stylesheetLocation: "xsl/cranach.sef.json",   // ← Your compiled version
+
+			sourceNode: preCranachDoc,
+
+			// Return a full DOM Document (equivalent to transformToDocument)
+			destination: "document"
+
+		}, "async");
+
+		// let cranachDoc = transformResult.principalResult;
+
+		// // === CRITICAL FIX: Ensure we have a real Document, not a Fragment ===
+		// if (cranachDoc.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+		// 	const newDoc = document.implementation.createDocument("", "", null);
+
+		// 	// Move all children from fragment into the new document
+		// 	while (cranachDoc.firstChild) {
+		// 		newDoc.appendChild(cranachDoc.firstChild);
+		// 	}
+
+		// 	cranachDoc = newDoc;
+		// }
+
+		this.cranachDoc = this.ensureDocument(transformResult.principalResult);
+
+		console.log(this.cranachDoc);
 		return this;
-	}
+	};
 
 	this.displayPreCranachDocToHtml = async function () {
 		// return this.preCranachDocToCranachDoc().then(renderer => {
@@ -243,26 +325,55 @@ function Cranach(url) {
 		return await renderer.updateIndexAndRender();
 	}
 
+	// this.displayCranachDocToHtml = async function () {
+	// 	report('IN DISPLAYCRANACHDOCTOHTML');
+	// 	const xsl = this.bare ? 'xsl/cranach2html_bare.xsl' : 'xsl/cranach2html.xsl';
+	// 	const output = this.output;
+
+	// 	const response = await fetch(xsl);
+	// 	const xsltext = await response.text();
+
+	// 	const xsltProcessor = new XSLTProcessor();
+	// 	xsltProcessor.importStylesheet(domparser.parseFromString(xsltext, "text/xml"));
+	// 	xsltProcessor.setParameter(null, "timestamp", new Date().getTime());
+	// 	xsltProcessor.setParameter(null, 'contenturl', this.attr['contentURL']);
+	// 	xsltProcessor.setParameter(null, 'contentdir', this.attr['dir']);
+
+	// 	const fragment = xsltProcessor.transformToFragment(this.cranachDoc, document);
+	// 	output.innerHTML = '';
+	// 	output.appendChild(fragment);
+
+	// 	return this;
+	// }
+
 	this.displayCranachDocToHtml = async function () {
 		report('IN DISPLAYCRANACHDOCTOHTML');
-		const xsl = this.bare ? 'xsl/cranach2html_bare.xsl' : 'xsl/cranach2html.xsl';
+
+		const xslSeF = this.bare
+			? 'xsl/cranach2html_bare.sef.json'
+			: 'xsl/cranach2html.sef.json';
+
+		const transformResult = await SaxonJS.transform({
+			stylesheetLocation: xslSeF,
+
+			sourceNode: this.cranachDoc,
+
+			stylesheetParams: {
+				timestamp: new Date().getTime().toString(),
+				contenturl: this.attr['contentURL'],
+				contentdir: this.attr['dir']
+			},
+
+			destination: "serialized"
+
+		}, "async");
+
 		const output = this.output;
-
-		const response = await fetch(xsl);
-		const xsltext = await response.text();
-
-		const xsltProcessor = new XSLTProcessor();
-		xsltProcessor.importStylesheet(domparser.parseFromString(xsltext, "text/xml"));
-		xsltProcessor.setParameter(null, "timestamp", new Date().getTime());
-		xsltProcessor.setParameter(null, 'contenturl', this.attr['contentURL']);
-		xsltProcessor.setParameter(null, 'contentdir', this.attr['dir']);
-
-		const fragment = xsltProcessor.transformToFragment(this.cranachDoc, document);
 		output.innerHTML = '';
-		output.appendChild(fragment);
+		output.innerHTML = transformResult.principalResult;
 
 		return this;
-	}
+	};
 
 	this.xmlDocQueryAndRender = async function (output = null) {
 		report('xmlDocQueryAndRender');
@@ -313,15 +424,66 @@ function Cranach(url) {
 		// 	});
 		// });
 	}
+	// this.updateIndex = async function () {
+	// 	let xmlDom = this.cranachDoc;
+	// 	const filename = this.attr['query'] == '' ? this.attr['localName'] : 'local';
+	// 	const contents = new XMLSerializer().serializeToString(xmlDom);
+	// 	const fileMD5 = base62md5(contents);
+
+	// 	const query = "//lv:keyword[@slide!='all']|//lv:statement|//lv:substatement|//lv:figure|//lv:ref|//lv:*[(lv:label) and (@type='Section')]";
+
+	// 	const indexDom = this.indexDoc;
+	// 	const newBranches = xmlDom.evaluate(
+	// 		query,
+	// 		xmlDom,
+	// 		nsResolver,
+	// 		XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+	// 		null
+	// 	);
+	// 	if (indexDom.getElementsByTagName('index')[0]) {
+	// 		for (let i = 0; i < newBranches.snapshotLength; i++) {
+	// 			indexDom.getElementsByTagName('index')[0]
+	// 				.appendChild(
+	// 					newBranches.snapshotItem(i).cloneNode(true)
+	// 				);
+	// 		}
+	// 	} else {
+	// 		return this;
+	// 	}
+
+	// 	let response = await fetch('xsl/updateindex.xsl');
+	// 	const xsltext = await response.text();
+	// 	const xsltProcessor = new XSLTProcessor();
+	// 	xsltProcessor.importStylesheet(domparser.parseFromString(xsltext, "text/xml"));
+	// 	xsltProcessor.setParameter('', 'cranachmd5', fileMD5);
+	// 	xsltProcessor.setParameter('', 'cranachfilename', filename);
+	// 	xsltProcessor.setParameter('', 'cranachdoc', xmlDom);
+
+	// 	const preIndexDoc = xsltProcessor.transformToDocument(this.indexDoc);
+	// 	response = await fetch('xsl/akhawunti.xsl')
+	// 	const indexxsltext = await response.text();
+	// 	const indexXsltProcessor = new XSLTProcessor();
+
+	// 	indexXsltProcessor.importStylesheet(domparser.parseFromString(indexxsltext, "text/xml"));
+	// 	this.indexDoc = xsltProcessor.transformToDocument(preIndexDoc);
+	// 	return this;
+
+	// }
+
 	this.updateIndex = async function () {
+		console.log(this.cranachDoc);
 		let xmlDom = this.cranachDoc;
 		const filename = this.attr['query'] == '' ? this.attr['localName'] : 'local';
+
+		// Serialize and compute MD5
 		const contents = new XMLSerializer().serializeToString(xmlDom);
+		// console.log(contents);
 		const fileMD5 = base62md5(contents);
 
 		const query = "//lv:keyword[@slide!='all']|//lv:statement|//lv:substatement|//lv:figure|//lv:ref|//lv:*[(lv:label) and (@type='Section')]";
-
 		const indexDom = this.indexDoc;
+
+		// XPath evaluation and node appending (unchanged)
 		const newBranches = xmlDom.evaluate(
 			query,
 			xmlDom,
@@ -329,53 +491,116 @@ function Cranach(url) {
 			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
 			null
 		);
+
 		if (indexDom.getElementsByTagName('index')[0]) {
+			const indexRoot = indexDom.getElementsByTagName('index')[0];
 			for (let i = 0; i < newBranches.snapshotLength; i++) {
-				indexDom.getElementsByTagName('index')[0]
-					.appendChild(
-						newBranches.snapshotItem(i).cloneNode(true)
-					);
+				indexRoot.appendChild(newBranches.snapshotItem(i).cloneNode(true));
 			}
 		} else {
 			return this;
 		}
 
-		let response = await fetch('xsl/updateindex.xsl');
-		const xsltext = await response.text();
-		const xsltProcessor = new XSLTProcessor();
-		xsltProcessor.importStylesheet(domparser.parseFromString(xsltext, "text/xml"));
-		xsltProcessor.setParameter('', 'cranachmd5', fileMD5);
-		xsltProcessor.setParameter('', 'cranachfilename', filename);
-		xsltProcessor.setParameter('', 'cranachdoc', xmlDom);
+		console.log('UPDATEINDEX');
 
-		const preIndexDoc = xsltProcessor.transformToDocument(this.indexDoc);
-		response = await fetch('xsl/akhawunti.xsl')
-		const indexxsltext = await response.text();
-		const indexXsltProcessor = new XSLTProcessor();
+		// === First Transformation: updateindex.xsl ===
+		let transformResult1 = await SaxonJS.transform({
+			stylesheetLocation: "xsl/updateindex.sef.json",
 
-		indexXsltProcessor.importStylesheet(domparser.parseFromString(indexxsltext, "text/xml"));
-		this.indexDoc = xsltProcessor.transformToDocument(preIndexDoc);
+			sourceNode: this.indexDoc,                    // input document
+
+			stylesheetParams: {
+				cranachmd5: fileMD5,
+				cranachfilename: filename,
+				cranachdoc: xmlDom                        // pass full document as parameter
+			},
+
+			destination: "document"
+
+		}, "async");
+
+		const preIndexDoc = transformResult1.principalResult;
+
+		// === Second Transformation: akhawunti.xsl ===
+		let transformResult2 = await SaxonJS.transform({
+			stylesheetLocation: "xsl/akhawunti.sef.json",
+
+			sourceNode: preIndexDoc,
+
+			destination: "document"
+
+		}, "async");
+
+		// let indexDoc = transformResult2.principalResult;
+
+		// // === CRITICAL FIX: Ensure we have a real Document, not a Fragment ===
+		// if (indexDoc.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+		// 	const newDoc = document.implementation.createDocument("", "", null);
+
+		// 	// Move all children from fragment into the new document
+		// 	while (indexDoc.firstChild) {
+		// 		newDoc.appendChild(indexDoc.firstChild);
+		// 	}
+
+		// 	indexDoc = newDoc;
+		// }
+
+		// this.indexDoc = indexDoc;
+
+		this.indexDoc = this.ensureDocument(transformResult2.principalResult);
+
 		return this;
+	};
 
-	}
+	// this.displayIndexDocToHtml = async function (target) {
+	// 	const contentURLDir = this.attr['rootURL'] + '\/?xml=' + this.attr['dir']
+	// 	const indexDoc = this.indexDoc;
+
+	// 	if (target === null) {
+	// 		return this;
+	// 	}
+	// 	const response = await fetch('xsl/index2html.xsl');
+	// 	const xsltext = await response.text();
+	// 	const xsltProcessor = new XSLTProcessor();
+	// 	xsltProcessor.importStylesheet(domparser.parseFromString(xsltext, "text/xml"));
+	// 	xsltProcessor.setParameter(null, 'contenturldir', contentURLDir);
+	// 	fragment = xsltProcessor.transformToFragment(indexDoc, document);
+	// 	target.innerHTML = ''
+	// 	target.appendChild(fragment);
+	// 	return this;
+	// }
 
 	this.displayIndexDocToHtml = async function (target) {
-		const contentURLDir = this.attr['rootURL'] + '\/?xml=' + this.attr['dir']
+		const contentURLDir = this.attr['rootURL'] + '/?xml=' + this.attr['dir'];
 		const indexDoc = this.indexDoc;
 
 		if (target === null) {
 			return this;
 		}
-		const response = await fetch('xsl/index2html.xsl');
-		const xsltext = await response.text();
-		const xsltProcessor = new XSLTProcessor();
-		xsltProcessor.importStylesheet(domparser.parseFromString(xsltext, "text/xml"));
-		xsltProcessor.setParameter(null, 'contenturldir', contentURLDir);
-		fragment = xsltProcessor.transformToFragment(indexDoc, document);
-		target.innerHTML = ''
-		target.appendChild(fragment);
+
+		console.log('DISPLAYINDEXDOCTOHTML');
+
+		// === SaxonJS Transformation ===
+		const transformResult = await SaxonJS.transform({
+			stylesheetLocation: "xsl/index2html.sef.json",
+
+			sourceNode: indexDoc,
+
+			stylesheetParams: {
+				contenturldir: contentURLDir
+			},
+
+			// We want a DocumentFragment (same as transformToFragment)
+			destination: "serialized"
+
+		}, "async");
+
+		// Clear target and append the result
+		target.innerHTML = '';
+		target.innerHTML = transformResult.principalResult;
+		console.log(transformResult.principalResult)
 		return this;
-	}
+	};
 
 	this.renderWb = function (wbString, output) {
 		if (output) {
