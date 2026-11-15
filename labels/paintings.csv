@@ -1,0 +1,11 @@
+author,title,year,medium,dimensions,price,artwork_id,qrcode_url
+Leonardo da Vinci,Mona Lisa,1503,oil on poplar,77 x 53 cm,12000HKD,ml1,https://en.wikipedia.org/wiki/Mona_Lisa
+Vincent van Gogh,Starry Night,1889,oil on canvas,73.7 x 92.1 cm,16000HKD,sn,https://en.wikipedia.org/wiki/The_Starry_Night
+Pablo Picasso,Les Demoiselles d'Avignon,1907,oil on canvas,350 x 310 cm,9000HKD,lddA,
+Edvard Munch,The Scream,1893,tempera and crayon on cardboard,91 x 73 cm,32000HKD,ts,
+Claude Monet,Water Lilies,1914,oil on canvas,73 x 92 cm,12000HKD,wl,
+Salvador Dalí,The Persistence of Memory,1931,oil on canvas,46.5 x 30 cm,9000HKD,pm,
+Rembrandt van Rijn,Self-Portrait,1665,oil on canvas,60 x 53 cm,9000HKD,sp1,
+Jan van Eyck,Arnolfini Portrait,1434,oil on wood,82.2 x 67.3 cm,16000HKD,ap,https://en.wikipedia.org/wiki/Arnolfini_Portrait
+Edgar Degas,The Absinthe Drinker,1876,oil on canvas,98.6 x 72.6 cm,50000HKD,ad,
+Gustav Klimt,The Kiss,-1,"oil, silver and gold on canvas",180 x 180 cm,50000HKD,tk,

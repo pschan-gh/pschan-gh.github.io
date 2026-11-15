@@ -50,7 +50,7 @@
     }
 
     .group h3 {
-      font-size: 0.75rem;
+      font-size: 0.9rem;
       text-transform: uppercase;
       letter-spacing: 0.04em;
       color: #666;
@@ -127,6 +127,15 @@
 
     #status {
       font-size: 0.8rem;
+      color: #555;
+      margin-top: 10px;
+      min-height: 1.2em;
+    }
+
+    #sample a {
+      padding-left: 10px;
+      font-size: 0.75em;
+      font-weight:normal;
       color: #555;
       margin-top: 10px;
       min-height: 1.2em;
@@ -325,11 +334,11 @@
     <h1>Artwork Label Generator</h1>
     <div class="controls">
       <div class="group">
-        <h3>Source file</h3>
+        <h3>Source file <span id="sample"><a href="paintings.csv">sample csv</a></span></h3>
         <div class="file-row">
-          <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,text/csv">
-        </div>
-        <div id="status">No file loaded</div>
+          <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,text/csv">          
+        </div>        
+        <div><span id="status">No file loaded</span></div>
       </div>
       <div class="group">
         <h3>Logo</h3>
